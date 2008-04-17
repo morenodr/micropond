@@ -21,7 +21,7 @@ void Simulation::resume(){
 }
 
 void Simulation::run(){
-	qsrand(100);
+	qsrand(time(NULL));
 	
 	init();
 	
@@ -67,6 +67,9 @@ void Simulation::killCell(struct Cell *cell){
 	}
 }
 
+/**
+ * regenarates the energy of one cell
+ */
 void Simulation::regenerateEnergy(){
 	int x = qrand() % WORLD_X;
 	int y = qrand() % WORLD_Y;
@@ -121,13 +124,11 @@ void Simulation::executeCell(int x, int y, int z){
 	
 	//Execute cell until no more energy is left
 	while(cell->energy && !stop){
-		genome_pointer++;
-		
 		if(genome_pointer > GENOME_SIZE-1){
-			genome_pointer = 1;
+			genome_pointer = 0;
 		}
 		
-		inst = cell->genome[genome_pointer];
+		inst = cell->genome[genome_pointer++];
 		cell->energy--;
 		
 		switch(inst){
@@ -228,7 +229,7 @@ void Simulation::executeCell(int x, int y, int z){
 	if(output_buffer[output_pointer] != GENOME_OPERATIONS){
 		struct Cell *neighbour = getNeighbour(x,y,z,facing);
 		if(accessOk(cell, neighbour, reg,false)){
-			reproduce(cell,neighbour);
+			reproduce(cell,neighbour,output_buffer);
 		}
 	}
 }
@@ -237,7 +238,7 @@ void Simulation::executeCell(int x, int y, int z){
  * reproduce cell.
  * Mutations are introduced 
  */
-void Simulation::reproduce(struct Cell *cell, struct Cell *neighbour){
+void Simulation::reproduce(struct Cell *cell, struct Cell *neighbour,uchar *output_buffer){
 	neighbour->id = ++cellid;
 	if(cell->id){
 		neighbour->parent = cell->id;
@@ -252,8 +253,21 @@ void Simulation::reproduce(struct Cell *cell, struct Cell *neighbour){
 	}else{
 		neighbour->lineage = cell->lineage;
 	}
+	
+	/*if(cell->generation > 2){
+		qDebug() << "reproduce!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!";
+		for(int i = 0; i < GENOME_SIZE; i++){
+			qDebug() << output_buffer[i];
+		}
+	}*/
+	
 	int loop = 0;
+	bool ended = false;
 	for(int i = 0; i < GENOME_SIZE && loop < GENOME_SIZE; i++){
+		//don't write the temp variable
+		if(output_buffer[loop] == GENOME_OPERATIONS)
+			ended = true;
+		
 		if(qrand() % MUTATION_RATE == 0){
 			switch(qrand() % 2){
 			case 0://command replacement
@@ -264,7 +278,11 @@ void Simulation::reproduce(struct Cell *cell, struct Cell *neighbour){
 				break;
 			}
 		}else{
-			neighbour->genome[i] = cell->genome[loop];
+			if(ended){
+				neighbour->genome[i] = GENOME_OPERATIONS - 1;
+			}else{
+				neighbour->genome[i] = output_buffer[loop];
+			}
 		}
 		loop++;
 	}
@@ -298,6 +316,9 @@ void Simulation::init(){
 	}
 }
 
+/**
+ * mutates the whole genome
+ */
 void Simulation::mutateCell(struct Cell *cell){	
 	for(int i = 0; i < GENOME_SIZE; i++){
 		if(qrand() % MUTATION_RATE == 0){
@@ -314,10 +335,17 @@ uchar Simulation::randomOperation(){
 	return temp;
 }
 
+/**
+ * returns the cell at the specified position
+ */
 struct Cell *Simulation::cell(int x, int y, int z){
 	return &world[x][y][z];
 }
 
+/**
+ * returns the neighbour in the specified direction
+ * wraps around edges
+ */
 struct Cell *Simulation::getNeighbour(int x, int y, int z, uchar direction){
 	
 	switch(direction){
@@ -354,9 +382,9 @@ struct Cell *Simulation::getNeighbour(int x, int y, int z, uchar direction){
 	}
 	
 	if(z >= WORLD_Z){
-		z = z - WORLD_Z;
+		z = WORLD_Z;
 	}else if(x < 0){
-		z = WORLD_Z + z;
+		z = 0;
 	}
 	
 	return &world[x][y][z];

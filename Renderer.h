@@ -27,6 +27,7 @@ public slots:
 private:
 	void updatePicture();
 	void printCell(int x, int y, int z);
+	void printReadableGenome(int x, int y, int z);
 	Simulation *simulation;
 	int colorMode;
 };

@@ -19,10 +19,10 @@
 #define UP 4
 #define DOWN 5
 
-#define MUTATION_RATE 2000
+#define MUTATION_RATE 2000000
 
-#define ENERGY_ADDED 300
-#define ENERGY_FREQUENCY 20
+#define ENERGY_ADDED 900
+#define ENERGY_FREQUENCY 25
 struct Cell{
 	uint id;
 	uint parent;
@@ -62,7 +62,7 @@ private:
 	void executeCell(int x, int y, int z);
 	void mutateCell(struct Cell *cell);
 	void killCell(struct Cell *cell);
-	void reproduce(struct Cell *cell, struct Cell *neighbour);
+	void reproduce(struct Cell *cell, struct Cell *neighbour,uchar *output_buffer);
 	
 	bool accessOk(struct Cell *source, struct Cell *dest, char guess,bool good);
 	struct Cell *getNeighbour(int x, int y, int z, uchar direction);

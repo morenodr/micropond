@@ -87,6 +87,70 @@ void Renderer::printCell(int x, int y, int z){
 	}
 }
 
+void Renderer::printReadableGenome(int x, int y, int z){
+	struct Cell *cell = simulation->cell(x,y,z);
+	int stop = 0;
+	
+	for(int i = 0; i < simulation->genomeSize();i++ ){
+		switch(cell->genome[i]){
+		case 0:
+			qDebug() << "reset";
+			break;
+		case 1: //pointer --
+			qDebug() << "pointer--";
+			break;
+		case 2: //pointer ++
+			qDebug() << "pointer++";
+			break;
+		case 3: //register ++
+			qDebug() << "register++";
+			break;
+		case 4: //register --
+			qDebug() << "register--";
+			break;
+		case 5: //read genome to register
+			qDebug() << "read genome";
+			break;
+		case 6: //write register to outputbuffer
+			qDebug() << "write to buffer";
+			break;
+		case 7: //read output buffer to register
+			qDebug() << "read buffer";
+			break;
+		case 8: //look into direction specified in the register
+			qDebug() << "face to register";
+			break;
+		case 9://while(register){
+			qDebug() << "while(register){";
+			break;
+		case 10://}
+			qDebug() << "}";
+			break;
+		case 11:
+			qDebug() << "register = direction with most energy";
+			break;
+		case 12: //move
+			qDebug() << "move to facing";
+			break;
+		case 13: // kill
+			qDebug() << "kill facing cell";
+			break;
+		case 14://nop
+			qDebug() << "NOP";
+			break;
+		case 15: //end
+			qDebug() << "stop";
+			break;
+		}
+		if(cell->genome[i] == 15){
+			stop++;
+			if(stop >= 4){
+				break;
+			}
+		}
+	}
+}
+
 void Renderer::mousePressEvent ( QMouseEvent * event ){
 	if(event->button() == Qt::RightButton){
 		colorMode = (colorMode + 1) % RENDERMODES;
@@ -96,6 +160,7 @@ void Renderer::mousePressEvent ( QMouseEvent * event ){
 		struct Cell *cell = simulation->cell(event->x(),event->y(),0);
 		if(cell->generation > 2){
 			printCell(event->x(),event->y(),0);
+			printReadableGenome(event->x(),event->y(),0);
 		}
 		simulation->resume();
 	}
