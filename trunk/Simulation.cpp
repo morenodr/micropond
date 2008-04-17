@@ -203,7 +203,7 @@ void Simulation::executeCell(int x, int y, int z){
 			facing = reg % DIRECTIONS;
 			break;
 		case 9://while(register){
-			if(reg){
+			if(!reg){
 				//int temp = genome_pointer;
 				while(cell->genome[genome_pointer] != 10 && cell->energy){
 					genome_pointer= (genome_pointer+1)%GENOME_SIZE;
