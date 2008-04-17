@@ -41,17 +41,23 @@ void Renderer::updatePicture(){
 					break;
 				case GENOME:
 					if(cell->generation > 2){
+						int hash = 0;
 						for(int i = 0; i < simulation->genomeSize();i++ ){
-							r += cell->genome[i]%5;
-							g += cell->genome[i]%7;
-							b += cell->genome[i]%9;
+							if(cell->genome[i] != simulation->genomeSize()-1){
+								hash += cell->genome[i];
+							}
 						}
+						r = qRed(hash);
+						g = qGreen(hash);
+						b = qBlue(hash);
 					}
 					break;
 				case LINEAGE:
-					r = qRed(cell->lineage * 200);
-					g = qGreen(cell->lineage  * 200);
-					b = qBlue(cell->lineage  * 200);
+					if(cell->generation > 2){
+						r = qRed(cell->lineage * 200);
+						g = qGreen(cell->lineage  * 200);
+						b = qBlue(cell->lineage  * 200);
+					}
 					break;
 				case ENERGY:
 					r = qRed(cell->energy );
@@ -63,8 +69,11 @@ void Renderer::updatePicture(){
 			temp.setPixel(x,y,qRgb(r % 256, g % 256, b % 256));
 		}
 	}
+	int counter = simulation->counter();
+	
 	simulation->resume();
 	setPixmap(QPixmap::fromImage (temp));
+	qDebug() << "cells executed: " << counter;
 	//qDebug() << "max generation = " << maxGeneration;
 }
 
