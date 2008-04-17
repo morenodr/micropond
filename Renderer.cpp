@@ -73,7 +73,7 @@ void Renderer::updatePicture(){
 	
 	simulation->resume();
 	setPixmap(QPixmap::fromImage (temp));
-	qDebug() << "cells executed: " << counter;
+	qDebug() << "cells executed: " << counter * 4;
 	//qDebug() << "max generation = " << maxGeneration;
 }
 
