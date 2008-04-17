@@ -2,7 +2,6 @@
 
 Window::Window()
 {
-	
 	simulation = new Simulation();
 	renderer = new Renderer(simulation);
 	simulation->start();
