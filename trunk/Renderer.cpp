@@ -6,6 +6,10 @@ Renderer::Renderer(Simulation *sim)
 	simulation = sim;
 	colorMode = GENOME;
 }
+void Renderer::update(){
+	updatePicture();
+	QTimer::singleShot(UPDATE_INTERVAL, this, SLOT(update()));	
+}
 
 void Renderer::updatePicture(){
 	int sizeX = simulation->x();
@@ -24,22 +28,19 @@ void Renderer::updatePicture(){
 			g = 0;
 			b = 0;
 			struct Cell *cell = simulation->cell(x,y,0);
+			
 			if(maxGeneration < cell->generation){
 				maxGeneration = cell->generation;
 			}
+			
 			switch(colorMode){
 				case GENERATION:
-					r = cell->generation;
-					g = cell->generation;
-					b = cell->generation;
-					break;
-				case LINEAGE:
-					r = cell->lineage % 31;
-					g = cell->lineage % 27;
-					b = cell->lineage % 13;
+					r = qRed(cell->generation * 30);
+					g = qGreen(cell->generation  * 30);
+					b = qBlue(cell->generation  * 30);
 					break;
 				case GENOME:
-					if(cell->generation){
+					if(cell->generation > 2){
 						for(int i = 0; i < simulation->genomeSize();i++ ){
 							r += cell->genome[i]%5;
 							g += cell->genome[i]%7;
@@ -47,17 +48,58 @@ void Renderer::updatePicture(){
 						}
 					}
 					break;
+				case LINEAGE:
+					r = qRed(cell->lineage * 200);
+					g = qGreen(cell->lineage  * 200);
+					b = qBlue(cell->lineage  * 200);
+					break;
+				case ENERGY:
+					r = qRed(cell->energy );
+					g = qGreen(cell->energy);
+					b = qBlue(cell->energy );
+					break;
 			}
-
+			//printCell(x,y,0);
 			temp.setPixel(x,y,qRgb(r % 256, g % 256, b % 256));
 		}
 	}
 	simulation->resume();
 	setPixmap(QPixmap::fromImage (temp));
-	qDebug() << "max generation = " << maxGeneration;
-	QTimer::singleShot(UPDATE_INTERVAL, this, SLOT(updatePicture()));
+	//qDebug() << "max generation = " << maxGeneration;
 }
 
+void Renderer::printCell(int x, int y, int z){
+	struct Cell *cell = simulation->cell(x,y,0);
+	QString genome("");
+	
+	int stop = 0;
+	if(cell->generation > 2){
+		for(int i = 0; i < simulation->genomeSize();i++ ){
+			genome.append(QString::number(cell->genome[i])+" ");
+			if(cell->genome[i] == 15){
+				stop++;
+				if(stop >= 4){
+					break;
+				}
+			}
+		}
+		qDebug() << "Pos" << x << y << z << "Gene" << cell->generation << "genome"<< genome;
+	}
+}
+
+void Renderer::mousePressEvent ( QMouseEvent * event ){
+	if(event->button() == Qt::RightButton){
+		colorMode = (colorMode + 1) % RENDERMODES;
+		updatePicture();
+	}else if(event->button() == Qt::LeftButton){
+		simulation->pause();
+		struct Cell *cell = simulation->cell(event->x(),event->y(),0);
+		if(cell->generation > 2){
+			printCell(event->x(),event->y(),0);
+		}
+		simulation->resume();
+	}
+}
 
 Renderer::~Renderer()
 {

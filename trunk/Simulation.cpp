@@ -27,30 +27,35 @@ void Simulation::run(){
 	
 	int x,y,z;
 	
+	uint round = 0;
+	
 	while(running){
 		mutex->lock();
+		round++;
+		//Select random cell
 		x = qrand() % WORLD_X;
 		y = qrand() % WORLD_Y;
 		z = qrand() % WORLD_Z;
 		Simulation::executeCell(x,y,z);
 		
 		if(!world[x][y][z].generation){
-			mutateCell(x,y,z);
+			mutateCell(&world[x][y][z]);
 		}
 		
-		if(!world[x][y][z].energy){
-			killCell(x,y,z);
+		//kills a cell if there is not energy left and it's a child
+		if(!world[x][y][z].energy && world[x][y][z].generation){
+			killCell(&world[x][y][z]);
 		}
 		
-		regenerateEnergy();
+		//add energy every x rounds
+		if(!(round % ENERGY_FREQUENCY)){
+			regenerateEnergy();
+		}
 		mutex->unlock();
-	}	
+	}
 }
 
-void Simulation::killCell(int x, int y, int z){
-	struct Cell *cell;
-		
-	cell = &world[x][y][z];
+void Simulation::killCell(struct Cell *cell){
 	cell->parent = 0;
 	cell->lineage = 0;
 	cell->generation = 0;
@@ -67,7 +72,30 @@ void Simulation::regenerateEnergy(){
 	int y = qrand() % WORLD_Y;
 	int z = qrand() % WORLD_Z;
 	
-	world[x][y][z].energy += 20;
+	world[x][y][z].energy += ENERGY_ADDED;
+}
+
+
+/**
+ * return true if a certain type of action is allowed from cell source to
+ * cell dest.
+ * The action can be specified with the parameter good
+ * the chance of success can be better with the guess parameter
+ */
+bool Simulation::accessOk(struct Cell *source, struct Cell *dest, char guess,bool good){
+	if(!dest->generation){
+		return true;
+	}
+	
+	if(dest->genome[0] == guess){
+		return true;
+	}else{
+		if(dest->genome[0] == source->genome[0] && good){
+			return true;
+		}
+	}
+	
+	return false;
 }
 
 /**
@@ -80,6 +108,7 @@ void Simulation::executeCell(int x, int y, int z){
 	int output_pointer = 0; //pointer to the outputbuffer
 	uchar output_buffer[GENOME_SIZE]; //outputbuffer, needed for reproducing
 	bool stop = false;
+	struct Cell *tmpCell; //temporary cell
 	
 	for(genome_pointer = 0; genome_pointer < GENOME_SIZE; genome_pointer++){
 		output_buffer[genome_pointer] = GENOME_OPERATIONS;
@@ -135,12 +164,12 @@ void Simulation::executeCell(int x, int y, int z){
 			reg = cell->genome[pointer];
 			break;
 		case 6: //write register to outputbuffer
-			output_buffer[pointer] = (uchar)reg ;
+			output_buffer[pointer] = reg;
 			break;
 		case 7: //read output buffer to register
 			reg = output_buffer[pointer];
 			break;
-		case 8:
+		case 8: //look into direction specified in the register
 			facing = reg % DIRECTIONS;
 			break;
 		case 9://while(register){
@@ -161,11 +190,29 @@ void Simulation::executeCell(int x, int y, int z){
 				}
 			}
 			break;
-		case 11:
+		case 11:{ //seek most energy
+				uint max = 0;
+				for(int i = 0; i < DIRECTIONS; i++){
+					tmpCell = getNeighbour(x,y,z,i);
+					if(max < tmpCell->energy){
+						reg = i;
+						max = tmpCell->energy;
+					}
+				}
+			}
 			break;
-		case 12:
+		case 12: //move
+			tmpCell = getNeighbour(x,y,z,facing);
+			struct Cell tmp;
+			tmp = *tmpCell;
+			*tmpCell = *cell;
+			*cell = tmp;
 			break;
-		case 13:
+		case 13: // kill
+			tmpCell = getNeighbour(x,y,z,facing);
+			if(accessOk(cell, tmpCell, reg,false)){
+				killCell(tmpCell);
+			}
 			break;
 		case 14://nop
 			break;
@@ -179,26 +226,47 @@ void Simulation::executeCell(int x, int y, int z){
 	
 	//jeah, we can reproduce something
 	if(output_buffer[output_pointer] != GENOME_OPERATIONS){
-		
 		struct Cell *neighbour = getNeighbour(x,y,z,facing);
-		neighbour->id = ++cellid;
-		if(cell->id){
-			neighbour->parent = cell->id;
+		if(accessOk(cell, neighbour, reg,false)){
+			reproduce(cell,neighbour);
+		}
+	}
+}
+
+/**
+ * reproduce cell.
+ * Mutations are introduced 
+ */
+void Simulation::reproduce(struct Cell *cell, struct Cell *neighbour){
+	neighbour->id = ++cellid;
+	if(cell->id){
+		neighbour->parent = cell->id;
+	}else{
+		neighbour->parent = neighbour->id;
+	}
+	
+	neighbour->generation = cell->generation + 1;
+	
+	if(!cell->lineage){
+		neighbour->lineage = neighbour->id;
+	}else{
+		neighbour->lineage = cell->lineage;
+	}
+	int loop = 0;
+	for(int i = 0; i < GENOME_SIZE && loop < GENOME_SIZE; i++){
+		if(qrand() % MUTATION_RATE == 0){
+			switch(qrand() % 2){
+			case 0://command replacement
+				neighbour->genome[i] = randomOperation();
+				break;
+			case 1://duplication or removal
+				loop = qrand() % GENOME_SIZE;
+				break;
+			}
 		}else{
-			neighbour->parent = neighbour->id;
+			neighbour->genome[i] = cell->genome[loop];
 		}
-		
-		neighbour->generation = cell->generation + 1;
-		
-		if(!cell->lineage){
-			neighbour->lineage = cell->lineage;
-		}else{
-			neighbour->lineage = neighbour->id;
-		}
-		
-		for(; output_pointer < GENOME_SIZE; output_pointer++){
-			neighbour->genome[output_pointer] = cell->genome[output_pointer];
-		}
+		loop++;
 	}
 }
 
@@ -230,9 +298,7 @@ void Simulation::init(){
 	}
 }
 
-void Simulation::mutateCell(int x, int y, int z){
-	struct Cell *cell = &world[x][y][z];
-	
+void Simulation::mutateCell(struct Cell *cell){	
 	for(int i = 0; i < GENOME_SIZE; i++){
 		if(qrand() % MUTATION_RATE == 0){
 			cell->genome[i] = randomOperation();
