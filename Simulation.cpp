@@ -209,6 +209,7 @@ void Simulation::executeCell(int x, int y, int z){
 					genome_pointer= (genome_pointer+1)%GENOME_SIZE;
 					cell->energy--;
 				}
+				genome_pointer++;
 			}
 			break;
 		case 10://}
@@ -221,6 +222,7 @@ void Simulation::executeCell(int x, int y, int z){
 					}
 					cell->energy--;
 				}
+				genome_pointer++;
 			}
 			break;
 		case 11:{ //seek most energy
