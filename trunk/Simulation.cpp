@@ -6,6 +6,7 @@ Simulation::Simulation()
 	running = true;
 	
 	mutex = new QMutex();
+	count = 0;
 }
 
 Simulation::~Simulation()
@@ -17,6 +18,7 @@ void Simulation::pause(){
 }
 
 void Simulation::resume(){
+	count = 0;
 	mutex->unlock();
 }
 
@@ -38,6 +40,7 @@ void Simulation::run(){
 	while(running){
 		mutex->lock();
 		round++;
+		count++;
 		//Select random cell
 		x = qrand() % WORLD_X;
 		y = qrand() % WORLD_Y;
@@ -54,13 +57,24 @@ void Simulation::run(){
 		}
 		
 		//kills a cell if there is not energy left and it's a child
-		if(!world[x][y][z].energy && world[x][y][z].generation){
+		/*if(!world[x][y][z].energy && world[x][y][z].generation){
 			killCell(&world[x][y][z]);
+<<<<<<< .mine
+		}else{
+			//call the execution of its code
+			Simulation::executeCell(x,y,z);
+		}*/
+		Simulation::executeCell(x,y,z);
+=======
 		}else{
 		//call the execution of its code
 		Simulation::executeCell(x,y,z);
+>>>>>>> .r7
 		
+<<<<<<< .mine
+=======
 		}
+>>>>>>> .r7
 
 		mutex->unlock();
 	}
@@ -70,7 +84,6 @@ void Simulation::killCell(struct Cell *cell){
 	cell->parent = 0;
 	cell->lineage = 0;
 	cell->generation = 0;
-	cell->energy = 0;
 	cell->id = 0;
 	
 	for(int i = 0; i < GENOME_SIZE; i++){
@@ -135,12 +148,28 @@ void Simulation::executeCell(int x, int y, int z){
 	
 	//Execute cell until no more energy is left
 	while(cell->energy && !stop){
+		
+		inst = cell->genome[genome_pointer];
+		genome_pointer++;
 		if(genome_pointer > GENOME_SIZE-1){
 			genome_pointer = 0;
 		}
-		
-		inst = cell->genome[genome_pointer++];
 		cell->energy--;
+		
+		//execution perturbation
+		if(qrand() % MUTATION_RATE_EXECUTION == 0){
+			switch(qrand() % 3){
+			case 0:
+				inst = qrand() % GENOME_OPERATIONS;
+				break;
+			case 1:
+				reg = qrand() % GENOME_OPERATIONS;
+				break;
+			case 2:
+				pointer = qrand() % GENOME_SIZE;
+				break;
+			}
+		}
 		
 		switch(inst){
 		case 0:
@@ -151,12 +180,12 @@ void Simulation::executeCell(int x, int y, int z){
 		case 1: //pointer --
 			pointer++;
 			if(pointer > GENOME_SIZE - 1){
-				pointer = 1;
+				pointer = 0;
 			}
 			break;
 		case 2: //pointer ++
 			pointer--;
-			if(pointer <= 1){
+			if(pointer <= 0){
 				pointer = GENOME_SIZE - 1;
 			}
 			break;
@@ -186,19 +215,22 @@ void Simulation::executeCell(int x, int y, int z){
 			break;
 		case 9://while(register){
 			if(reg){
-				for(; genome_pointer < GENOME_SIZE; genome_pointer++){
-					if(cell->genome[genome_pointer] == 10){
-						break;
-					}
+				//int temp = genome_pointer;
+				while(cell->genome[genome_pointer] != 10 && cell->energy){
+					genome_pointer= (genome_pointer+1)%GENOME_SIZE;
+					cell->energy--;
 				}
 			}
 			break;
 		case 10://}
 			if(reg){
-				for(; genome_pointer >= 0; genome_pointer--){
-					if(cell->genome[genome_pointer] == 9){
-						break;
+				//int temp = genome_pointer;
+				while(cell->genome[genome_pointer] != 9 && cell->energy){
+					genome_pointer--;
+					if(genome_pointer< 0){
+						genome_pointer = GENOME_SIZE-1;
 					}
+					cell->energy--;
 				}
 			}
 			break;
@@ -273,11 +305,12 @@ void Simulation::reproduce(struct Cell *cell, struct Cell *neighbour,uchar *outp
 	}*/
 	
 	int loop = 0;
-	bool ended = false;
 	for(int i = 0; i < GENOME_SIZE && loop < GENOME_SIZE; i++){
 		//don't write the temp variable
-		if(output_buffer[loop] == GENOME_OPERATIONS)
-			ended = true;
+		if(output_buffer[loop] == GENOME_OPERATIONS){
+			neighbour->genome[i] = GENOME_OPERATIONS - 1;
+			break;
+		}
 		
 		if(qrand() % MUTATION_RATE == 0){
 			switch(qrand() % 2){
@@ -289,11 +322,7 @@ void Simulation::reproduce(struct Cell *cell, struct Cell *neighbour,uchar *outp
 				break;
 			}
 		}else{
-			if(ended){
-				neighbour->genome[i] = GENOME_OPERATIONS - 1;
-			}else{
-				neighbour->genome[i] = output_buffer[loop];
-			}
+			neighbour->genome[i] = output_buffer[loop];
 		}
 		loop++;
 	}
@@ -332,7 +361,7 @@ void Simulation::init(){
  */
 void Simulation::mutateCell(struct Cell *cell){	
 	for(int i = 0; i < GENOME_SIZE; i++){
-		if(qrand() % MUTATION_RATE == 0){
+		if(qrand() % MUTATION_RATE_NON_LIVING == 0){
 			cell->genome[i] = randomOperation();
 		}
 	}
