@@ -242,6 +242,7 @@ void Simulation::executeCell(int x, int y, int z){
 			tmp = *tmpCell;
 			*tmpCell = *cell;
 			*cell = tmp;
+			stop = true;
 			break;
 		case 13: // kill
 			tmpCell = getNeighbour(x,y,z,facing);
