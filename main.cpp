@@ -1,9 +1,12 @@
 #include <QtCore>
 #include <QCoreApplication>
 
+#include "Simulation.h"
+
 int main(int argc, char *argv[])
 {
-    QCoreApplication a(argc, argv);
-	
-    return a.exec();
+	argc = 0;
+	argv = 0;
+    Simulation *simulation = new Simulation();
+    simulation->run();
 }
