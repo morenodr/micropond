@@ -3,10 +3,21 @@
 Simulation::Simulation()
 {
 	cellid = 0;
+	running = true;
+	
+	mutex = new QMutex();
 }
 
 Simulation::~Simulation()
 {
+}
+
+void Simulation::pause(){
+	mutex->lock();
+}
+
+void Simulation::resume(){
+	mutex->unlock();
 }
 
 void Simulation::run(){
@@ -16,13 +27,47 @@ void Simulation::run(){
 	
 	int x,y,z;
 	
-	for(;;){
+	while(running){
+		mutex->lock();
 		x = qrand() % WORLD_X;
 		y = qrand() % WORLD_Y;
 		z = qrand() % WORLD_Z;
 		Simulation::executeCell(x,y,z);
-	}
+		
+		if(!world[x][y][z].generation){
+			mutateCell(x,y,z);
+		}
+		
+		if(!world[x][y][z].energy){
+			killCell(x,y,z);
+		}
+		
+		regenerateEnergy();
+		mutex->unlock();
+	}	
+}
+
+void Simulation::killCell(int x, int y, int z){
+	struct Cell *cell;
+		
+	cell = &world[x][y][z];
+	cell->parent = 0;
+	cell->lineage = 0;
+	cell->generation = 0;
+	cell->energy = 0;
+	cell->id = 0;
 	
+	for(int i = 0; i < GENOME_SIZE; i++){
+		cell->genome[i] = randomOperation();
+	}
+}
+
+void Simulation::regenerateEnergy(){
+	int x = qrand() % WORLD_X;
+	int y = qrand() % WORLD_Y;
+	int z = qrand() % WORLD_Z;
+	
+	world[x][y][z].energy += 20;
 }
 
 /**
@@ -134,9 +179,15 @@ void Simulation::executeCell(int x, int y, int z){
 	
 	//jeah, we can reproduce something
 	if(output_buffer[output_pointer] != GENOME_OPERATIONS){
+		
 		struct Cell *neighbour = getNeighbour(x,y,z,facing);
 		neighbour->id = ++cellid;
-		neighbour->parent = cell->id;
+		if(cell->id){
+			neighbour->parent = cell->id;
+		}else{
+			neighbour->parent = neighbour->id;
+		}
+		
 		neighbour->generation = cell->generation + 1;
 		
 		if(!cell->lineage){
@@ -169,11 +220,22 @@ void Simulation::init(){
 				cell->lineage = 0;
 				cell->generation = 0;
 				cell->energy = 0;
+				cell->id = 0;
 				
 				for(i = 0; i < GENOME_SIZE; i++){
 					cell->genome[i] = randomOperation();
 				}
 			}
+		}
+	}
+}
+
+void Simulation::mutateCell(int x, int y, int z){
+	struct Cell *cell = &world[x][y][z];
+	
+	for(int i = 0; i < GENOME_SIZE; i++){
+		if(qrand() % MUTATION_RATE == 0){
+			cell->genome[i] = randomOperation();
 		}
 	}
 }
@@ -184,6 +246,10 @@ void Simulation::init(){
 uchar Simulation::randomOperation(){
 	uchar temp = ((uchar)qrand()) % GENOME_OPERATIONS;
 	return temp;
+}
+
+struct Cell *Simulation::cell(int x, int y, int z){
+	return &world[x][y][z];
 }
 
 struct Cell *Simulation::getNeighbour(int x, int y, int z, uchar direction){
@@ -209,19 +275,19 @@ struct Cell *Simulation::getNeighbour(int x, int y, int z, uchar direction){
 		break;
 	}
 	
-	if(x > WORLD_X){
+	if(x >= WORLD_X){
 		x = x - WORLD_X;
 	}else if(x < 0){
 		x = WORLD_X + x;
 	}
 	
-	if(y > WORLD_Y){
+	if(y >= WORLD_Y){
 		y = y - WORLD_Y;
 	}else if(x < 0){
 		y = WORLD_Y + y;
 	}
 	
-	if(z > WORLD_Z){
+	if(z >= WORLD_Z){
 		z = z - WORLD_Z;
 	}else if(x < 0){
 		z = WORLD_Z + z;
