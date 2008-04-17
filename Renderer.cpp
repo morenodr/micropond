@@ -69,11 +69,11 @@ void Renderer::updatePicture(){
 			temp.setPixel(x,y,qRgb(r % 256, g % 256, b % 256));
 		}
 	}
-	int counter = simulation->counter();
+	//int counter = simulation->counter();
 	
 	simulation->resume();
 	setPixmap(QPixmap::fromImage (temp));
-	qDebug() << "cells executed: " << counter * 4;
+	//qDebug() << "cells executed: " << counter * 4;
 	//qDebug() << "max generation = " << maxGeneration;
 }
 
