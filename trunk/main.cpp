@@ -1,12 +1,13 @@
 #include <QtCore>
 #include <QCoreApplication>
 
-#include "Simulation.h"
+#include "Window.h"
 
 int main(int argc, char *argv[])
 {
-	argc = 0;
-	argv = 0;
-    Simulation *simulation = new Simulation();
-    simulation->run();
+	QApplication a(argc, argv);
+		
+    Window *gui = new Window();
+    gui->initGui();
+    return a.exec();
 }

@@ -2,9 +2,11 @@ TEMPLATE = app
 TARGET = Micropond
 QT += core \
     gui
-HEADERS += Renderer.h \
+HEADERS += Window.h \
+    Renderer.h \
     Simulation.h
-SOURCES += Renderer.cpp \
+SOURCES += Window.cpp \
+    Renderer.cpp \
     Simulation.cpp \
     main.cpp
 FORMS += 
