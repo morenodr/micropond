@@ -19,7 +19,9 @@
 #define UP 4
 #define DOWN 5
 
-#define MUTATION_RATE 2000000
+#define MUTATION_RATE 20000
+#define MUTATION_RATE_EXECUTION 200000
+#define MUTATION_RATE_NON_LIVING 200
 #define MUTATION_FREQUENCY 500
 
 #define ENERGY_ADDED 900
@@ -55,11 +57,14 @@ public:
 	void regenerateEnergy();
 	void pause();
 	void resume();
+	uint counter(){return count;};
 private:
 	struct Cell world[WORLD_X][WORLD_Y][WORLD_Z];
-	uint cellid;
-	bool running;
+	uint cellid; //used to track new cells
+	bool running; //stop exection when false
 	QMutex *mutex;
+	
+	uint count;
 	
 	void init();
 	uchar randomOperation();
