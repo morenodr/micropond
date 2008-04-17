@@ -59,22 +59,11 @@ void Simulation::run(){
 		//kills a cell if there is not energy left and it's a child
 		/*if(!world[x][y][z].energy && world[x][y][z].generation){
 			killCell(&world[x][y][z]);
-<<<<<<< .mine
 		}else{
 			//call the execution of its code
 			Simulation::executeCell(x,y,z);
 		}*/
 		Simulation::executeCell(x,y,z);
-=======
-		}else{
-		//call the execution of its code
-		Simulation::executeCell(x,y,z);
->>>>>>> .r7
-		
-<<<<<<< .mine
-=======
-		}
->>>>>>> .r7
 
 		mutex->unlock();
 	}
