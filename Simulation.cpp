@@ -20,6 +20,12 @@ void Simulation::resume(){
 	mutex->unlock();
 }
 
+/*
+ * Main process
+ * is a loop executing the main code of the program, till the user
+ * sends through the graphical interface a stop command which sets the
+ * running variable to false
+ */
 void Simulation::run(){
 	qsrand(time(NULL));
 	
@@ -36,21 +42,26 @@ void Simulation::run(){
 		x = qrand() % WORLD_X;
 		y = qrand() % WORLD_Y;
 		z = qrand() % WORLD_Z;
-		Simulation::executeCell(x,y,z);
 		
-		if(!world[x][y][z].generation){
+		//add energy every x rounds
+		if(!(round % ENERGY_FREQUENCY)){
+			regenerateEnergy();
+		}
+		
+		//if there is one make the cell mutate
+		if(!world[x][y][z].generation && !(round % MUTATION_FREQUENCY)){
 			mutateCell(&world[x][y][z]);
 		}
 		
 		//kills a cell if there is not energy left and it's a child
 		if(!world[x][y][z].energy && world[x][y][z].generation){
 			killCell(&world[x][y][z]);
-		}
+		}else{
+		//call the execution of its code
+		Simulation::executeCell(x,y,z);
 		
-		//add energy every x rounds
-		if(!(round % ENERGY_FREQUENCY)){
-			regenerateEnergy();
 		}
+
 		mutex->unlock();
 	}
 }
