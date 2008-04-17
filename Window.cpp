@@ -9,7 +9,7 @@ Window::Window()
 }
 
 void Window::initGui(){
-	renderer->updatePicture();
+	renderer->update();
 	setCentralWidget(renderer);
 	resize(200,200);
 	show();

@@ -10,7 +10,7 @@
 
 #define GENOME_OPERATIONS 16
 
-#define DIRECTIONS 6
+#define DIRECTIONS 4 //change if you want 3d
 
 #define NORTH 0
 #define WEST 1
@@ -19,8 +19,10 @@
 #define UP 4
 #define DOWN 5
 
-#define MUTATION_RATE 1000
+#define MUTATION_RATE 2000
 
+#define ENERGY_ADDED 300
+#define ENERGY_FREQUENCY 20
 struct Cell{
 	uint id;
 	uint parent;
@@ -58,8 +60,11 @@ private:
 	void init();
 	uchar randomOperation();
 	void executeCell(int x, int y, int z);
-	void mutateCell(int x, int y, int z);
-	void killCell(int x, int y, int z);
+	void mutateCell(struct Cell *cell);
+	void killCell(struct Cell *cell);
+	void reproduce(struct Cell *cell, struct Cell *neighbour);
+	
+	bool accessOk(struct Cell *source, struct Cell *dest, char guess,bool good);
 	struct Cell *getNeighbour(int x, int y, int z, uchar direction);
 };
 

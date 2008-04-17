@@ -9,6 +9,9 @@
 #define GENERATION 0
 #define GENOME 1
 #define LINEAGE 2
+#define ENERGY 3
+
+#define RENDERMODES 4
 
 class Renderer: public QLabel
 {
@@ -17,10 +20,13 @@ public:
 	Renderer(Simulation *sim);
 	virtual ~Renderer();
 	
+	void mousePressEvent ( QMouseEvent * event );
 public slots:
-	void updatePicture();
+	void update();
 	
 private:
+	void updatePicture();
+	void printCell(int x, int y, int z);
 	Simulation *simulation;
 	int colorMode;
 };
