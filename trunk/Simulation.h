@@ -3,8 +3,8 @@
 
 #include <QtCore>
 
-#define WORLD_X 500
-#define WORLD_Y 500
+#define WORLD_X 640
+#define WORLD_Y 480
 #define WORLD_Z 1
 #define GENOME_SIZE 100
 
@@ -20,9 +20,13 @@
 #define DOWN 5
 
 #define MUTATION_RATE 2000000
+#define MUTATION_FREQUENCY 500
 
 #define ENERGY_ADDED 900
 #define ENERGY_FREQUENCY 25
+
+
+
 struct Cell{
 	uint id;
 	uint parent;
