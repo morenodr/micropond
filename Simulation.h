@@ -8,7 +8,7 @@
 #define WORLD_Z 1
 #define GENOME_SIZE 100
 
-#define GENOME_OPERATIONS 19
+#define GENOME_OPERATIONS 20
 
 #define DIRECTIONS 4 //change if you want 3d
 
@@ -24,8 +24,10 @@
 #define MUTATION_RATE_NON_LIVING 20000
 #define MUTATION_FREQUENCY 500
 
-#define ENERGY_ADDED 900
+#define ENERGY_ADDED 1500
 #define ENERGY_FREQUENCY 50
+
+#define ENERGY_DECREASE 10000000
 
 #define ACCESS_CHANCE 20
 
@@ -63,8 +65,10 @@ private:
 	uint cellid; //used to track new cells
 	bool running; //stop exection when false
 	QMutex *mutex;
+	uint round; //total number of rounds
+	uint count; //stat value
 	
-	uint count;
+	uint energyAdd;
 	
 	void init();
 	uchar randomOperation();

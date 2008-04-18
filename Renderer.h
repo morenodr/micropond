@@ -4,14 +4,15 @@
 #include <QtGui>
 #include "Simulation.h"
 
-#define UPDATE_INTERVAL 250
+#define UPDATE_INTERVAL 1000
 
 #define GENERATION 0
 #define GENOME 1
 #define LINEAGE 2
-#define ENERGY 3
+#define LOGO 3
+#define ENERGY 4
 
-#define RENDERMODES 4
+#define RENDERMODES 5
 
 class Renderer: public QLabel
 {

@@ -7,6 +7,8 @@ Simulation::Simulation()
 	
 	mutex = new QMutex();
 	count = 0;
+	
+	energyAdd = ENERGY_ADDED;
 }
 
 Simulation::~Simulation()
@@ -35,7 +37,7 @@ void Simulation::run(){
 	
 	int x,y,z;
 	
-	uint round = 0;
+	round = 0;
 	
 	while(running){
 		mutex->lock();
@@ -63,7 +65,15 @@ void Simulation::run(){
 			//call the execution of its code
 			Simulation::executeCell(x,y,z);
 		}
-		//Simulation::executeCell(x,y,z);
+		
+		if(round % ENERGY_DECREASE == 0){
+			qDebug() << "Decrease energy";
+			energyAdd -= 20;
+			if(energyAdd < ENERGY_ADDED / 5){
+				energyAdd = ENERGY_ADDED;
+				qDebug() << "Energy restored";
+			}
+		}
 
 		mutex->unlock();
 	}
@@ -75,7 +85,7 @@ void Simulation::killCell(struct Cell *cell){
 	cell->generation = 0;
 	cell->id = 0;
 	
-	for(int i = 0; i < 2; i++){
+	for(int i = 0; i < 8; i++){
 		cell->genome[i] = randomOperation();
 	}
 }
@@ -88,7 +98,7 @@ void Simulation::regenerateEnergy(){
 	int y = qrand() % WORLD_Y;
 	int z = qrand() % WORLD_Z;
 	
-	world[x][y][z].energy += ENERGY_ADDED;
+	world[x][y][z].energy += energyAdd;
 }
 
 
@@ -276,7 +286,17 @@ void Simulation::executeCell(int x, int y, int z){
 			reg = 0;
 			temp = 0;
 			break;
-		case 18: //end
+		case 18://neigbour type
+			tmpCell = getNeighbour(x,y,z,facing);
+			if(!tmpCell->generation){
+				reg = 0; //registry is 0 if neighbour is very young
+			}else if(tmpCell->genome[0] == cell->genome[0]){
+				reg = 1; //1 if same logo, friend
+			}else{
+				reg = 2; //2 if enemy
+			}
+			break;
+		case 19: //end
 			stop = true;
 			break;
 		}
