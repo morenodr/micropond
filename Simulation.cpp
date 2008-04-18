@@ -224,23 +224,32 @@ void Simulation::executeCell(int x, int y, int z){
 			break;
 		case 9://while(register){
 			if(!reg){
-				//int temp = genome_pointer;
+				int tempP = genome_pointer;
 				while(cell->genome[genome_pointer] != 10 && cell->energy){
 					genome_pointer= (genome_pointer+1)%GENOME_SIZE;
 					cell->energy--;
+					if(genome_pointer == tempP){
+						stop = true;
+						break;
+					}
 				}
 				genome_pointer++;
 			}
 			break;
 		case 10://}
 			if(reg){
-				//int temp = genome_pointer;
+				int tempP = genome_pointer;
 				while(cell->genome[genome_pointer] != 9 && cell->energy){
 					genome_pointer--;
 					if(genome_pointer< 0){
 						genome_pointer = GENOME_SIZE-1;
 					}
 					cell->energy--;
+					
+					if(genome_pointer == tempP){
+						stop = true;
+						break;
+					}
 				}
 				genome_pointer++;
 			}
