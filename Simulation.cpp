@@ -54,7 +54,7 @@ void Simulation::run(){
 		}
 		
 		//if there is one make the cell mutate
-		if(!world[x][y][z].generation && !(round % MUTATION_FREQUENCY)){
+		if(world[x][y][z].generation < 2 && !(round % MUTATION_FREQUENCY)){
 			mutateCell(&world[x][y][z]);
 		}
 		
