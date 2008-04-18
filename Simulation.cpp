@@ -85,7 +85,7 @@ void Simulation::killCell(struct Cell *cell){
 	cell->generation = 0;
 	cell->id = 0;
 	
-	for(int i = 0; i < 8; i++){
+	for(int i = 0; i < 6; i++){
 		cell->genome[i] = randomOperation();
 	}
 }
