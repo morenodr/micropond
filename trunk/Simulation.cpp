@@ -57,13 +57,13 @@ void Simulation::run(){
 		}
 		
 		//kills a cell if there is not energy left and it's a child
-		/*if(!world[x][y][z].energy && world[x][y][z].generation){
+		if(!world[x][y][z].energy && world[x][y][z].generation){
 			killCell(&world[x][y][z]);
 		}else{
 			//call the execution of its code
 			Simulation::executeCell(x,y,z);
-		}*/
-		Simulation::executeCell(x,y,z);
+		}
+		//Simulation::executeCell(x,y,z);
 
 		mutex->unlock();
 	}
@@ -114,7 +114,6 @@ bool Simulation::accessOk(struct Cell *source, struct Cell *dest, char guess,boo
 			return true;
 		}
 	}
-	
 	
 	return qrand() % ACCESS_CHANCE == 0;
 }
@@ -173,13 +172,13 @@ void Simulation::executeCell(int x, int y, int z){
 			temp = 0;
 			facing = WEST;
 			break;
-		case 1: //pointer --
+		case 1: //pointer ++
 			pointer++;
 			if(pointer > GENOME_SIZE - 1){
 				pointer = 0;
 			}
 			break;
-		case 2: //pointer ++
+		case 2: //pointer --
 			pointer--;
 			if(pointer <= 0){
 				pointer = GENOME_SIZE - 1;
