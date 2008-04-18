@@ -11,7 +11,7 @@ void Renderer::update(){
 	QTimer::singleShot(UPDATE_INTERVAL, this, SLOT(update()));	
 }
 
-void Renderer::updatePicture(){
+void Renderer::updatePicture(){	
 	int sizeX = simulation->x();
 	int sizeY = simulation->y();
 	int r = 0; //temporary red value
@@ -35,39 +35,40 @@ void Renderer::updatePicture(){
 			
 			switch(colorMode){
 				case GENERATION:
-					r = qRed(cell->generation * 900);
-					g = qGreen(cell->generation  * 180);
+					r = qRed(cell->generation);
+					g = qGreen(cell->generation);
 					b = qBlue(cell->generation);
 					break;
 				case GENOME:
 					if(cell->generation > 2){
 						int hash = 0;
-						int stop = 0;
 						for(int i = 0; i < simulation->genomeSize();i++ ){
 							if(cell->genome[i] != simulation->genomeSize()-1){
 								hash += cell->genome[i];
-							}else{
-								stop++;
-								if(stop > 4){
-									break;
-								}
 							}
 						}
-						r = qRed(hash * 200);
-						g = qGreen(hash * 500);
-						b = qBlue(hash);
+						r = hash % simulation->genomeSize() + 40;
+						g = (hash + 64) % simulation->genomeSize() + 50;
+						b = (hash +21) % simulation->genomeSize() + 20;
 					}
 					break;
 				case LINEAGE:
 					if(cell->generation > 2){
-						r = qRed(cell->lineage * 200);
-						g = qGreen(cell->lineage  * 200);
-						b = qBlue(cell->lineage  * 200);
+						r = qRed(cell->lineage);
+						g = qGreen(cell->lineage);
+						b = qBlue(cell->lineage);
+					}
+					break;
+				case LOGO:
+					if(cell->generation > 2){
+						r = cell->genome[0] * 10;
+						g = cell->genome[0] * 10;
+						b = cell->genome[0] * 10;
 					}
 					break;
 				case ENERGY:
-					r = qRed(cell->energy );
-					g = qGreen(cell->energy);
+					r = qRed(cell->energy * 900);
+					g = qGreen(cell->energy * 180);
 					b = qBlue(cell->energy );
 					break;
 			}
@@ -75,11 +76,11 @@ void Renderer::updatePicture(){
 			temp.setPixel(x,y,qRgb(r % 256, g % 256, b % 256));
 		}
 	}
-	//int counter = simulation->counter();
+	int counter = simulation->counter();
 	
 	simulation->resume();
 	setPixmap(QPixmap::fromImage (temp));
-	//qDebug() << "cells executed: " << counter * 4;
+	qDebug() << "cells executed: " << counter;
 	//qDebug() << "max generation = " << maxGeneration;
 }
 
@@ -162,7 +163,10 @@ void Renderer::printReadableGenome(int x, int y, int z){
 		case 17://reset registers
 			qDebug() << "reset registers";
 			break;
-		case 18: //end
+		case 18: //probe
+			qDebug() << "probe";
+			break;
+		case 19: //end
 			qDebug() << "stop";
 			break;
 		}
