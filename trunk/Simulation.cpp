@@ -59,7 +59,7 @@ void Simulation::run(){
 		}
 		
 		//kills a cell if there is not energy left and it's a child
-		if(!world[x][y][z].energy && world[x][y][z].generation){
+		if(!world[x][y][z].energy && world[x][y][z].generation > 2){
 			killCell(&world[x][y][z]);
 		}else{
 			//call the execution of its code
@@ -85,8 +85,12 @@ void Simulation::killCell(struct Cell *cell){
 	cell->generation = 0;
 	cell->id = 0;
 	
-	for(int i = 0; i < 6; i++){
-		cell->genome[i] = randomOperation();
+	for(int i = 0; i < 4; i++){
+		if(i & 1){
+			cell->genome[i] = GENOME_OPERATIONS-1;
+		}else{
+			cell->genome[i] = 0;
+		}
 	}
 }
 
