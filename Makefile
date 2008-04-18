@@ -9,6 +9,7 @@
 first: debug
 install: debug-install
 uninstall: debug-uninstall
+CXXFLAGS      = -p
 MAKEFILE      = Makefile
 QMAKE         = /usr/bin/qmake
 DEL_FILE      = rm -f
