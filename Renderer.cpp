@@ -35,16 +35,22 @@ void Renderer::updatePicture(){
 			
 			switch(colorMode){
 				case GENERATION:
-					r = qRed(cell->generation * 30);
-					g = qGreen(cell->generation  * 30);
-					b = qBlue(cell->generation  * 30);
+					r = qRed(cell->generation * 900);
+					g = qGreen(cell->generation  * 180);
+					b = qBlue(cell->generation);
 					break;
 				case GENOME:
 					if(cell->generation > 2){
 						int hash = 0;
+						int stop = 0;
 						for(int i = 0; i < simulation->genomeSize();i++ ){
 							if(cell->genome[i] != simulation->genomeSize()-1){
 								hash += cell->genome[i];
+							}else{
+								stop++;
+								if(stop > 4){
+									break;
+								}
 							}
 						}
 						r = qRed(hash * 200);
@@ -105,10 +111,10 @@ void Renderer::printReadableGenome(int x, int y, int z){
 		case 0:
 			qDebug() << "reset";
 			break;
-		case 1: //pointer --
+		case 1: //pointer ++
 			qDebug() << "pointer--";
 			break;
-		case 2: //pointer ++
+		case 2: //pointer --
 			qDebug() << "pointer++";
 			break;
 		case 3: //register ++
