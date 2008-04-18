@@ -103,6 +103,10 @@ bool Simulation::accessOk(struct Cell *source, struct Cell *dest, char guess,boo
 		return true;
 	}
 	
+	if(dest->generation < 3 && qrand() % 3 == 0){
+		return true;
+	}
+	
 	if(dest->genome[0] == guess){
 		return true;
 	}else{
@@ -111,7 +115,8 @@ bool Simulation::accessOk(struct Cell *source, struct Cell *dest, char guess,boo
 		}
 	}
 	
-	return false;
+	
+	return qrand() % ACCESS_CHANCE == 0;
 }
 
 /**
@@ -134,6 +139,7 @@ void Simulation::executeCell(int x, int y, int z){
 	int pointer = 0;//general pointer
 	uchar facing = WEST;
 	int reg = 0; //internal register to be used for anything
+	int temp = 0; //temp register
 	
 	//Execute cell until no more energy is left
 	while(cell->energy && !stop){
@@ -164,6 +170,7 @@ void Simulation::executeCell(int x, int y, int z){
 		case 0:
 			pointer = 0;
 			reg = 0;
+			temp = 0;
 			facing = WEST;
 			break;
 		case 1: //pointer --
@@ -252,7 +259,25 @@ void Simulation::executeCell(int x, int y, int z){
 			break;
 		case 14://nop
 			break;
-		case 15: //end
+		case 15://share
+			tmpCell = getNeighbour(x,y,z,facing);
+			if(accessOk(cell, tmpCell, reg,true)){
+				uint tmpEnergy = tmpCell->energy + cell->energy;
+				tmpCell->energy = tmpEnergy / 2;
+				cell->energy = tmpEnergy / 2;
+			}
+			break;
+		case 16:{//swap temp
+			int t = temp;
+			temp = reg;
+			reg = t;
+			}
+			break;
+		case 17://reset registers
+			reg = 0;
+			temp = 0;
+			break;
+		case 18: //end
 			stop = true;
 			break;
 		}

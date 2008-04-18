@@ -47,8 +47,8 @@ void Renderer::updatePicture(){
 								hash += cell->genome[i];
 							}
 						}
-						r = qRed(hash);
-						g = qGreen(hash);
+						r = qRed(hash * 200);
+						g = qGreen(hash * 500);
 						b = qBlue(hash);
 					}
 					break;
@@ -147,7 +147,16 @@ void Renderer::printReadableGenome(int x, int y, int z){
 		case 14://nop
 			qDebug() << "NOP";
 			break;
-		case 15: //end
+		case 15://share
+			qDebug() << "share";
+			break;
+		case 16://swap temp
+			qDebug() << "swap";
+			break;
+		case 17://reset registers
+			qDebug() << "reset registers";
+			break;
+		case 18: //end
 			qDebug() << "stop";
 			break;
 		}
