@@ -12,6 +12,7 @@ void Window::initGui(){
 	renderer->update();
 	
 	creatureBar = new CreatureBar();
+	creatureBar->setFeatures(QDockWidget::DockWidgetMovable);
 	addDockWidget(Qt::RightDockWidgetArea,creatureBar);
 	resize(200,200);
 	show();
