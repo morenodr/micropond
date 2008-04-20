@@ -13,6 +13,7 @@ public:
 	Window();
 	virtual ~Window();
 	void initGui();
+	void closeEvent ( QCloseEvent * event );
 private:
 	Simulation *simulation;
 	Renderer *renderer;

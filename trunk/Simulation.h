@@ -19,17 +19,16 @@
 #define UP 4
 #define DOWN 5
 
-#define MUTATION_RATE 200000
+#define MUTATION_RATE_REPRODUCTION 20000
 #define MUTATION_RATE_EXECUTION 200000
-#define MUTATION_RATE_NON_LIVING 20000
-#define MUTATION_FREQUENCY 500
+#define MUTATION_RATE_NON_LIVING 2000
 
-#define ENERGY_ADDED 8000
-#define ENERGY_FREQUENCY 50
+#define ENERGY_ADDED 5000
+#define ENERGY_FREQUENCY 25
 
 #define ENERGY_DECREASE 10000000
 
-#define ACCESS_CHANCE 20
+#define ACCESS_CHANCE 15
 
 struct Cell{
 	uint id;
@@ -47,6 +46,7 @@ public:
 	Simulation();
 	virtual ~Simulation();
 	void run();
+	void stopIt(){running = false;};
 	
 	int x(){ return WORLD_X;}
 	int y(){ return WORLD_Y;}
