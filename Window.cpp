@@ -8,10 +8,19 @@ Window::Window()
 }
 
 void Window::initGui(){
-	renderer->update();
 	setCentralWidget(renderer);
+	renderer->update();
 	resize(200,200);
 	show();
+}
+
+void Window::closeEvent ( QCloseEvent * event ){
+	renderer->close();
+	delete renderer;
+	simulation->stopIt();
+	while(simulation->isRunning());
+	delete simulation;
+	event->accept();
 }
 
 Window::~Window()

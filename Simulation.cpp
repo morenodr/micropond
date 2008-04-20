@@ -7,7 +7,6 @@ Simulation::Simulation()
 	
 	mutex = new QMutex();
 	count = 0;
-	
 	energyAdd = ENERGY_ADDED;
 }
 
@@ -31,6 +30,7 @@ void Simulation::resume(){
  * running variable to false
  */
 void Simulation::run(){
+	mutex->lock();
 	qsrand(time(NULL));
 	
 	init();
@@ -38,7 +38,7 @@ void Simulation::run(){
 	int x,y,z;
 	
 	round = 0;
-	
+	mutex->unlock();
 	while(running){
 		mutex->lock();
 		round++;
@@ -48,13 +48,8 @@ void Simulation::run(){
 		y = qrand() % WORLD_Y;
 		z = qrand() % WORLD_Z;
 		
-		//add energy every x rounds
-		if(!(round % ENERGY_FREQUENCY)){
-			regenerateEnergy();
-		}
-		
 		//if there is one make the cell mutate
-		if(world[x][y][z].generation < 2 && !(round % MUTATION_FREQUENCY)){
+		if(!world[x][y][z].generation){
 			mutateCell(&world[x][y][z]);
 		}
 		
@@ -75,6 +70,11 @@ void Simulation::run(){
 			}
 		}
 
+		//add energy every x rounds
+		if(!(round % ENERGY_FREQUENCY)){
+			regenerateEnergy();
+		}
+		
 		mutex->unlock();
 	}
 }
@@ -346,13 +346,6 @@ void Simulation::reproduce(struct Cell *cell, struct Cell *neighbour,uchar *outp
 		neighbour->lineage = cell->lineage;
 	}
 	
-	/*if(cell->generation > 2){
-		qDebug() << "reproduce!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!";
-		for(int i = 0; i < GENOME_SIZE; i++){
-			qDebug() << output_buffer[i];
-		}
-	}*/
-	
 	int loop = 0;
 	for(int i = 0; i < GENOME_SIZE && loop < GENOME_SIZE; i++){
 		//don't write the temp variable
@@ -361,12 +354,14 @@ void Simulation::reproduce(struct Cell *cell, struct Cell *neighbour,uchar *outp
 			break;
 		}
 		
-		if(qrand() % MUTATION_RATE == 0){
-			switch(qrand() % 2){
-			case 0://command replacement
+		if(qrand() % MUTATION_RATE_REPRODUCTION == 0){
+			switch(qrand() % 4){
+			case 0:
+			case 1:
+			case 2://command replacement
 				neighbour->genome[i] = randomOperation();
 				break;
-			case 1://duplication or removal
+			case 3://duplication or removal
 				loop = qrand() % GENOME_SIZE;
 				break;
 			}
@@ -419,9 +414,8 @@ void Simulation::mutateCell(struct Cell *cell){
 /**
  * returns a random operation
  */
-uchar Simulation::randomOperation(){
-	uchar temp = ((uchar)qrand()) % GENOME_OPERATIONS;
-	return temp;
+uchar inline Simulation::randomOperation(){
+	return ((uchar)qrand()) % GENOME_OPERATIONS;
 }
 
 /**

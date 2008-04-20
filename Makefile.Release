@@ -10,8 +10,8 @@
 CC            = gcc
 CXX           = g++
 DEFINES       = -DQT_SHARED -DQT_NO_DEBUG -DQT_GUI_LIB -DQT_CORE_LIB
-CFLAGS        = -pipe -O6 -Wall -W -D_REENTRANT $(DEFINES) -funroll-loops -fomit-frame-pointer
-CXXFLAGS      = -pipe -fpermissive -O6 -Wall -W -D_REENTRANT $(DEFINES) -funroll-loops -fomit-frame-pointer
+CFLAGS        = -pipe -O4 -Wall -W -D_REENTRANT $(DEFINES) -funroll-loops -fomit-frame-pointer
+CXXFLAGS      = -pipe -fpermissive -O4 -Wall -W -D_REENTRANT $(DEFINES) -funroll-loops -fomit-frame-pointer
 INCPATH       = -I/usr/share/qt4/mkspecs/linux-g++ -I. -I/usr/include/qt4/QtCore -I/usr/include/qt4/QtCore -I/usr/include/qt4/QtGui -I/usr/include/qt4/QtGui -I/usr/include/qt4 -Irelease -I.
 LINK          = g++
 LFLAGS        = -Wl,--no-undefined
