@@ -37,6 +37,7 @@ struct Cell{
 	uint energy;
 	uint lineage;
 	uchar genome[GENOME_SIZE];
+	uint genome_size;
 };
 
 struct Place{

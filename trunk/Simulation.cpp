@@ -278,7 +278,7 @@ void Simulation::executeCell(int x, int y, int z){
 		case 13:{ // kill
 			struct Position pos = getNeighbour(x,y,z,facing);
 			tmpCell = &cells[pos.x][pos.y][pos.z];
-			if(accessOk(cell, tmpCell, reg,false)){
+			if(cell->generation && accessOk(cell, tmpCell, reg,false)){
 				killCell(tmpCell);
 			}
 		}break;
@@ -357,7 +357,6 @@ void Simulation::reproduce(struct Cell *cell, struct Cell *neighbour,uchar *outp
 	for(int i = 0; i < GENOME_SIZE && loop < GENOME_SIZE; i++){
 		//don't write the temp variable
 		if(output_buffer[loop] == GENOME_OPERATIONS){
-			neighbour->genome[i] = GENOME_OPERATIONS - 1;
 			break;
 		}
 		
@@ -399,7 +398,7 @@ void Simulation::init(){
 				cell->generation = 0;
 				cell->energy = 0;
 				cell->id = 0;
-				
+				cell->genome_size = GENOME_SIZE;
 				for(i = 0; i < GENOME_SIZE; i++){
 					cell->genome[i] = randomOperation();
 				}
