@@ -8,7 +8,7 @@
 #define WORLD_Z 1
 #define GENOME_SIZE 100
 
-#define GENOME_OPERATIONS 20
+#define GENOME_OPERATIONS 23
 
 #define DIRECTIONS 4 //change if you want 3d
 
@@ -19,14 +19,14 @@
 #define UP 4
 #define DOWN 5
 
-#define MUTATION_RATE_REPRODUCTION 20000
-#define MUTATION_RATE_EXECUTION 200000
-#define MUTATION_RATE_NON_LIVING 2000
+#define MUTATION_RATE_REPRODUCTION 200000
+#define MUTATION_RATE_EXECUTION 2000000
+#define MUTATION_RATE_NON_LIVING 200000
 
-#define ENERGY_ADDED 5000
+#define ENERGY_ADDED 3000
 #define ENERGY_FREQUENCY 25
 
-#define ENERGY_DECREASE 10000000
+#define ENERGY_DECREASE 1000000
 
 #define ACCESS_CHANCE 15
 
@@ -38,6 +38,7 @@ struct Cell{
 	uint lineage;
 	uchar genome[GENOME_SIZE];
 	uint genome_size;
+	bool activated;
 };
 
 struct Place{
