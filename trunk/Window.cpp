@@ -10,6 +10,9 @@ Window::Window()
 void Window::initGui(){
 	setCentralWidget(renderer);
 	renderer->update();
+	
+	creatureBar = new CreatureBar();
+	addDockWidget(Qt::RightDockWidgetArea,creatureBar);
 	resize(200,200);
 	show();
 }
