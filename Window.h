@@ -5,6 +5,7 @@
 
 #include "Renderer.h"
 #include "Simulation.h"
+#include "CreatureBar.h"
 
 class Window: public QMainWindow
 {
@@ -17,6 +18,7 @@ public:
 private:
 	Simulation *simulation;
 	Renderer *renderer;
+	CreatureBar *creatureBar;
 };
 
 #endif /*WINDOW_H_*/

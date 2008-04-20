@@ -39,6 +39,16 @@ struct Cell{
 	uchar genome[GENOME_SIZE];
 };
 
+struct Place{
+	bool reproducable; //can we reproduce at this place?
+};
+
+struct Position{
+	int x;
+	int y;
+	int z;
+};
+
 class Simulation: public QThread
 {
 	Q_OBJECT
@@ -61,7 +71,8 @@ public:
 	void resume();
 	uint counter(){return count;};
 private:
-	struct Cell world[WORLD_X][WORLD_Y][WORLD_Z];
+	struct Cell cells[WORLD_X][WORLD_Y][WORLD_Z];
+	struct Place world[WORLD_X][WORLD_Y][WORLD_Z];
 	uint cellid; //used to track new cells
 	bool running; //stop exection when false
 	QMutex *mutex;
@@ -78,7 +89,7 @@ private:
 	void reproduce(struct Cell *cell, struct Cell *neighbour,uchar *output_buffer);
 	
 	bool accessOk(struct Cell *source, struct Cell *dest, char guess,bool good);
-	struct Cell *getNeighbour(int x, int y, int z, uchar direction);
+	struct Position getNeighbour(int x, int y, int z, uchar direction);
 };
 
 #endif /*SIMULATION_H_*/
