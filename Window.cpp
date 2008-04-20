@@ -13,6 +13,10 @@ void Window::initGui(){
 	
 	creatureBar = new CreatureBar();
 	creatureBar->setFeatures(QDockWidget::DockWidgetMovable);
+	
+	connect(renderer,SIGNAL(cellSelected(struct Cell)),
+			creatureBar,SLOT(cellSelected(struct Cell)));
+	
 	addDockWidget(Qt::RightDockWidgetArea,creatureBar);
 	resize(200,200);
 	show();

@@ -22,6 +22,11 @@ public:
 	virtual ~Renderer();
 	
 	void mousePressEvent ( QMouseEvent * event );
+	static QColor getColor(struct Cell *cell, int mode);
+	
+signals:
+	void cellSelected(struct Cell cell);
+	
 public slots:
 	void update();
 	
