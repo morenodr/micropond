@@ -63,7 +63,7 @@ void Simulation::run(){
 		
 		if(round % ENERGY_DECREASE == 0){
 			qDebug() << "Decrease energy";
-			energyAdd -= 20;
+			energyAdd -= 100;
 			if(energyAdd < ENERGY_ADDED / 5){
 				energyAdd = ENERGY_ADDED;
 				qDebug() << "Energy restored";
@@ -84,6 +84,7 @@ void Simulation::killCell(struct Cell *cell){
 	cell->lineage = 0;
 	cell->generation = 0;
 	cell->id = 0;
+	cell->activated = false;
 	
 	for(int i = 0; i < 4; i++){
 		if(i & 1){
@@ -113,7 +114,7 @@ void Simulation::regenerateEnergy(){
  * the chance of success can be better with the guess parameter
  */
 bool Simulation::accessOk(struct Cell *source, struct Cell *dest, char guess,bool good){
-	if(!dest->generation){
+	if(dest->generation < 2){
 		return true;
 	}
 	
@@ -225,10 +226,18 @@ void Simulation::executeCell(int x, int y, int z){
 		case 9://while(register){
 			if(!reg){
 				int tempP = genome_pointer;
-				while(cell->genome[genome_pointer] != 10 && cell->energy){
+				int found = 0;
+				while(cell->genome[genome_pointer] != 10 && cell->energy && !found){
 					genome_pointer= (genome_pointer+1)%GENOME_SIZE;
+					
+					if(cell->genome[genome_pointer] == 9)
+						found++;
+					
+					if(cell->genome[genome_pointer] == 10)
+						found--;
+					
 					cell->energy--;
-					if(genome_pointer == tempP){
+					if(genome_pointer == tempP || found < 0){
 						stop = true;
 						break;
 					}
@@ -314,7 +323,29 @@ void Simulation::executeCell(int x, int y, int z){
 				reg = 2; //2 if enemy
 			}
 		}break;
-		case 19: //end
+		case 19://activate signal
+			cell->activated = !cell->activated;
+			break;
+		case 20:{
+			struct Position pos = getNeighbour(x,y,z,facing);
+			tmpCell = &cells[pos.x][pos.y][pos.z];
+			if(accessOk(cell, tmpCell, reg,true)){
+				if(tmpCell->activated){
+					reg = 2;
+				}else{
+					reg = 1;
+				}
+			}
+			reg = 0;
+		}break;
+		case 21:
+			if(temp == reg){
+				reg = 1;
+			}else{
+				reg = 0;
+			}
+			break;
+		case 22: //end
 			stop = true;
 			break;
 		}
@@ -352,6 +383,8 @@ void Simulation::reproduce(struct Cell *cell, struct Cell *neighbour,uchar *outp
 	}else{
 		neighbour->lineage = cell->lineage;
 	}
+	
+	cell->activated = false;
 	
 	int loop = 0;
 	for(int i = 0; i < GENOME_SIZE && loop < GENOME_SIZE; i++){
@@ -399,6 +432,8 @@ void Simulation::init(){
 				cell->energy = 0;
 				cell->id = 0;
 				cell->genome_size = GENOME_SIZE;
+				cell->activated = false;
+				
 				for(i = 0; i < GENOME_SIZE; i++){
 					cell->genome[i] = randomOperation();
 				}
