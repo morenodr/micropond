@@ -16,10 +16,12 @@ public slots:
 	void cellSelected(struct Cell cell);
 	
 private:
+	QString operationName(uchar operation);
 	QLabel *generation;
 	QLabel *id;
 	QLabel *lineage;
 	QLabel *picture;
+	QTextEdit *genome;
 };
 
 #endif /*CREATUREBAR_H_*/

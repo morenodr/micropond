@@ -54,7 +54,7 @@ void Simulation::run(){
 		}
 		
 		//kills a cell if there is not energy left and it's a child
-		if(!cells[x][y][z].energy && cells[x][y][z].generation > 2){
+		if(!cells[x][y][z].energy && cells[x][y][z].generation > 5){
 			killCell(&cells[x][y][z]);
 		}else{
 			//call the execution of its code
@@ -146,7 +146,7 @@ void Simulation::executeCell(int x, int y, int z){
 	struct Cell *tmpCell; //temporary cell
 	
 	for(genome_pointer = 0; genome_pointer < GENOME_SIZE; genome_pointer++){
-		output_buffer[genome_pointer] = GENOME_OPERATIONS;
+		output_buffer[genome_pointer] = GENOME_OPERATIONS - 1;
 	}
 	
 	genome_pointer = 0;
@@ -169,10 +169,10 @@ void Simulation::executeCell(int x, int y, int z){
 		if(qrand() % MUTATION_RATE_EXECUTION == 0){
 			switch(qrand() % 3){
 			case 0:
-				inst = qrand() % GENOME_OPERATIONS;
+				inst = randomOperation();
 				break;
 			case 1:
-				reg = qrand() % GENOME_OPERATIONS;
+				reg = randomOperation();
 				break;
 			case 2:
 				pointer = qrand() % GENOME_SIZE;
@@ -201,14 +201,14 @@ void Simulation::executeCell(int x, int y, int z){
 			break;
 		case 3: //register ++
 			reg++;
-			if(reg > GENOME_SIZE -1 ){
+			if(reg > GENOME_OPERATIONS -1 ){
 				reg = 0;
 			}
 			break;
 		case 4: //register --
 			reg--;
 			if(reg < 0 ){
-				reg = GENOME_SIZE - 1;
+				reg = GENOME_OPERATIONS - 1;
 			}
 			break;
 		case 5: //read genome to register
@@ -354,7 +354,7 @@ void Simulation::executeCell(int x, int y, int z){
 	output_pointer = 0;
 	
 	//jeah, we can reproduce something
-	if(output_buffer[output_pointer] != GENOME_OPERATIONS &&
+	if(output_buffer[output_pointer] != GENOME_OPERATIONS -1 &&
 			world[x][y][z].reproducable){
 		struct Position pos = getNeighbour(x,y,z,facing);
 		struct Cell *neighbour = &cells[pos.x][pos.y][pos.z];
@@ -434,8 +434,12 @@ void Simulation::init(){
 				cell->genome_size = GENOME_SIZE;
 				cell->activated = false;
 				
-				for(i = 0; i < GENOME_SIZE; i++){
+				for(i = 0; i < GENOME_SIZE / 3; i++){
 					cell->genome[i] = randomOperation();
+				}
+				
+				for(i = GENOME_SIZE / 3; i < GENOME_SIZE; i++){
+					cell->genome[i] = GENOME_SIZE - 1; //randomOperation();
 				}
 			}
 		}
@@ -466,7 +470,7 @@ void Simulation::mutateCell(struct Cell *cell){
 /**
  * returns a random operation
  */
-uchar inline Simulation::randomOperation(){
+uchar Simulation::randomOperation(){
 	return ((uchar)qrand()) % GENOME_OPERATIONS;
 }
 
