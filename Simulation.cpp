@@ -465,10 +465,20 @@ void Simulation::init(){
  * mutates the whole genome
  */
 void Simulation::mutateCell(struct Cell *cell){	
+	int stops = 0;
 	for(int i = 0; i < GENOME_SIZE; i++){
-		if(qrand() % MUTATION_RATE_NON_LIVING == 0){
-			cell->genome[i] = randomOperation();
+		if(cell->genome[i] != GENOME_OPERATIONS-1){
+			stops = 0;
+			if(qrand() % MUTATION_RATE_NON_LIVING == 0){
+				cell->genome[i] = randomOperation();
+			}
+		}else{
+			stops++;
+			if(stops == 4){
+				break;
+			}
 		}
+		
 	}
 }
 
