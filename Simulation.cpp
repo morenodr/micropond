@@ -5,7 +5,7 @@ Simulation::Simulation()
 	cellid = 0;
 	running = true;
 	
-	mutex = new QMutex();
+	mutex = new QSemaphore(1);
 	count = 0;
 	energyAdd = ENERGY_ADDED;
 }
@@ -15,12 +15,12 @@ Simulation::~Simulation()
 }
 
 void Simulation::pause(){
-	mutex->lock();
+	mutex->acquire(1);
 }
 
 void Simulation::resume(){
 	count = 0;
-	mutex->unlock();
+	mutex->release(1);
 }
 
 /*
@@ -30,7 +30,7 @@ void Simulation::resume(){
  * running variable to false
  */
 void Simulation::run(){
-	mutex->lock();
+	mutex->acquire(1);
 	qsrand(time(NULL));
 	
 	init();
@@ -38,9 +38,9 @@ void Simulation::run(){
 	int x,y,z;
 	
 	round = 0;
-	mutex->unlock();
+	mutex->release(1);
 	while(running){
-		mutex->lock();
+	    //mutex->acquire(1);
 		round++;
 		count++;
 		//Select random cell
@@ -75,7 +75,7 @@ void Simulation::run(){
 			regenerateEnergy();
 		}
 		
-		mutex->unlock();
+		//mutex->release(1);
 	}
 }
 
@@ -114,11 +114,11 @@ void Simulation::regenerateEnergy(){
  * the chance of success can be better with the guess parameter
  */
 bool Simulation::accessOk(struct Cell *source, struct Cell *dest, char guess,bool good){
-	if(dest->generation < 2){
+	if(dest->generation <= 2){
 		return true;
 	}
 	
-	if(dest->generation < 3 && qrand() % 3 == 0){
+	if(dest->generation <= 4 && qrand() % 3 == 0){
 		return true;
 	}
 	
@@ -146,7 +146,7 @@ void Simulation::executeCell(int x, int y, int z){
 	struct Cell *tmpCell; //temporary cell
 	
 	for(genome_pointer = 0; genome_pointer < GENOME_SIZE; genome_pointer++){
-		output_buffer[genome_pointer] = GENOME_OPERATIONS - 1;
+		output_buffer[genome_pointer] = 22; //NOP & NOREP command
 	}
 	
 	genome_pointer = 0;
@@ -345,7 +345,14 @@ void Simulation::executeCell(int x, int y, int z){
 				reg = 0;
 			}
 			break;
-		case 22: //end
+		case 22: //NOP2, stops reproduction
+			if(temp == reg){
+				reg = 1;
+			}else{
+				reg = 0;
+			}
+			break;
+		case 23: //end
 			stop = true;
 			break;
 		}
@@ -354,7 +361,7 @@ void Simulation::executeCell(int x, int y, int z){
 	output_pointer = 0;
 	
 	//jeah, we can reproduce something
-	if(output_buffer[output_pointer] != GENOME_OPERATIONS -1 &&
+	if(output_buffer[output_pointer] != 22 &&
 			world[x][y][z].reproducable){
 		struct Position pos = getNeighbour(x,y,z,facing);
 		struct Cell *neighbour = &cells[pos.x][pos.y][pos.z];
@@ -387,20 +394,18 @@ void Simulation::reproduce(struct Cell *cell, struct Cell *neighbour,uchar *outp
 	cell->activated = false;
 	
 	int loop = 0;
-	for(int i = 0; i < GENOME_SIZE && loop < GENOME_SIZE; i++){
-		//don't write the temp variable
-		if(output_buffer[loop] == GENOME_OPERATIONS){
+	for(int i = 0; i < GENOME_SIZE && loop < GENOME_SIZE; i++){		
+		if(output_buffer[loop] == 22){
 			break;
 		}
 		
 		if(qrand() % MUTATION_RATE_REPRODUCTION == 0){
-			switch(qrand() % 4){
+			switch(qrand() % 3){
 			case 0:
-			case 1:
-			case 2://command replacement
+			case 1://command replacement
 				neighbour->genome[i] = randomOperation();
 				break;
-			case 3://duplication or removal
+			case 2://duplication or removal
 				loop = qrand() % GENOME_SIZE;
 				break;
 			}
@@ -434,12 +439,12 @@ void Simulation::init(){
 				cell->genome_size = GENOME_SIZE;
 				cell->activated = false;
 				
-				for(i = 0; i < GENOME_SIZE / 3; i++){
+				for(i = 0; i < GENOME_SIZE / 5; i++){
 					cell->genome[i] = randomOperation();
 				}
 				
-				for(i = GENOME_SIZE / 3; i < GENOME_SIZE; i++){
-					cell->genome[i] = GENOME_SIZE - 1; //randomOperation();
+				for(i = GENOME_SIZE / 5; i < GENOME_SIZE; i++){
+					cell->genome[i] = GENOME_OPERATIONS - 1; //randomOperation();
 				}
 			}
 		}
