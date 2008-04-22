@@ -25,6 +25,7 @@ void Window::initGui(){
 void Window::closeEvent ( QCloseEvent * event ){
 	renderer->close();
 	delete renderer;
+	simulation->resume();
 	simulation->stopIt();
 	while(simulation->isRunning());
 	delete simulation;

@@ -87,9 +87,10 @@ void Renderer::mousePressEvent ( QMouseEvent * event ){
 	}else if(event->button() == Qt::LeftButton){
 		simulation->pause();
 		struct Cell *cell = simulation->cell(event->x(),event->y(),0);
-		if(cell->generation > 2){
+		if(cell->generation >= 2){
 			/*printCell(event->x(),event->y(),0);
 			printReadableGenome(event->x(),event->y(),0);*/
+			qDebug() << "read" << event->y() << event->x();
 			struct Cell tempCell = *cell;
 			emit cellSelected(tempCell);
 		}	

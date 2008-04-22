@@ -8,7 +8,7 @@
 #define WORLD_Z 1
 #define GENOME_SIZE 100
 
-#define GENOME_OPERATIONS 23
+#define GENOME_OPERATIONS 24
 
 #define DIRECTIONS 4 //change if you want 3d
 
@@ -20,15 +20,15 @@
 #define DOWN 5
 
 #define MUTATION_RATE_REPRODUCTION 20000
-#define MUTATION_RATE_EXECUTION 500000
-#define MUTATION_RATE_NON_LIVING 20000
+#define MUTATION_RATE_EXECUTION 100000
+#define MUTATION_RATE_NON_LIVING 10000
 
-#define ENERGY_ADDED 6000
+#define ENERGY_ADDED 5000
 #define ENERGY_FREQUENCY 25
 
-#define ENERGY_DECREASE 1000000
+#define ENERGY_DECREASE 10000000
 
-#define ACCESS_CHANCE 15
+#define ACCESS_CHANCE 10
 
 struct Cell{
 	uint id;
@@ -77,7 +77,7 @@ private:
 	struct Place world[WORLD_X][WORLD_Y][WORLD_Z];
 	uint cellid; //used to track new cells
 	bool running; //stop exection when false
-	QMutex *mutex;
+	QSemaphore *mutex;
 	uint round; //total number of rounds
 	uint count; //stat value
 	

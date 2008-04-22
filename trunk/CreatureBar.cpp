@@ -60,7 +60,7 @@ QString CreatureBar::operationName(uchar operation){
 		return "write to buffer";
 		break;
 	case 7: //read output buffer to register
-		qDebug() << "read buffer";
+		return "read buffer";
 		break;
 	case 8: //look into direction specified in the register
 		return "face to register";
@@ -105,10 +105,13 @@ QString CreatureBar::operationName(uchar operation){
 		return "read neighbour activation state";
 		break;
 	case 22: //end
+		return "NOP & NOREP";
+		break;
+	case 23: //end
 		return "stop";
 		break;
 	}
-	return "NOT DEFINED";
+	return "NOT DEFINED"+QString::number(operation);
 }
 
 void CreatureBar::cellSelected(struct Cell cell){
