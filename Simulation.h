@@ -19,11 +19,11 @@
 #define UP 4
 #define DOWN 5
 
-#define MUTATION_RATE_REPRODUCTION 20000
-#define MUTATION_RATE_EXECUTION 100000
-#define MUTATION_RATE_NON_LIVING 10000
+#define MUTATION_RATE_REPRODUCTION 6000
+#define MUTATION_RATE_EXECUTION 90000
+#define MUTATION_RATE_NON_LIVING 1000
 
-#define ENERGY_ADDED 5000
+#define ENERGY_ADDED 8000
 #define ENERGY_FREQUENCY 25
 
 #define ENERGY_DECREASE 10000000
@@ -31,11 +31,11 @@
 #define ACCESS_CHANCE 10
 
 struct Cell{
-	uint id;
-	uint parent;
+	unsigned long long id;
+	unsigned long long parent;
 	uint generation;
 	uint energy;
-	uint lineage;
+	unsigned long long lineage;
 	uchar genome[GENOME_SIZE];
 	uint genome_size;
 	bool activated;
@@ -75,10 +75,10 @@ public:
 private:
 	struct Cell cells[WORLD_X][WORLD_Y][WORLD_Z];
 	struct Place world[WORLD_X][WORLD_Y][WORLD_Z];
-	uint cellid; //used to track new cells
+	unsigned long long cellid; //used to track new cells
 	bool running; //stop exection when false
 	QSemaphore *mutex;
-	uint round; //total number of rounds
+	unsigned long long round; //total number of rounds
 	uint count; //stat value
 	
 	uint energyAdd;

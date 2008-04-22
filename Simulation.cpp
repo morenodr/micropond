@@ -394,7 +394,7 @@ void Simulation::reproduce(struct Cell *cell, struct Cell *neighbour,uchar *outp
 	cell->activated = false;
 	
 	int loop = 0;
-	for(int i = 0; i < GENOME_SIZE && loop < GENOME_SIZE; i++){		
+	for(int i = 0; i < GENOME_SIZE && loop < GENOME_SIZE; i++){
 		if(output_buffer[loop] == 22){
 			break;
 		}

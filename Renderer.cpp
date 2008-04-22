@@ -22,7 +22,7 @@ QColor Renderer::getColor(struct Cell *cell, int mode){
 			b = qBlue(cell->generation);
 			break;
 		case GENOME:
-			if(cell->generation > 2){
+			if(cell->generation >= LIVING_CELL){
 				int hash = 0;
 				for(uint i = 0; i < cell->genome_size;i++ ){
 					if(cell->genome[i] != cell->genome_size-1){
@@ -37,7 +37,7 @@ QColor Renderer::getColor(struct Cell *cell, int mode){
 			}
 			break;
 		case LINEAGE:
-			if(cell->generation > 2){
+			if(cell->generation >= LIVING_CELL){
 				r = qRed(cell->lineage);
 				g = qGreen(cell->lineage);
 				b = qBlue(cell->lineage);
@@ -87,10 +87,7 @@ void Renderer::mousePressEvent ( QMouseEvent * event ){
 	}else if(event->button() == Qt::LeftButton){
 		simulation->pause();
 		struct Cell *cell = simulation->cell(event->x(),event->y(),0);
-		if(cell->generation >= 2){
-			/*printCell(event->x(),event->y(),0);
-			printReadableGenome(event->x(),event->y(),0);*/
-			qDebug() << "read" << event->y() << event->x();
+		if(cell->generation >= LIVING_CELL){
 			struct Cell tempCell = *cell;
 			emit cellSelected(tempCell);
 		}	
