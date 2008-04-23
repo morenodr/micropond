@@ -87,7 +87,9 @@ void Renderer::mousePressEvent ( QMouseEvent * event ){
 	}else if(event->button() == Qt::LeftButton){
 		simulation->pause();
 		struct Cell *cell = simulation->cell(event->x(),event->y(),0);
+		qDebug() << "try"<<event->x() << event->y();
 		if(cell->generation >= LIVING_CELL){
+			qDebug() << "got"<<event->x() << event->y();
 			struct Cell tempCell = *cell;
 			emit cellSelected(tempCell);
 		}	
