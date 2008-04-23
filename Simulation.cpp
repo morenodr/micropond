@@ -84,7 +84,6 @@ void Simulation::killCell(struct Cell *cell){
 	cell->parent = 0;
 	cell->lineage = 0;
 	cell->generation = 0;
-	cell->energy = 0;
 	cell->id = 0;
 	cell->genome_size = GENOME_SIZE;
 	cell->activated = false;
@@ -430,6 +429,8 @@ void Simulation::init(){
 		for(y = 0; y < WORLD_Y; y++){
 			for(z = 0; z < WORLD_Z; z++){
 				killCell(&cells[x][y][z]);
+
+				cells[x][y][z].energy = 0;
 			}
 		}
 	}
