@@ -88,12 +88,12 @@ void Simulation::killCell(struct Cell *cell){
 	cell->genome_size = GENOME_SIZE;
 	cell->activated = false;
 	cell->reproduced = 0;
-	
+
 	int randStuff = GENOME_SIZE / 5;
 	for(int i = 0; i < randStuff; i++){
 		cell->genome[i] = randomOperation();
 	}
-	
+
 	memset(cell->genome + randStuff * sizeof(uchar),
 			GENOME_OPERATIONS - 1,
 			(GENOME_SIZE-1) - randStuff);

@@ -10,7 +10,7 @@
 
 #define GENOME_OPERATIONS 24
 
-#define LIVING 4 //minimum generation to be considered alive
+#define LIVING 3 //minimum generation to be considered alive
 
 #define DIRECTIONS 4 //change if you want 3d
 
