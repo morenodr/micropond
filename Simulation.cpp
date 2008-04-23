@@ -1,4 +1,5 @@
 #include "Simulation.h"
+#include <cstring>
 
 Simulation::Simulation()
 {
@@ -54,7 +55,7 @@ void Simulation::run(){
 		}
 		
 		//kills a cell if there is not energy left and it's a child
-		if(!cells[x][y][z].energy && cells[x][y][z].generation > 5){
+		if(!cells[x][y][z].energy && cells[x][y][z].generation > 4){
 			killCell(&cells[x][y][z]);
 		}else{
 			//call the execution of its code
@@ -86,13 +87,7 @@ void Simulation::killCell(struct Cell *cell){
 	cell->id = 0;
 	cell->activated = false;
 	
-	for(int i = 0; i < 4; i++){
-		if(i & 1){
-			cell->genome[i] = GENOME_OPERATIONS-1;
-		}else{
-			cell->genome[i] = 0;
-		}
-	}
+	memset(cell->genome,GENOME_OPERATIONS-1, GENOME_SIZE);
 }
 
 /**
@@ -226,18 +221,11 @@ void Simulation::executeCell(int x, int y, int z){
 		case 9://while(register){
 			if(!reg){
 				int tempP = genome_pointer;
-				int found = 0;
-				while(cell->genome[genome_pointer] != 10 && cell->energy && !found){
+				while(cell->genome[genome_pointer] != 10 && cell->energy){
 					genome_pointer= (genome_pointer+1)%GENOME_SIZE;
 					
-					if(cell->genome[genome_pointer] == 9)
-						found++;
-					
-					if(cell->genome[genome_pointer] == 10)
-						found--;
-					
 					cell->energy--;
-					if(genome_pointer == tempP || found < 0){
+					if(genome_pointer == tempP){
 						stop = true;
 						break;
 					}
@@ -394,7 +382,8 @@ void Simulation::reproduce(struct Cell *cell, struct Cell *neighbour,uchar *outp
 	cell->activated = false;
 	
 	int loop = 0;
-	for(int i = 0; i < GENOME_SIZE && loop < GENOME_SIZE; i++){
+	int i = 0;
+	for(i = 0; i < GENOME_SIZE && loop < GENOME_SIZE; i++){
 		if(output_buffer[loop] == 22){
 			break;
 		}
@@ -413,6 +402,10 @@ void Simulation::reproduce(struct Cell *cell, struct Cell *neighbour,uchar *outp
 			neighbour->genome[i] = output_buffer[loop];
 		}
 		loop++;
+	}
+	
+	if(i < GENOME_SIZE - 1){
+		memset(cell->genome +i*sizeof(uchar),GENOME_OPERATIONS - 1 ,(GENOME_SIZE - 1) - i);
 	}
 }
 
@@ -439,13 +432,16 @@ void Simulation::init(){
 				cell->genome_size = GENOME_SIZE;
 				cell->activated = false;
 				
-				for(i = 0; i < GENOME_SIZE / 5; i++){
+				int randStuff = GENOME_SIZE / 5;
+				
+				for(i = 0; i < randStuff; i++){
 					cell->genome[i] = randomOperation();
 				}
 				
-				for(i = GENOME_SIZE / 5; i < GENOME_SIZE; i++){
-					cell->genome[i] = GENOME_OPERATIONS - 1; //randomOperation();
-				}
+				memset(cell->genome + randStuff * sizeof(uchar),
+						GENOME_OPERATIONS - 1,
+						(GENOME_SIZE-1) - randStuff);
+				
 			}
 		}
 	}
