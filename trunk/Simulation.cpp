@@ -84,10 +84,19 @@ void Simulation::killCell(struct Cell *cell){
 	cell->parent = 0;
 	cell->lineage = 0;
 	cell->generation = 0;
+	cell->energy = 0;
 	cell->id = 0;
+	cell->genome_size = GENOME_SIZE;
 	cell->activated = false;
 	
-	memset(cell->genome,GENOME_OPERATIONS-1, GENOME_SIZE);
+	int randStuff = GENOME_SIZE / 5;
+	for(int i = 0; i < randStuff; i++){
+		cell->genome[i] = randomOperation();
+	}
+	
+	memset(cell->genome + randStuff * sizeof(uchar),
+			GENOME_OPERATIONS - 1,
+			(GENOME_SIZE-1) - randStuff);
 }
 
 /**
@@ -416,32 +425,11 @@ void Simulation::init(){
 	int x = 0;
 	int y = 0;
 	int z = 0;
-	int i = 0;
-	struct Cell *cell;
-	
 	
 	for(x = 0; x < WORLD_X; x++){
 		for(y = 0; y < WORLD_Y; y++){
 			for(z = 0; z < WORLD_Z; z++){
-				cell = &cells[x][y][z];
-				cell->parent = 0;
-				cell->lineage = 0;
-				cell->generation = 0;
-				cell->energy = 0;
-				cell->id = 0;
-				cell->genome_size = GENOME_SIZE;
-				cell->activated = false;
-				
-				int randStuff = GENOME_SIZE / 5;
-				
-				for(i = 0; i < randStuff; i++){
-					cell->genome[i] = randomOperation();
-				}
-				
-				memset(cell->genome + randStuff * sizeof(uchar),
-						GENOME_OPERATIONS - 1,
-						(GENOME_SIZE-1) - randStuff);
-				
+				killCell(&cells[x][y][z]);
 			}
 		}
 	}
