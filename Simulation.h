@@ -41,6 +41,7 @@ struct Cell{
 	uchar genome[GENOME_SIZE];
 	uint genome_size;
 	bool activated;
+	uchar reproduced;
 };
 
 struct Place{
