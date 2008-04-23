@@ -55,7 +55,7 @@ void Simulation::run(){
 		}
 		
 		//kills a cell if there is not energy left and it's a child
-		if(!cells[x][y][z].energy && cells[x][y][z].generation > 4){
+		if(!cells[x][y][z].energy && cells[x][y][z].generation >= LIVING){
 			killCell(&cells[x][y][z]);
 		}else{
 			//call the execution of its code
@@ -121,7 +121,7 @@ bool Simulation::accessOk(struct Cell *source, struct Cell *dest, char guess,boo
 		return true;
 	}
 	
-	if(dest->generation <= 4 && qrand() % 3 == 0){
+	if(dest->generation < LIVING && qrand() % 3 == 0){
 		return true;
 	}
 	
@@ -283,7 +283,7 @@ void Simulation::executeCell(int x, int y, int z){
 		case 13:{ // kill
 			struct Position pos = getNeighbour(x,y,z,facing);
 			tmpCell = &cells[pos.x][pos.y][pos.z];
-			if(cell->generation && accessOk(cell, tmpCell, reg,false)){
+			if(cell->generation >= LIVING  && accessOk(cell, tmpCell, reg,false)){
 				killCell(tmpCell);
 			}
 		}break;
@@ -357,13 +357,16 @@ void Simulation::executeCell(int x, int y, int z){
 	output_pointer = 0;
 	
 	//jeah, we can reproduce something
-	if(output_buffer[output_pointer] != 22 &&
-			world[x][y][z].reproducable){
-		struct Position pos = getNeighbour(x,y,z,facing);
-		struct Cell *neighbour = &cells[pos.x][pos.y][pos.z];
-		if(accessOk(cell, neighbour, reg,false)){
-			reproduce(cell,neighbour,output_buffer);
+	if(output_buffer[output_pointer] != 22){
+		if(world[x][y][z].reproducable){
+			struct Position pos = getNeighbour(x,y,z,facing);
+			struct Cell *neighbour = &cells[pos.x][pos.y][pos.z];
+			if(accessOk(cell, neighbour, reg,false)){
+				reproduce(cell,neighbour,output_buffer);
+			}
 		}
+	}else if(cell->generation >= LIVING){
+		killCell(cell);
 	}
 }
 
