@@ -87,6 +87,7 @@ void Simulation::killCell(struct Cell *cell){
 	cell->id = 0;
 	cell->genome_size = GENOME_SIZE;
 	cell->activated = false;
+	cell->reproduced = 0;
 	
 	int randStuff = GENOME_SIZE / 5;
 	for(int i = 0; i < randStuff; i++){
@@ -358,6 +359,7 @@ void Simulation::executeCell(int x, int y, int z){
 	
 	//jeah, we can reproduce something
 	if(output_buffer[output_pointer] != 22){
+		cell->reproduced = 0;
 		if(world[x][y][z].reproducable){
 			struct Position pos = getNeighbour(x,y,z,facing);
 			struct Cell *neighbour = &cells[pos.x][pos.y][pos.z];
@@ -365,8 +367,10 @@ void Simulation::executeCell(int x, int y, int z){
 				reproduce(cell,neighbour,output_buffer);
 			}
 		}
-	}else if(cell->generation >= LIVING){
+	}else if(cell->generation >= LIVING && cell->reproduced > 5){
 		killCell(cell);
+	}else{
+		cell->reproduced++;
 	}
 }
 
