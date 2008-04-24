@@ -10,7 +10,7 @@
 
 #define GENOME_OPERATIONS 24
 
-#define LIVING 3 //minimum generation to be considered alive
+#define LIVING 10 //minimum generation to be considered alive
 
 #define DIRECTIONS 4 //change if you want 3d
 
@@ -23,7 +23,7 @@
 
 #define MUTATION_RATE_REPRODUCTION 20000
 #define MUTATION_RATE_EXECUTION 90000
-#define MUTATION_RATE_NON_LIVING 5000
+#define MUTATION_RATE_NON_LIVING 2000
 
 #define ENERGY_ADDED 4000
 #define ENERGY_FREQUENCY 25
