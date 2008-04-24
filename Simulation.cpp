@@ -97,6 +97,7 @@ void Simulation::killCell(struct Cell *cell){
 	memset(cell->genome + randStuff * sizeof(uchar),
 			GENOME_OPERATIONS - 1,
 			(GENOME_SIZE-1) - randStuff);
+	cell->genome[GENOME_SIZE] = 0x00;
 }
 
 /**
@@ -149,9 +150,7 @@ void Simulation::executeCell(int x, int y, int z){
 	bool stop = false;
 	struct Cell *tmpCell; //temporary cell
 	
-	for(genome_pointer = 0; genome_pointer < GENOME_SIZE; genome_pointer++){
-		output_buffer[genome_pointer] = 22; //NOP & NOREP command
-	}
+	memset(output_buffer, 22, GENOME_SIZE);
 	
 	genome_pointer = 0;
 	int pointer = 0;//general pointer
@@ -239,7 +238,8 @@ void Simulation::executeCell(int x, int y, int z){
 						break;
 					}
 				}
-				genome_pointer++;
+				
+				genome_pointer = (genome_pointer+1) % GENOME_SIZE;
 			}
 			break;
 		case 10://}
@@ -257,7 +257,7 @@ void Simulation::executeCell(int x, int y, int z){
 						break;
 					}
 				}
-				genome_pointer++;
+				genome_pointer = (genome_pointer+1) % GENOME_SIZE;
 			}
 			break;
 		case 11:{ //seek most energy
