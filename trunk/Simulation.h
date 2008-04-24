@@ -38,7 +38,7 @@ struct Cell{
 	uint generation;
 	uint energy;
 	unsigned long long lineage;
-	uchar genome[GENOME_SIZE];
+	uchar genome[GENOME_SIZE+1];
 	uint genome_size;
 	bool activated;
 	uchar reproduced;
