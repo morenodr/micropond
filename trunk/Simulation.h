@@ -33,13 +33,13 @@
 #define ACCESS_CHANCE 10
 
 struct Cell{
+	uint genome_size;
 	unsigned long long id;
 	unsigned long long parent;
 	uint generation;
 	uint energy;
 	unsigned long long lineage;
 	uchar genome[GENOME_SIZE+1];
-	uint genome_size;
 	bool activated;
 	uchar reproduced;
 };
