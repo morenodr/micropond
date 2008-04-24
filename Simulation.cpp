@@ -93,10 +93,11 @@ void Simulation::killCell(struct Cell *cell){
 	for(int i = 0; i < randStuff; i++){
 		cell->genome[i] = randomOperation();
 	}
-
-	memset(cell->genome + randStuff * sizeof(uchar),
+	
+	memset(&cell->genome[randStuff],
 			GENOME_OPERATIONS - 1,
-			(GENOME_SIZE-1) - randStuff);
+			(GENOME_SIZE - randStuff) * sizeof(uchar));
+	
 	cell->genome[GENOME_SIZE] = 0x00;
 }
 
@@ -150,7 +151,7 @@ void Simulation::executeCell(int x, int y, int z){
 	bool stop = false;
 	struct Cell *tmpCell; //temporary cell
 	
-	memset(output_buffer, 22, GENOME_SIZE);
+	memset(output_buffer, 22, GENOME_SIZE * sizeof(uchar));
 	
 	genome_pointer = 0;
 	int pointer = 0;//general pointer
@@ -275,10 +276,13 @@ void Simulation::executeCell(int x, int y, int z){
 		case 12:{ //move
 			struct Position pos = getNeighbour(x,y,z,facing);
 			tmpCell = &cells[pos.x][pos.y][pos.z];
-			struct Cell tmp;
-			tmp = *tmpCell;
-			*tmpCell = *cell;
-			*cell = tmp;
+			
+			if(tmpCell != cell){
+				struct Cell tmp;
+				tmp = *tmpCell;
+				*tmpCell = *cell;
+				*cell = tmp;
+			}
 			stop = true;
 		}break;
 		case 13:{ // kill
@@ -420,7 +424,9 @@ void Simulation::reproduce(struct Cell *cell, struct Cell *neighbour,uchar *outp
 	}
 	
 	if(i < GENOME_SIZE - 1){
-		memset(cell->genome +i*sizeof(uchar),GENOME_OPERATIONS - 1 ,(GENOME_SIZE - 1) - i);
+		memset(cell->genome +i*sizeof(uchar),
+				GENOME_OPERATIONS - 1 ,
+				((GENOME_SIZE - 1) - i) * sizeof(uchar));
 	}
 }
 
@@ -470,7 +476,6 @@ void Simulation::mutateCell(struct Cell *cell){
 				break;
 			}
 		}
-		
 	}
 }
 
@@ -478,7 +483,7 @@ void Simulation::mutateCell(struct Cell *cell){
  * returns a random operation
  */
 uchar Simulation::randomOperation(){
-	return ((uchar)qrand()) % GENOME_OPERATIONS;
+	return (uchar)(qrand() % GENOME_OPERATIONS);
 }
 
 /**
@@ -516,20 +521,20 @@ struct Position Simulation::getNeighbour(int x, int y, int z, uchar direction){
 	}
 	
 	if(x >= WORLD_X){
-		x = x - WORLD_X;
+		x = 0;
 	}else if(x < 0){
-		x = WORLD_X + x;
+		x = WORLD_X-1;
 	}
 	
 	if(y >= WORLD_Y){
-		y = y - WORLD_Y;
-	}else if(x < 0){
-		y = WORLD_Y + y;
+		y = 0;
+	}else if(y < 0){
+		y = WORLD_Y - 1;
 	}
 	
 	if(z >= WORLD_Z){
-		z = WORLD_Z;
-	}else if(x < 0){
+		z = WORLD_Z - 1;
+	}else if(z < 0){
 		z = 0;
 	}
 	
