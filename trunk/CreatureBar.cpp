@@ -126,6 +126,7 @@ void CreatureBar::cellSelected(struct Cell cell){
 	for(uint i = 0; i < cell.genome_size; i++){
 		genome->append(operationName(cell.genome[i]));
 	}
+	genome->moveCursor(QTextCursor::Start, QTextCursor::MoveAnchor);
 }
 
 CreatureBar::~CreatureBar()
