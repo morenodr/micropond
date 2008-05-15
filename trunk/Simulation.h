@@ -10,7 +10,7 @@
 
 #define GENOME_OPERATIONS 24
 
-#define LIVING 10 //minimum generation to be considered alive
+#define LIVING 1 //minimum generation to be considered alive
 
 #define DIRECTIONS 4 //change if you want 3d
 
@@ -21,16 +21,16 @@
 #define UP 4
 #define DOWN 5
 
-#define MUTATION_RATE_REPRODUCTION 20000
+#define MUTATION_RATE_REPRODUCTION 40000
 #define MUTATION_RATE_EXECUTION 90000
-#define MUTATION_RATE_NON_LIVING 2000
+#define MUTATION_RATE_NON_LIVING 5000
 
 #define ENERGY_ADDED 4000
-#define ENERGY_FREQUENCY 25
+#define ENERGY_FREQUENCY 50
 
-#define ENERGY_DECREASE 10000000
+#define ENERGY_DECREASE 5000000
 
-#define ACCESS_CHANCE 10
+#define ACCESS_CHANCE 15
 
 struct Cell{
 	uint genome_size;
