@@ -44,7 +44,7 @@ QColor Renderer::getColor(struct Cell *cell, int mode){
 			}
 			break;
 		case LOGO:
-			if(cell->generation > 2){
+			if(cell->generation > LIVING_CELL){
 				r = cell->genome[0] * 10;
 				g = cell->genome[0] * 10;
 				b = cell->genome[0] * 10;

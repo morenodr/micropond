@@ -423,7 +423,7 @@ void Simulation::reproduce(struct Cell *cell, struct Cell *neighbour,uchar *outp
 		loop++;
 	}
 	
-	if(i < GENOME_SIZE - 1){
+	if(i < GENOME_SIZE - 1 && i > GENOME_SIZE / 5){
 		memset(cell->genome +i*sizeof(uchar),
 				GENOME_OPERATIONS - 1 ,
 				((GENOME_SIZE - 1) - i) * sizeof(uchar));

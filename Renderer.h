@@ -14,7 +14,7 @@
 
 #define RENDERMODES 5
 
-#define LIVING_CELL 5
+#define LIVING_CELL 8
 
 class Renderer: public QLabel
 {
