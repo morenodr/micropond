@@ -8,7 +8,9 @@
 #define WORLD_Z 1
 #define GENOME_SIZE 100
 
-#define GENOME_OPERATIONS 24
+#define GENOME_OPERATIONS 25
+
+#define EAT_ENERGY GENOME_SIZE
 
 #define LIVING 1 //minimum generation to be considered alive
 
@@ -75,6 +77,9 @@ public:
 	void pause();
 	void resume();
 	uint counter(){return count;};
+	void setEnergyAdd(uint value){ energyAdd = value;};
+	uint getEnergyAdd(){return energyAdd;};
+	uint getMaxEnergyAdd(){ return ENERGY_ADDED;};
 private:
 	struct Cell cells[WORLD_X][WORLD_Y][WORLD_Z];
 	struct Place world[WORLD_X][WORLD_Y][WORLD_Z];

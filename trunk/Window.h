@@ -15,10 +15,15 @@ public:
 	virtual ~Window();
 	void initGui();
 	void closeEvent ( QCloseEvent * event );
+	
+public slots:
+	void valueChanged(int val);
+	
 private:
 	Simulation *simulation;
 	Renderer *renderer;
 	CreatureBar *creatureBar;
+	QSlider *slider;
 };
 
 #endif /*WINDOW_H_*/

@@ -62,14 +62,13 @@ void Simulation::run(){
 			Simulation::executeCell(x,y,z);
 		}
 		
-		if(round % ENERGY_DECREASE == 0){
+		/*if(round % ENERGY_DECREASE == 0){
 			qDebug() << "Decrease energy";
 			energyAdd -= 100;
-			if(energyAdd < ENERGY_ADDED / 5){
-				energyAdd = ENERGY_ADDED;
-				qDebug() << "Energy restored";
+			if(energyAdd < 0){
+				energyAdd = 0;
 			}
-		}
+		}*/
 
 		//add energy every x rounds
 		if(!(round % ENERGY_FREQUENCY)){
@@ -353,7 +352,24 @@ void Simulation::executeCell(int x, int y, int z){
 				reg = 0;
 			}
 			break;
-		case 23: //end
+		case 23:{//eat energy and modify neighbour genome
+			struct Position pos = getNeighbour(x,y,z,facing);
+			tmpCell = &cells[pos.x][pos.y][pos.z];
+			if(cell->generation >= LIVING  && accessOk(cell, tmpCell, reg,false)){
+				if(tmpCell->genome[pointer] == reg && reg != 0 
+						&& reg != GENOME_OPERATIONS - 1){
+					tmpCell->genome[pointer]--;
+					
+					//eat energy
+					cell->energy += EAT_ENERGY / 2;
+					if(tmpCell->energy >= EAT_ENERGY / 2){
+						cell->energy += EAT_ENERGY / 2;
+						tmpCell->energy -= EAT_ENERGY / 2;
+					}
+				}
+			}
+		}break;
+		case 24: //end
 			stop = true;
 			break;
 		}
@@ -362,7 +378,7 @@ void Simulation::executeCell(int x, int y, int z){
 	output_pointer = 0;
 	
 	//jeah, we can reproduce something
-	if(output_buffer[output_pointer] != 22){
+	if(output_buffer[0] != 22){
 		cell->reproduced = 0;
 		if(world[x][y][z].reproducable){
 			struct Position pos = getNeighbour(x,y,z,facing);
@@ -402,8 +418,11 @@ void Simulation::reproduce(struct Cell *cell, struct Cell *neighbour,uchar *outp
 	
 	int loop = 0;
 	int i = 0;
+	bool stoped = false;
+	
 	for(i = 0; i < GENOME_SIZE && loop < GENOME_SIZE; i++){
 		if(output_buffer[loop] == 22){
+			stoped = true;
 			break;
 		}
 		
@@ -421,6 +440,12 @@ void Simulation::reproduce(struct Cell *cell, struct Cell *neighbour,uchar *outp
 			neighbour->genome[i] = output_buffer[loop];
 		}
 		loop++;
+	}
+	
+	if(!stoped && i < GENOME_SIZE - 1){
+		neighbour->parent = cell->id;
+		neighbour->lineage = neighbour->id;
+		neighbour->generation = 1;
 	}
 	
 	if(i < GENOME_SIZE - 1 && i > GENOME_SIZE / 5){

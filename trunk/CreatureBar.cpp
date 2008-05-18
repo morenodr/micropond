@@ -107,7 +107,10 @@ QString CreatureBar::operationName(uchar operation){
 	case 22: //end
 		return "NOP & NOREP";
 		break;
-	case 23: //end
+	case 23:
+		return "eat";
+		break;
+	case 24: //end
 		return "stop";
 		break;
 	}
