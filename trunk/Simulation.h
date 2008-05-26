@@ -28,7 +28,7 @@
 
 #define MUTATION_RATE_REPRODUCTION 5000
 #define MUTATION_RATE_EXECUTION 10000
-#define MUTATION_RATE_NON_LIVING 200
+#define MUTATION_RATE_NON_LIVING 100
 
 #define ENERGY_ADDED 3500
 #define ENERGY_FREQUENCY 25
@@ -107,6 +107,11 @@ private:
 	
 	bool accessOk(struct Cell *source, struct Cell *dest, char guess,bool good);
 	struct Position getNeighbour(int x, int y, int z, uchar direction);
+	
+	int nextx;
+	int nexty;
+	int nextz;
+	bool nextSet;
 };
 
 #endif /*SIMULATION_H_*/

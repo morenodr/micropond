@@ -96,7 +96,7 @@ QString CreatureBar::operationName(uchar operation){
 		return "probe";
 		break;
 	case 19: //end
-		return "register = neighbour type";
+		return "execute facing";
 		break;
 	case 20: //end
 		return "toggle cell activation";

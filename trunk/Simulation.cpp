@@ -9,6 +9,7 @@ Simulation::Simulation()
 	mutex = new QSemaphore(1);
 	count = 0;
 	energyAdd = ENERGY_ADDED;
+	nextSet = false;
 }
 
 Simulation::~Simulation()
@@ -44,11 +45,17 @@ void Simulation::run(){
 	    //mutex->acquire(1);
 		round++;
 		count++;
-		//Select random cell
-		x = qrand() % WORLD_X;
-		y = qrand() % WORLD_Y;
-		z = qrand() % WORLD_Z;
-		
+		if(nextSet){
+			x = nextx;
+			y = nexty;
+			z = nextz;
+			nextSet = false;
+		}else{
+			//Select random cell
+			x = qrand() % WORLD_X;
+			y = qrand() % WORLD_Y;
+			z = qrand() % WORLD_Z;
+		}
 		//if there is one make the cell mutate
 		if(!cells[x][y][z].generation){
 			mutateCell(&cells[x][y][z]);
@@ -132,7 +139,7 @@ void Simulation::regenerateEnergy(){
 		mod *= 1.0 - (y / WORLD_Y );
 	}
 	
-	mod += 0.2;
+	mod += 0.1;
 #endif
 	
 	cells[(int)x][(int)y][(int)z].energy += energyAdd * mod;
@@ -366,9 +373,14 @@ void Simulation::executeCell(int x, int y, int z){
 				reg = 2; //2 if enemy
 			}
 		}break;
-		case 19://activate signal
-			cell->activated = !cell->activated;
-			break;
+		case 19:{//execute neigbour
+			struct Position pos = getNeighbour(x,y,z,facing);
+			nextx = pos.x;
+			nexty = pos.y;
+			nextz = pos.z;
+			nextSet = true;
+			stop = true;
+		}break;
 		case 20:{
 			struct Position pos = getNeighbour(x,y,z,facing);
 			tmpCell = &cells[pos.x][pos.y][pos.z];
@@ -483,7 +495,6 @@ void Simulation::executeCell(int x, int y, int z){
 	if(cell->generation >= LIVING && cell->reproduced > 2){
 		killCell(cell);
 	}
-		
 }
 
 /**
@@ -588,7 +599,7 @@ void Simulation::init(){
  * mutates the whole genome
  */
 void Simulation::mutateCell(struct Cell *cell){	
-	int stops = 0;
+	/*int stops = 0;
 	for(int i = 0; i < GENOME_SIZE; i++){
 		if(cell->genome[i] != GENOME_OPERATIONS-1){
 			stops = 0;
@@ -601,6 +612,13 @@ void Simulation::mutateCell(struct Cell *cell){
 				break;
 			}
 		}
+	}*/
+	
+	int prob = MUTATION_RATE_NON_LIVING / GENOME_SIZE;
+	
+	if(qrand() % prob == 0){
+		int pos = qrand() % GENOME_SIZE;
+		cell->genome[pos] = randomOperation();
 	}
 }
 
@@ -625,42 +643,48 @@ struct Cell *Simulation::cell(int x, int y, int z){
 struct Position Simulation::getNeighbour(int x, int y, int z, uchar direction){
 	
 	switch(direction){
-	case NORTH:
+	case NORTH:{
 		y--;
+		if(y >= WORLD_Y){
+			y = 0;
+		}
+	}
 		break;
-	case SOUTH:
+	case SOUTH:{
 		y++;
+		if(y < 0){
+			y = WORLD_Y - 1;
+		}
+	}
 		break;
-	case WEST:
+	case WEST:{
 		x--;
+		if(x < 0){
+			x = WORLD_X-1;
+		}
+	}
 		break;
-	case EAST:
+	case EAST:{
 		x++;
+		if(x >= WORLD_X){
+			x = 0;
+		}
+	}
 		break;
-	case UP:
+	case UP:{
 		z++;
+		if(z >= WORLD_Z){
+			z = WORLD_Z - 1;
+		}
+	}
 		break;
-	case DOWN:
+	case DOWN:{
 		z--;
+		if(z < 0){
+			z = 0;
+		}
+	}
 		break;
-	}
-	
-	if(x >= WORLD_X){
-		x = 0;
-	}else if(x < 0){
-		x = WORLD_X-1;
-	}
-	
-	if(y >= WORLD_Y){
-		y = 0;
-	}else if(y < 0){
-		y = WORLD_Y - 1;
-	}
-	
-	if(z >= WORLD_Z){
-		z = WORLD_Z - 1;
-	}else if(z < 0){
-		z = 0;
 	}
 	
 	struct Position pos;
