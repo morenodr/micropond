@@ -17,9 +17,9 @@ QColor Renderer::getColor(struct Cell *cell, int mode){
 	int b = 0; //temporary blue value
 	switch(mode){
 		case GENERATION:
-			r = qRed(cell->generation);
-			g = qGreen(cell->generation);
-			b = qBlue(cell->generation);
+			r = qRed(cell->generation*cell->generation);
+			g = qGreen(cell->generation*cell->generation);
+			b = qBlue(cell->generation*cell->generation);
 			break;
 		case GENOME:
 			if(cell->generation >= LIVING_CELL){
