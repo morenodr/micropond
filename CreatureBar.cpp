@@ -72,7 +72,7 @@ QString CreatureBar::operationName(uchar operation){
 		return "}";
 		break;
 	case 11:
-		return "register = direction with most energy";
+		return "NOP & NOREP";
 		break;
 	case 12: //move
 		return "move to facing";
@@ -105,12 +105,18 @@ QString CreatureBar::operationName(uchar operation){
 		return "read neighbour activation state";
 		break;
 	case 22: //end
-		return "NOP & NOREP";
+		return "register = direction with most energy";
 		break;
 	case 23:
 		return "eat";
 		break;
-	case 24: //end
+	case 24: 
+		return "convert";
+		break;
+	case 25://end
+		return "eject";
+		break;
+	case 26://end
 		return "stop";
 		break;
 	}

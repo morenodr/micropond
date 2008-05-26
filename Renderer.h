@@ -10,11 +10,14 @@
 #define GENOME 1
 #define LINEAGE 2
 #define LOGO 3
-#define ENERGY 4
+#define REPRODUCED 4
+#define ENERGY 5
+#define ENERGY2 6
+#define BAD 7
 
-#define RENDERMODES 5
+#define RENDERMODES 8
 
-#define LIVING_CELL 8
+#define LIVING_CELL 2
 
 class Renderer: public QLabel
 {
