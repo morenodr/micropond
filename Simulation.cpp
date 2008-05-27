@@ -10,6 +10,7 @@ Simulation::Simulation()
 	count = 0;
 	energyAdd = ENERGY_ADDED;
 	nextSet = false;
+	canExecuteNext = true;
 }
 
 Simulation::~Simulation()
@@ -50,11 +51,13 @@ void Simulation::run(){
 			y = nexty;
 			z = nextz;
 			nextSet = false;
+			canExecuteNext = false;
 		}else{
 			//Select random cell
 			x = qrand() % WORLD_X;
 			y = qrand() % WORLD_Y;
 			z = qrand() % WORLD_Z;
+			canExecuteNext = true;
 		}
 		//if there is one make the cell mutate
 		if(!cells[x][y][z].generation){
@@ -374,24 +377,19 @@ void Simulation::executeCell(int x, int y, int z){
 			}
 		}break;
 		case 19:{//execute neigbour
-			struct Position pos = getNeighbour(x,y,z,facing);
-			nextx = pos.x;
-			nexty = pos.y;
-			nextz = pos.z;
-			nextSet = true;
+			if(canExecuteNext && cell->energy2){
+				int executeDir = temp % DIRECTIONS;
+				struct Position pos = getNeighbour(x,y,z,executeDir);
+				nextx = pos.x;
+				nexty = pos.y;
+				nextz = pos.z;
+				nextSet = true;
+				cell->energy2--;
+			}
 			stop = true;
 		}break;
-		case 20:{
-			struct Position pos = getNeighbour(x,y,z,facing);
-			tmpCell = &cells[pos.x][pos.y][pos.z];
-			if(accessOk(cell, tmpCell, reg,true)){
-				if(tmpCell->activated){
-					reg = 2;
-				}else{
-					reg = 1;
-				}
-			}
-			reg = 0;
+		case 20:{//NOP
+			
 		}break;
 		case 21:
 			if(temp == reg){

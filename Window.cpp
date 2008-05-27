@@ -47,7 +47,7 @@ void Window::closeEvent ( QCloseEvent * event ){
 	simulation->resume();
 	simulation->stopIt();
 	while(simulation->isRunning());
-	delete simulation;
+	//delete simulation;
 	event->accept();
 }
 

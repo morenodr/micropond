@@ -35,7 +35,7 @@
 
 #define ENERGY_DECREASE 5000000
 
-#define ACCESS_CHANCE 5
+#define ACCESS_CHANCE 15
 
 #define MIN_COPY 3
 
@@ -112,6 +112,7 @@ private:
 	int nexty;
 	int nextz;
 	bool nextSet;
+	bool canExecuteNext;
 };
 
 #endif /*SIMULATION_H_*/
