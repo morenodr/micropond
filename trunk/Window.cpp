@@ -43,7 +43,7 @@ void Window::valueChanged(int val){
 
 void Window::closeEvent ( QCloseEvent * event ){
 	renderer->close();
-	delete renderer;
+	//delete renderer;
 	simulation->resume();
 	simulation->stopIt();
 	while(simulation->isRunning());

@@ -3,17 +3,19 @@
 
 #include <QtCore>
 
-#define VARIED_ENERGY
+#define VARIED_ENERGY //does not give the whole playing field the same energy
+//#define OLDSTYLE_MUTATION   //older and slower way to mutate
+//#define DECREASE_ENERGY //decreases energy over time
 
 #define WORLD_X 640
 #define WORLD_Y 480
 #define WORLD_Z 1
-#define GENOME_SIZE 100
+#define GENOME_SIZE 100 //number of operations in a genome
 
-#define GENOME_OPERATIONS 27
-#define NO_REP_OPERATION 11
+#define GENOME_OPERATIONS 27 //number of different operations
+#define NO_REP_OPERATION 11 //id of the NO REPRODUCE operation
 
-#define EAT_ENERGY GENOME_SIZE
+#define EAT_ENERGY GENOME_SIZE //amount of energy gained from eating
 
 #define LIVING 2 //minimum generation to be considered alive
 
@@ -28,14 +30,15 @@
 
 #define MUTATION_RATE_REPRODUCTION 5000
 #define MUTATION_RATE_EXECUTION 10000
-#define MUTATION_RATE_NON_LIVING 100
+#define MUTATION_RATE_NON_LIVING 50
+//#define MAX_MUTATIONS_NON_LIVING 3
 
 #define ENERGY_ADDED 3500
 #define ENERGY_FREQUENCY 25
 
 #define ENERGY_DECREASE 5000000
 
-#define ACCESS_CHANCE 15
+#define ACCESS_CHANCE 4
 
 #define MIN_COPY 3
 
@@ -48,9 +51,9 @@ struct Cell{
 	uint energy2;
 	unsigned long long lineage;
 	uchar genome[GENOME_SIZE+1];
-	bool activated;
 	uchar reproduced;
 	uint bad;
+	uint brain;
 };
 
 struct Place{

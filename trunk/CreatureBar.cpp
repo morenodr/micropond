@@ -90,7 +90,7 @@ QString CreatureBar::operationName(uchar operation){
 		return "swap";
 		break;
 	case 17://reset registers
-		return "reset registers";
+		return "save reg in brain";
 		break;
 	case 18: //probe
 		return "probe";
@@ -99,7 +99,7 @@ QString CreatureBar::operationName(uchar operation){
 		return "execute facing";
 		break;
 	case 20: //end
-		return "toggle cell activation";
+		return "recall brain";
 		break;
 	case 21: //end
 		return "read neighbour activation state";
