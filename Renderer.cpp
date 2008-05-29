@@ -97,10 +97,14 @@ void Renderer::updatePicture(){
 	qDebug() << "cells executed: " << counter;
 }
 
+void Renderer::changeColorMode(int mode){
+	colorMode = mode;
+	updatePicture();
+}
+
 void Renderer::mousePressEvent ( QMouseEvent * event ){
 	if(event->button() == Qt::RightButton){
-		colorMode = (colorMode + 1) % RENDERMODES;
-		updatePicture();
+		changeColorMode((colorMode + 1) % RENDERMODES);		
 	}else if(event->button() == Qt::LeftButton){
 		simulation->pause();
 		struct Cell *cell = simulation->cell(event->x(),event->y(),0);

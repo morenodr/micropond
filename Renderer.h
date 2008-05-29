@@ -34,6 +34,7 @@ signals:
 	
 public slots:
 	void update();
+	void changeColorMode(int mode);
 	
 private:
 	void updatePicture();

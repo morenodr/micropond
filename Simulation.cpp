@@ -74,20 +74,22 @@ void Simulation::run(){
 		
 		
 		if(cells[x][y][z].generation >= LIVING && cells[x][y][z].bad){
-			double killValue = 64.0 / 
+			double killValue = 64.0 /
 				(( cells[x][y][z].bad) * ( cells[x][y][z].bad));
-			if((int) killValue == 0 || qrand() % (int) killValue){
+			if(((int) killValue) == 0 || qrand() % (int) killValue == 0){
 				killCell(&cells[x][y][z]);
 			}
 		}
 		
-		/*if(round % ENERGY_DECREASE == 0){
+#ifdef DECREASE_ENERGY
+		if(round % ENERGY_DECREASE == 0){
 			qDebug() << "Decrease energy";
 			energyAdd -= 100;
 			if(energyAdd < 0){
 				energyAdd = 0;
 			}
-		}*/
+		}
+#endif
 
 		//add energy every x rounds
 		if(!(round % ENERGY_FREQUENCY)){
@@ -104,8 +106,8 @@ void Simulation::killCell(struct Cell *cell){
 	cell->generation = 0;
 	cell->id = 0;
 	cell->genome_size = GENOME_SIZE;
-	cell->activated = false;
 	cell->reproduced = 0;
+	cell->brain = 0;
 
 	int randStuff = GENOME_SIZE / 5;
 	for(int i = 0; i < randStuff; i++){
@@ -144,8 +146,12 @@ void Simulation::regenerateEnergy(){
 	
 	mod += 0.1;
 #endif
+	struct Cell *cell = &cells[(int)x][(int)y][(int)z];
+	cell->energy += energyAdd * mod;
 	
-	cells[(int)x][(int)y][(int)z].energy += energyAdd * mod;
+	if(qrand() % 4 == 0 && cell->bad){
+		cell->bad--;
+	}
 }
 
 
@@ -156,18 +162,12 @@ void Simulation::regenerateEnergy(){
  * the chance of success can be better with the guess parameter
  */
 bool Simulation::accessOk(struct Cell *source, struct Cell *dest, char guess,bool good){
-	if(dest->generation <= LIVING){
+	if(dest->generation <= LIVING ||
+			dest->genome[0] == guess ||
+			(dest->genome[0] == source->genome[0] && good)){
 		return true;
 	}
-	
-	if(dest->genome[0] == guess){
-		return true;
-	}else{
-		if(dest->genome[0] == source->genome[0] && good){
-			return true;
-		}
-	}
-	
+		
 	return qrand() % ACCESS_CHANCE == 0;
 }
 
@@ -362,8 +362,7 @@ void Simulation::executeCell(int x, int y, int z){
 			}
 			break;
 		case 17://reset registers
-			reg = 0;
-			temp = 0;
+			cell->brain = reg;
 			break;
 		case 18:{//neigbour type
 			struct Position pos = getNeighbour(x,y,z,facing);
@@ -378,7 +377,7 @@ void Simulation::executeCell(int x, int y, int z){
 		}break;
 		case 19:{//execute neigbour
 			if(canExecuteNext && cell->energy2){
-				int executeDir = temp % DIRECTIONS;
+				int executeDir = reg % DIRECTIONS;
 				struct Position pos = getNeighbour(x,y,z,executeDir);
 				nextx = pos.x;
 				nexty = pos.y;
@@ -389,7 +388,7 @@ void Simulation::executeCell(int x, int y, int z){
 			stop = true;
 		}break;
 		case 20:{//NOP
-			
+			reg = cell->brain;
 		}break;
 		case 21:
 			if(temp == reg){
@@ -413,18 +412,18 @@ void Simulation::executeCell(int x, int y, int z){
 		case 23:{//eat energy and modify neighbour genome
 			struct Position pos = getNeighbour(x,y,z,facing);
 			tmpCell = &cells[pos.x][pos.y][pos.z];
-			if(cell->generation >= LIVING  && 
-					accessOk(cell, tmpCell, reg,false) &&
-					(tmpCell->generation == 0 || qrand() % 3 == 0)){
+			if((tmpCell->generation == 0 ||
+					(cell->generation >= LIVING  && qrand() % 5 == 0)) &&
+					accessOk(cell, tmpCell, reg,false)){
 				if(tmpCell->genome[pointer] == reg && reg != 0 
 						&& reg != GENOME_OPERATIONS - 1){
-					tmpCell->genome[pointer]--;
+					tmpCell->genome[pointer] = 0;
 					
 					//eat energy
-					cell->energy2 += EAT_ENERGY / 2;
-					if(tmpCell->energy2 >= EAT_ENERGY / 2){
-						cell->energy2 += EAT_ENERGY / 2;
-						tmpCell->energy2 -= EAT_ENERGY / 2;
+					cell->energy2 += EAT_ENERGY / 3;
+					if(tmpCell->energy2 >= (2 * EAT_ENERGY) / 3){
+						cell->energy2 += (2 * EAT_ENERGY) / 3;
+						tmpCell->energy2 -= (2 * EAT_ENERGY) / 3;
 					}
 				}
 			}
@@ -432,7 +431,10 @@ void Simulation::executeCell(int x, int y, int z){
 		case 24:{
 			if(cell->energy2 > 0){
 				cell->energy2--;
-				cell->energy += 15;
+				cell->energy += 20;
+				if(qrand() % 10 == 0){
+					cell->bad++;
+				}
 			}
 		}break;
 		case 25:{//eject
@@ -480,17 +482,15 @@ void Simulation::executeCell(int x, int y, int z){
 			struct Position pos = getNeighbour(x,y,z,facing);
 			struct Cell *neighbour = &cells[pos.x][pos.y][pos.z];
 			if(accessOk(cell, neighbour, reg,false)){
-				cell->reproduced = 0;
 				reproduce(cell,neighbour,output_buffer);
-			}else{
-				cell->reproduced++;
 			}
+			cell->reproduced = 0;
 		}
 	}else{
 		cell->reproduced++;
 	}
 	
-	if(cell->generation >= LIVING && cell->reproduced > 2){
+	if(cell->generation >= LIVING && cell->reproduced > 3){
 		killCell(cell);
 	}
 }
@@ -558,7 +558,7 @@ void Simulation::reproduce(struct Cell *cell, struct Cell *neighbour,uchar *outp
 		
 		neighbour->lineage = cell->lineage;
 		
-		neighbour->activated = false;
+		neighbour->brain = 0;
 	}
 }
 
@@ -597,7 +597,9 @@ void Simulation::init(){
  * mutates the whole genome
  */
 void Simulation::mutateCell(struct Cell *cell){	
-	/*int stops = 0;
+	
+#ifdef OLDSTYLE_MUTATION
+	int stops = 0;
 	for(int i = 0; i < GENOME_SIZE; i++){
 		if(cell->genome[i] != GENOME_OPERATIONS-1){
 			stops = 0;
@@ -610,14 +612,30 @@ void Simulation::mutateCell(struct Cell *cell){
 				break;
 			}
 		}
-	}*/
+	}
+#else
+	double prob =  GENOME_SIZE / MUTATION_RATE_NON_LIVING;
 	
-	int prob = MUTATION_RATE_NON_LIVING / GENOME_SIZE;
+	register int max = cell->bad;
+	if(max > GENOME_SIZE / 4){
+		max = GENOME_SIZE / 4;
+	}
 	
-	if(qrand() % prob == 0){
+	max = max * prob;
+	
+	if(!max){
+		max = 1;
+	}
+	
+	max = qrand() % max;
+	max ++; // % 1 always give 0, we don't want that
+	
+	for(int i = 0; i < max; i++){
 		int pos = qrand() % GENOME_SIZE;
 		cell->genome[pos] = randomOperation();
 	}
+
+#endif
 }
 
 /**
