@@ -81,7 +81,7 @@ QString CreatureBar::operationName(uchar operation){
 		return "kill facing cell";
 		break;
 	case 14://nop
-		return "NOP";
+		return "remove bad";
 		break;
 	case 15://share
 		return "share";
@@ -102,7 +102,7 @@ QString CreatureBar::operationName(uchar operation){
 		return "recall brain";
 		break;
 	case 21: //end
-		return "read neighbour activation state";
+		return "compare reg and temp";
 		break;
 	case 22: //end
 		return "register = direction with most energy";

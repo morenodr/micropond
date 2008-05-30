@@ -7,8 +7,8 @@
 //#define OLDSTYLE_MUTATION   //older and slower way to mutate
 //#define DECREASE_ENERGY //decreases energy over time
 
-#define WORLD_X 640
-#define WORLD_Y 480
+#define WORLD_X 800
+#define WORLD_Y 600
 #define WORLD_Z 1
 #define GENOME_SIZE 100 //number of operations in a genome
 
@@ -17,7 +17,9 @@
 
 #define EAT_ENERGY GENOME_SIZE //amount of energy gained from eating
 
-#define LIVING 2 //minimum generation to be considered alive
+#define LIVING 3 //minimum generation to be considered alive
+
+#define MAX_EXECUTION_ROW 5 //how many cells can be executed in a row
 
 #define DIRECTIONS 4 //change if you want 3d
 
@@ -28,8 +30,8 @@
 #define UP 4
 #define DOWN 5
 
-#define MUTATION_RATE_REPRODUCTION 5000
-#define MUTATION_RATE_EXECUTION 10000
+#define MUTATION_RATE_REPRODUCTION 300
+#define MUTATION_RATE_EXECUTION 1000
 #define MUTATION_RATE_NON_LIVING 50
 //#define MAX_MUTATIONS_NON_LIVING 3
 
@@ -102,7 +104,7 @@ private:
 	uint energyAdd;
 	
 	void init();
-	uchar randomOperation();
+	inline uchar randomOperation();
 	void executeCell(int x, int y, int z);
 	void mutateCell(struct Cell *cell);
 	void killCell(struct Cell *cell);
@@ -115,7 +117,7 @@ private:
 	int nexty;
 	int nextz;
 	bool nextSet;
-	bool canExecuteNext;
+	int canExecuteNext;
 };
 
 #endif /*SIMULATION_H_*/
