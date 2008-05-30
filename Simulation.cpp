@@ -43,7 +43,7 @@ void Simulation::run(){
 	round = 0;
 	mutex->release(1);
 	while(running){
-	    //mutex->acquire(1);
+	    mutex->acquire(1);
 		round++;
 		count++;
 		if(nextSet){
@@ -51,13 +51,13 @@ void Simulation::run(){
 			y = nexty;
 			z = nextz;
 			nextSet = false;
-			canExecuteNext = false;
+			canExecuteNext--;
 		}else{
 			//Select random cell
 			x = qrand() % WORLD_X;
 			y = qrand() % WORLD_Y;
 			z = qrand() % WORLD_Z;
-			canExecuteNext = true;
+			canExecuteNext = MAX_EXECUTION_ROW;
 		}
 		//if there is one make the cell mutate
 		if(!cells[x][y][z].generation){
@@ -76,7 +76,7 @@ void Simulation::run(){
 		if(cells[x][y][z].generation >= LIVING && cells[x][y][z].bad){
 			double killValue = 64.0 /
 				(( cells[x][y][z].bad) * ( cells[x][y][z].bad));
-			if(((int) killValue) == 0 || qrand() % (int) killValue == 0){
+			if(((int) killValue) == 0 || !(qrand() % (int) killValue)){
 				killCell(&cells[x][y][z]);
 			}
 		}
@@ -96,7 +96,7 @@ void Simulation::run(){
 			regenerateEnergy();
 		}
 		
-		//mutex->release(1);
+		mutex->release(1);
 	}
 }
 
@@ -149,7 +149,7 @@ void Simulation::regenerateEnergy(){
 	struct Cell *cell = &cells[(int)x][(int)y][(int)z];
 	cell->energy += energyAdd * mod;
 	
-	if(qrand() % 4 == 0 && cell->bad){
+	if(cell->bad){
 		cell->bad--;
 	}
 }
@@ -168,7 +168,7 @@ bool Simulation::accessOk(struct Cell *source, struct Cell *dest, char guess,boo
 		return true;
 	}
 		
-	return qrand() % ACCESS_CHANCE == 0;
+	return !(qrand() % ACCESS_CHANCE);
 }
 
 /**
@@ -202,7 +202,7 @@ void Simulation::executeCell(int x, int y, int z){
 		cell->energy--;
 		
 		//execution perturbation
-		if(qrand() % MUTATION_RATE_EXECUTION == 0){
+		if(!(qrand() % MUTATION_RATE_EXECUTION)){
 			switch(qrand() % 3){
 			case 0:
 				inst = randomOperation();
@@ -322,9 +322,13 @@ void Simulation::executeCell(int x, int y, int z){
 				tmpCell->energy = tempEnergy / 2;
 				
 				struct Cell tmp;
-				memcpy(&tmp, tmpCell, sizeof(struct Cell));
+				/*memcpy(&tmp, tmpCell, sizeof(struct Cell));
 				memcpy(tmpCell, cell, sizeof(struct Cell));
 				memcpy(cell, &tmp, sizeof(struct Cell));
+				*/
+				tmp = *tmpCell;
+				*tmpCell = *cell;
+				*cell = tmp;				
 				
 				x = pos.x;
 				y = pos.y;
@@ -344,8 +348,12 @@ void Simulation::executeCell(int x, int y, int z){
 				cell->energy2--;
 			}
 		}break;
-		case 14://nop
-			break;
+		case 14:{//remove bad
+			if(cell->bad && cell->energy >= 5){
+				cell->bad--;
+				cell->energy -= 5;
+			}
+		}break;
 		case 15:{//share
 			struct Position pos = getNeighbour(x,y,z,facing);
 			tmpCell = &cells[pos.x][pos.y][pos.z];
@@ -412,8 +420,8 @@ void Simulation::executeCell(int x, int y, int z){
 		case 23:{//eat energy and modify neighbour genome
 			struct Position pos = getNeighbour(x,y,z,facing);
 			tmpCell = &cells[pos.x][pos.y][pos.z];
-			if((tmpCell->generation == 0 ||
-					(cell->generation >= LIVING  && qrand() % 5 == 0)) &&
+			if((!tmpCell->generation ||
+					(cell->generation >= LIVING  && !(qrand() % 5))) &&
 					accessOk(cell, tmpCell, reg,false)){
 				if(tmpCell->genome[pointer] == reg && reg != 0 
 						&& reg != GENOME_OPERATIONS - 1){
@@ -429,10 +437,10 @@ void Simulation::executeCell(int x, int y, int z){
 			}
 		}break;
 		case 24:{
-			if(cell->energy2 > 0){
+			if(cell->energy2){
 				cell->energy2--;
 				cell->energy += 20;
-				if(qrand() % 10 == 0){
+				if(!(qrand() % 10)){
 					cell->bad++;
 				}
 			}
@@ -514,8 +522,8 @@ void Simulation::reproduce(struct Cell *cell, struct Cell *neighbour,uchar *outp
 			break;
 		}
 		
-		if(qrand() % MUTATION_RATE_REPRODUCTION == 0){
-			switch(qrand() % 3){
+		if(!(qrand() % MUTATION_RATE_REPRODUCTION)){
+			switch(qrand() % 5){
 			case 0:
 			case 1://command replacement
 				neighbour->genome[i] = randomOperation();
@@ -523,6 +531,12 @@ void Simulation::reproduce(struct Cell *cell, struct Cell *neighbour,uchar *outp
 			case 2://duplication or removal
 				loop = qrand() % GENOME_SIZE;
 				break;
+			case 3:{//insert command
+				loop++;
+				}break;
+			case 4:{//remove command
+				loop--;
+				}break;
 			}
 		}else{
 			neighbour->genome[i] = output_buffer[loop];
@@ -623,12 +637,11 @@ void Simulation::mutateCell(struct Cell *cell){
 	
 	max = max * prob;
 	
-	if(!max){
-		max = 1;
+	if(max < 2){
+		max = 2;
 	}
 	
 	max = qrand() % max;
-	max ++; // % 1 always give 0, we don't want that
 	
 	for(int i = 0; i < max; i++){
 		int pos = qrand() % GENOME_SIZE;
@@ -641,7 +654,7 @@ void Simulation::mutateCell(struct Cell *cell){
 /**
  * returns a random operation
  */
-uchar Simulation::randomOperation(){
+inline uchar Simulation::randomOperation(){
 	return (uchar)(qrand() % GENOME_OPERATIONS);
 }
 
