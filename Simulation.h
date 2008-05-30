@@ -40,9 +40,13 @@
 
 #define ENERGY_DECREASE 5000000
 
+#define ENERGY2_CONVERSION_GAIN 15
+
 #define ACCESS_CHANCE 4
 
 #define MIN_COPY 3
+
+#define DISASTER_CHANCE 9000000
 
 struct Cell{
 	uint genome_size;
@@ -112,6 +116,7 @@ private:
 	
 	bool accessOk(struct Cell *source, struct Cell *dest, char guess,bool good);
 	struct Position getNeighbour(int x, int y, int z, uchar direction);
+	void disaster();
 	
 	int nextx;
 	int nexty;
