@@ -96,6 +96,11 @@ void Simulation::run(){
 			regenerateEnergy();
 		}
 		
+		//disaster :-)
+		if(qrand() % DISASTER_CHANCE == 0){
+			disaster();
+		}
+		
 		mutex->release(1);
 	}
 }
@@ -349,9 +354,9 @@ void Simulation::executeCell(int x, int y, int z){
 			}
 		}break;
 		case 14:{//remove bad
-			if(cell->bad && cell->energy >= 5){
+			if(cell->bad && cell->energy >= ENERGY2_CONVERSION_GAIN / 4){
 				cell->bad--;
-				cell->energy -= 5;
+				cell->energy -= ENERGY2_CONVERSION_GAIN / 4;
 			}
 		}break;
 		case 15:{//share
@@ -439,7 +444,7 @@ void Simulation::executeCell(int x, int y, int z){
 		case 24:{
 			if(cell->energy2){
 				cell->energy2--;
-				cell->energy += 20;
+				cell->energy += ENERGY2_CONVERSION_GAIN;
 				if(!(qrand() % 10)){
 					cell->bad++;
 				}
@@ -664,6 +669,73 @@ inline uchar Simulation::randomOperation(){
 struct Cell *Simulation::cell(int x, int y, int z){
 	return &cells[x][y][z];
 }
+
+/**
+ * creates a disaster
+ */
+void Simulation::disaster(){
+	int type = 0;
+	switch(qrand() % 3){
+	case 0:
+		type = 0;
+		qDebug() << "Meteor hit";
+		//Meteor that kills most live
+		break;
+	case 1:
+		qDebug() << "Poison meteor hit";
+		type = 1;
+		//Meteor that kills most live and posons the place
+		break;
+	case 2:
+		qDebug() << "Hunger hit";
+		type = 2;
+		//Hunger
+		break;
+	}
+	
+	int x,y;
+	
+	x = qrand() % WORLD_X;
+	y = qrand() % WORLD_Y;
+	
+	int realX, realY;
+	
+	int size = qrand() % 50 + 50;
+	
+	for(int xLoop = x - size / 2; xLoop < x + size / 2; xLoop++){
+		
+		for(int yLoop = y - size / 2; yLoop < y + size / 2; yLoop++){
+			realX = xLoop % WORLD_X;
+			realY = yLoop % WORLD_Y;
+			
+			if(realX < 0) 
+				realX = WORLD_X + realX;
+			if(realY < 0) 
+				realY = WORLD_Y + realY;
+			
+			switch(type){
+			case 0:{
+				if(qrand() % 10){
+					killCell(&cells[realX][realY][1]);
+				}
+			}break;
+			case 1:{
+				if(qrand() % 10){
+					killCell(&cells[realX][realY][1]);
+					cells[realX][realY][1].bad = 10;
+				}
+			}break;
+			case 2:{
+				cells[realX][realY][1].energy /= 10;
+				cells[realX][realY][1].energy2 /= 10;
+			}break;
+			}
+			
+		}
+	}
+	
+}
+
 
 /**
  * returns the neighbour in the specified direction
