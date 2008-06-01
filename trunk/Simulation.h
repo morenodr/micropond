@@ -48,6 +48,8 @@
 
 #define DISASTER_CHANCE 9000000
 
+#define LANDSCAPE_LINES 5
+
 struct Cell{
 	uint genome_size;
 	unsigned long long id;
@@ -60,10 +62,11 @@ struct Cell{
 	uchar reproduced;
 	uint bad;
 	uint brain;
+	struct Place *place;
 };
 
 struct Place{
-	bool reproducable; //can we reproduce at this place?
+	bool dead; //can we reproduce at this place?
 };
 
 struct Position{

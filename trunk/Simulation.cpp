@@ -6,7 +6,7 @@ Simulation::Simulation()
 	cellid = 0;
 	running = true;
 	
-	mutex = new QSemaphore(1);
+	mutex = new QSemaphore(0);
 	count = 0;
 	energyAdd = ENERGY_ADDED;
 	nextSet = false;
@@ -33,7 +33,7 @@ void Simulation::resume(){
  * running variable to false
  */
 void Simulation::run(){
-	mutex->acquire(1);
+	//mutex->acquire(1);
 	qsrand(time(NULL));
 	
 	init();
@@ -56,18 +56,19 @@ void Simulation::run(){
 			//Select random cell
 			x = qrand() % WORLD_X;
 			y = qrand() % WORLD_Y;
-			z = qrand() % WORLD_Z;
+			z = 0;//qrand() % WORLD_Z;
 			canExecuteNext = MAX_EXECUTION_ROW;
 		}
+		
 		//if there is one make the cell mutate
-		if(!cells[x][y][z].generation){
+		if(!cells[x][y][z].generation && !world[x][y][z].dead){
 			mutateCell(&cells[x][y][z]);
 		}
 		
 		//kills a cell if there is not energy left and it's a child
 		if(!cells[x][y][z].energy && cells[x][y][z].generation >= LIVING){
 			killCell(&cells[x][y][z]);
-		}else{
+		}else if(!world[x][y][z].dead){
 			//call the execution of its code
 			Simulation::executeCell(x,y,z);
 		}
@@ -134,6 +135,10 @@ void Simulation::regenerateEnergy(){
 	double y = qrand() % WORLD_Y;
 	double z = qrand() % WORLD_Z;
 	
+	if(world[(int)x][(int)y][(int)z].dead){
+		return;
+	}
+	
 	double mod = 1.0;
 	
 #ifdef VARIED_ENERGY
@@ -154,8 +159,10 @@ void Simulation::regenerateEnergy(){
 	struct Cell *cell = &cells[(int)x][(int)y][(int)z];
 	cell->energy += energyAdd * mod;
 	
-	if(cell->bad){
+	if(cell->bad > 1){
 		cell->bad--;
+	}else if(qrand() % 10 == 0){
+		cell->bad++;
 	}
 }
 
@@ -167,12 +174,16 @@ void Simulation::regenerateEnergy(){
  * the chance of success can be better with the guess parameter
  */
 bool Simulation::accessOk(struct Cell *source, struct Cell *dest, char guess,bool good){
+	if(dest->place->dead){
+		return false;
+	}
+	
 	if(dest->generation <= LIVING ||
 			dest->genome[0] == guess ||
 			(dest->genome[0] == source->genome[0] && good)){
 		return true;
 	}
-		
+	
 	return !(qrand() % ACCESS_CHANCE);
 }
 
@@ -333,7 +344,11 @@ void Simulation::executeCell(int x, int y, int z){
 				*/
 				tmp = *tmpCell;
 				*tmpCell = *cell;
-				*cell = tmp;				
+				*cell = tmp;
+				
+				struct Place *p = tmpCell->place;
+				tmpCell->place = cell->place;
+				cell->place = p;
 				
 				x = pos.x;
 				y = pos.y;
@@ -491,14 +506,12 @@ void Simulation::executeCell(int x, int y, int z){
 	
 	//jeah, we can reproduce something
 	if(output_buffer[0] != NO_REP_OPERATION){
-		if(world[x][y][z].reproducable){
-			struct Position pos = getNeighbour(x,y,z,facing);
-			struct Cell *neighbour = &cells[pos.x][pos.y][pos.z];
-			if(accessOk(cell, neighbour, reg,false)){
-				reproduce(cell,neighbour,output_buffer);
-			}
-			cell->reproduced = 0;
+		struct Position pos = getNeighbour(x,y,z,facing);
+		struct Cell *neighbour = &cells[pos.x][pos.y][pos.z];
+		if(accessOk(cell, neighbour, reg,false)){
+			reproduce(cell,neighbour,output_buffer);
 		}
+		cell->reproduced = 0;
 	}else{
 		cell->reproduced++;
 	}
@@ -593,10 +606,11 @@ void Simulation::init(){
 		for(y = 0; y < WORLD_Y; y++){
 			for(z = 0; z < WORLD_Z; z++){
 				killCell(&cells[x][y][z]);
-
+				
 				cells[x][y][z].energy = ENERGY_ADDED;
 				cells[x][y][z].energy2 = 0;
 				cells[x][y][z].bad = 1;
+				cells[x][y][z].place = &world[x][y][z];
 			}
 		}
 	}
@@ -606,9 +620,50 @@ void Simulation::init(){
 		for(y = 0; y < WORLD_Y; y++){
 			for(z = 0; z < WORLD_Z; z++){
 				place = &world[x][y][z];
-				place->reproducable = true;
+				place->dead = false;
 			}
 		}
+	}
+	
+	int lines = 0;
+	while(lines < LANDSCAPE_LINES){
+		struct Position start;
+		start.x = qrand() % WORLD_X;
+		start.y = qrand() % WORLD_Y;
+		start.z = 0;
+		
+		struct Position end;
+		end.x = qrand() % WORLD_X;
+		end.y = qrand() % WORLD_Y;
+		end.z = 0;
+		
+		x = start.x;
+		y = start.y;
+		z = start.z;
+		while(x != end.x || y != end.y || z != end.z){
+			world[x][y][z].dead = true;
+			cells[x][y][z].energy = 0;
+			cells[x][y][z].bad = 0;
+			if(x < end.x){
+				x++;
+			}else if(x > end.x){
+				x--;
+			}
+			
+			if(y < end.y){
+				y++;
+			}else if(y > end.y){
+				y--;
+			}
+			
+			if(z < end.z){
+				z++;
+			}else if(z > end.z){
+				z--;
+			}
+		}
+		
+		lines++;
 	}
 }
 
@@ -698,7 +753,8 @@ void Simulation::disaster(){
 	x = qrand() % WORLD_X;
 	y = qrand() % WORLD_Y;
 	
-	int realX, realY;
+	int realX, realY, realZ;
+	realZ = 0;
 	
 	int size = qrand() % 50 + 50;
 	
@@ -713,21 +769,24 @@ void Simulation::disaster(){
 			if(realY < 0) 
 				realY = WORLD_Y + realY;
 			
+			if(world[realX][realY][realZ].dead)
+				continue;
+			
 			switch(type){
 			case 0:{
 				if(qrand() % 10){
-					killCell(&cells[realX][realY][1]);
+					killCell(&cells[realX][realY][realZ]);
 				}
 			}break;
 			case 1:{
 				if(qrand() % 10){
-					killCell(&cells[realX][realY][1]);
-					cells[realX][realY][1].bad = 10;
+					killCell(&cells[realX][realY][realZ]);
+					cells[realX][realY][realZ].bad = 10;
 				}
 			}break;
 			case 2:{
-				cells[realX][realY][1].energy /= 10;
-				cells[realX][realY][1].energy2 /= 10;
+				cells[realX][realY][realZ].energy /= 10;
+				cells[realX][realY][realZ].energy2 /= 10;
 			}break;
 			}
 			
@@ -746,15 +805,15 @@ struct Position Simulation::getNeighbour(int x, int y, int z, uchar direction){
 	switch(direction){
 	case NORTH:{
 		y--;
-		if(y >= WORLD_Y){
-			y = 0;
+		if(y < 0){
+			y = WORLD_Y - 1;
 		}
 	}
 		break;
 	case SOUTH:{
 		y++;
-		if(y < 0){
-			y = WORLD_Y - 1;
+		if(y >= WORLD_Y){
+			y = 0;
 		}
 	}
 		break;
@@ -772,7 +831,7 @@ struct Position Simulation::getNeighbour(int x, int y, int z, uchar direction){
 		}
 	}
 		break;
-	case UP:{
+	/*case UP:{
 		z++;
 		if(z >= WORLD_Z){
 			z = WORLD_Z - 1;
@@ -785,12 +844,12 @@ struct Position Simulation::getNeighbour(int x, int y, int z, uchar direction){
 			z = 0;
 		}
 	}
-		break;
+		break;*/
 	}
 	
 	struct Position pos;
 	pos.x = x;
 	pos.y = y;
-	pos.z = z;
+	pos.z = 0;//z;
 	return pos;
 }
