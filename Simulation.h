@@ -6,6 +6,9 @@
 #define VARIED_ENERGY //does not give the whole playing field the same energy
 //#define OLDSTYLE_MUTATION   //older and slower way to mutate
 //#define DECREASE_ENERGY //decreases energy over time
+#define DEAD_MUTATION //mutates dead cells
+#define EXECUTION_ERRORS //creates random execution errors
+#define REPRODUCTION_ERRORS //mutates genome when reproducing
 
 #define WORLD_X 800
 #define WORLD_Y 600
@@ -46,9 +49,11 @@
 
 #define MIN_COPY 3
 
-#define DISASTER_CHANCE 9000000
+#define DISASTER_CHANCE 6000000
 
 #define LANDSCAPE_LINES 5
+
+#define REPRODUCTION_COST 0.2
 
 struct Cell{
 	uint genome_size;

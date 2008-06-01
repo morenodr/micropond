@@ -60,10 +60,12 @@ void Simulation::run(){
 			canExecuteNext = MAX_EXECUTION_ROW;
 		}
 		
+#ifdef DEAD_MUTATION
 		//if there is one make the cell mutate
 		if(!cells[x][y][z].generation && !world[x][y][z].dead){
 			mutateCell(&cells[x][y][z]);
 		}
+#endif
 		
 		//kills a cell if there is not energy left and it's a child
 		if(!cells[x][y][z].energy && cells[x][y][z].generation >= LIVING){
@@ -217,8 +219,9 @@ void Simulation::executeCell(int x, int y, int z){
 		}
 		cell->energy--;
 		
+#ifdef EXECUTION_ERRORS
 		//execution perturbation
-		if(!(qrand() % MUTATION_RATE_EXECUTION)){
+		if(qrand() % MUTATION_RATE_EXECUTION == 0){
 			switch(qrand() % 3){
 			case 0:
 				inst = randomOperation();
@@ -231,6 +234,7 @@ void Simulation::executeCell(int x, int y, int z){
 				break;
 			}
 		}
+#endif
 		
 		switch(inst){
 		case 0:
@@ -509,6 +513,7 @@ void Simulation::executeCell(int x, int y, int z){
 		struct Position pos = getNeighbour(x,y,z,facing);
 		struct Cell *neighbour = &cells[pos.x][pos.y][pos.z];
 		if(accessOk(cell, neighbour, reg,false)){
+			cell->energy -= cell->energy * REPRODUCTION_COST;
 			reproduce(cell,neighbour,output_buffer);
 		}
 		cell->reproduced = 0;
@@ -540,6 +545,7 @@ void Simulation::reproduce(struct Cell *cell, struct Cell *neighbour,uchar *outp
 			break;
 		}
 		
+#ifdef REPRODUCTION_ERRORS
 		if(!(qrand() % MUTATION_RATE_REPRODUCTION)){
 			switch(qrand() % 5){
 			case 0:
@@ -557,8 +563,12 @@ void Simulation::reproduce(struct Cell *cell, struct Cell *neighbour,uchar *outp
 				}break;
 			}
 		}else{
+#endif
 			neighbour->genome[i] = output_buffer[loop];
+			
+#ifdef REPRODUCTION_ERRORS
 		}
+#endif
 		
 		loop++;
 		copied++;
@@ -754,9 +764,13 @@ void Simulation::disaster(){
 	y = qrand() % WORLD_Y;
 	
 	int realX, realY, realZ;
-	realZ = 0;
+	realZ = 0; //special case anyway, what to do in a 3d env?
 	
 	int size = qrand() % 50 + 50;
+	
+	if(qrand() % 10 == 0){ //10% chance of a big disaster
+		size * 3;
+	}
 	
 	for(int xLoop = x - size / 2; xLoop < x + size / 2; xLoop++){
 		
