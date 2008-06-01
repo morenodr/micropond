@@ -17,46 +17,74 @@ QColor Renderer::getColor(struct Cell *cell, int mode){
 	int b = 0; //temporary blue value
 	switch(mode){
 		case GENERATION:
-			r = qRed(cell->generation*cell->generation);
-			g = qGreen(cell->generation*cell->generation);
-			b = qBlue(cell->generation*cell->generation);
+			if(cell->place->dead && SHOW_LANDSCAPE){
+				r = 254;
+				g = 254;
+				b = 254;
+			}else{
+				r = qRed(cell->generation*cell->generation);
+				g = qGreen(cell->generation*cell->generation);
+				b = qBlue(cell->generation*cell->generation);	
+			}
 			break;
 		case GENOME:
-			if(cell->generation >= LIVING_CELL){
-				int hash = 0;
-				for(uint i = 0; i < cell->genome_size;i++ ){
-					if(cell->genome[i] != cell->genome_size-1){
-						hash += cell->genome[i];
-					}else{
-						break;
+			if(cell->place->dead && SHOW_LANDSCAPE){
+				r = 254;
+				g = 254;
+				b = 254;
+			}else{
+				if(cell->generation >= LIVING_CELL){
+					int hash = 0;
+					for(uint i = 0; i < cell->genome_size;i++ ){
+						if(cell->genome[i] != cell->genome_size-1){
+							hash += cell->genome[i];
+						}else{
+							break;
+						}
 					}
+					r = hash % cell->genome_size + 40;
+					g = (hash + 64) % cell->genome_size + 50;
+					b = (hash +21) % cell->genome_size + 20;
 				}
-				r = hash % cell->genome_size + 40;
-				g = (hash + 64) % cell->genome_size + 50;
-				b = (hash +21) % cell->genome_size + 20;
 			}
 			break;
 		case LINEAGE:
-			if(cell->generation >= LIVING_CELL){
-				r = qRed(cell->lineage * cell->lineage);
-				g = qGreen(cell->lineage * cell->lineage);
-				b = qBlue(cell->lineage * cell->lineage);
+			if(cell->place->dead && SHOW_LANDSCAPE){
+				r = 254;
+				g = 254;
+				b = 254;
+			}else{
+				if(cell->generation >= LIVING_CELL){
+					r = qRed(cell->lineage * cell->lineage);
+					g = qGreen(cell->lineage * cell->lineage);
+					b = qBlue(cell->lineage * cell->lineage);
+				}
 			}
 			break;
 		case LOGO:
-			if(cell->generation >= LIVING_CELL){
-				r = cell->genome[0] * 10;
-				g = cell->genome[0] * 10;
-				b = cell->genome[0] * 10;
+			if(cell->place->dead && SHOW_LANDSCAPE){
+				r = 254;
+				g = 254;
+				b = 254;
+			}else{
+				if(cell->generation >= LIVING_CELL){
+					r = cell->genome[0] * 10;
+					g = cell->genome[0] * 10;
+					b = cell->genome[0] * 10;
+				}
 			}
 			break;
-		case REPRODUCED:
-			if(cell->generation >= LIVING_CELL){
-				r = cell->reproduced * 10;
-				g = cell->reproduced * 10;
-				b = cell->reproduced * 10;
+		case LANDSCAPE:{
+			if(cell->place->dead){
+				r = 254;
+				g = 254;
+				b = 254;
+			}else{
+				r = 0;
+				g = 0;
+				b = 0;
 			}
-			break;
+		}break;
 		case ENERGY:
 			r = qRed(cell->energy * 900);
 			g = qGreen(cell->energy * 180);
