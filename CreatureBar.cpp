@@ -117,6 +117,12 @@ QString CreatureBar::operationName(uchar operation){
 		return "eject";
 		break;
 	case 26://end
+		return "reg = random";
+		break;
+	case 27://end
+		return "is outpointer == max?";
+		break;
+	case 28://end
 		return "stop";
 		break;
 	}
