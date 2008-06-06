@@ -21,6 +21,7 @@ private:
 	QLabel *id;
 	QLabel *lineage;
 	QLabel *picture;
+	QLabel *size;
 	QTextEdit *genome;
 };
 

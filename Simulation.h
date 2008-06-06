@@ -43,11 +43,9 @@
 
 #define ENERGY_DECREASE 5000000
 
-#define ENERGY2_CONVERSION_GAIN 10
+#define ENERGY2_CONVERSION_GAIN 13
 
-#define ACCESS_CHANCE 4
-
-#define MIN_COPY 3
+#define MIN_COPY 5
 
 #define DISASTER_CHANCE 6000000
 
@@ -58,17 +56,18 @@
 
 struct Cell{
 	uint genome_size;
-	unsigned long long id;
-	unsigned long long parent;
+	qlonglong id;
+	qlonglong parent;
 	uint generation;
 	uint energy;
 	uint energy2;
-	unsigned long long lineage;
+	qlonglong lineage;
 	uchar genome[GENOME_SIZE+1];
 	uchar reproduced;
 	uint bad;
 	uint brain;
 	struct Place *place;
+	uint size;
 };
 
 struct Place{
