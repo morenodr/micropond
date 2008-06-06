@@ -13,3 +13,4 @@ SOURCES += CreatureBar.cpp \
     main.cpp
 FORMS += 
 RESOURCES += 
+CONFIG += console
