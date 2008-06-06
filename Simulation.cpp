@@ -100,9 +100,7 @@ void Simulation::run(){
 		}
 		
 		//disaster :-)
-		int val = qrand() % DISASTER_CHANCE;
-		if(val == 0){
-			qDebug() << val;
+		if(qrand() % DISASTER_CHANCE == 0){
 			disaster();
 		}
 		
