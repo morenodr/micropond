@@ -116,6 +116,7 @@ void Simulation::killCell(struct Cell *cell){
 	cell->genome_size = GENOME_SIZE;
 	cell->reproduced = 0;
 	cell->brain = 0;
+	cell->size = 1;
 
 	int randStuff = GENOME_SIZE / 5;
 	for(int i = 0; i < randStuff; i++){
@@ -159,7 +160,7 @@ void Simulation::regenerateEnergy(){
 	mod += 0.1;
 #endif
 	struct Cell *cell = &cells[(int)x][(int)y][(int)z];
-	cell->energy += energyAdd * mod;
+	cell->energy += (int)((double)energyAdd * mod);
 	
 	if(cell->bad > 1){
 		cell->bad--;
@@ -186,7 +187,20 @@ bool Simulation::accessOk(struct Cell *source, struct Cell *dest, char guess,boo
 		return true;
 	}
 	
-	return !(qrand() % ACCESS_CHANCE);
+	double temp = (double)source->size / dest->size;
+	
+	if(temp < 0.5){
+		return false;
+	}else if(temp > 2){
+		return true;
+	}
+	
+	int access_chance = 100 - (int)(66.0 * temp - 33.0);
+	
+	if(access_chance == 0)
+		return true;
+	
+	return !(qrand() % access_chance);
 }
 
 /**
@@ -216,6 +230,7 @@ void Simulation::executeCell(int x, int y, int z){
 		executed++;
 		inst = cell->genome[genome_pointer];
 		genome_pointer++;
+		
 		if(genome_pointer > GENOME_SIZE-1){
 			genome_pointer = 0;
 		}
@@ -369,7 +384,7 @@ void Simulation::executeCell(int x, int y, int z){
 			tmpCell = &cells[pos.x][pos.y][pos.z];
 			if(cell->generation >= LIVING  &&
 					accessOk(cell, tmpCell, reg,false) &&
-					cell->energy2 > 0){
+					cell->energy2){
 				killCell(tmpCell);
 				cell->energy2--;
 				killCounter++;
@@ -496,7 +511,7 @@ void Simulation::executeCell(int x, int y, int z){
 						}
 					}break;
 					default:{
-						if(cell->energy >= reg){
+						if(cell->energy >= (uint)reg){
 							cell->energy -= reg;
 							tmpCell->energy += reg;
 						}
@@ -561,10 +576,18 @@ bool Simulation::reproduce(struct Cell *cell, struct Cell *neighbour,uchar *outp
 	bool stoped = false;
 	int copied = 0;
 	
+	int stops = 0;
+	
 	for(i = 0; i < GENOME_SIZE && loop < GENOME_SIZE; i++){
-		if(output_buffer[loop] == NO_REP_OPERATION){
+		if(output_buffer[loop] == NO_REP_OPERATION || stops == 4){
 			stoped = true;
 			break;
+		}
+		
+		if(output_buffer[loop] == GENOME_SIZE-1){
+			stops++;
+		}else{
+			stops = 0;
 		}
 		
 #ifdef REPRODUCTION_ERRORS
@@ -623,6 +646,8 @@ bool Simulation::reproduce(struct Cell *cell, struct Cell *neighbour,uchar *outp
 		neighbour->lineage = cell->lineage;
 		
 		neighbour->brain = 0;
+		
+		neighbour->size = copied;
 		return true;
 	}
 	
@@ -730,7 +755,7 @@ void Simulation::mutateCell(struct Cell *cell){
 		max = GENOME_SIZE / 4;
 	}
 	
-	max = max * prob;
+	max = (int)((double)max * prob);
 	
 	if(max < 2){
 		max = 2;
@@ -765,7 +790,7 @@ struct Cell *Simulation::cell(int x, int y, int z){
  */
 void Simulation::disaster(){
 	int type = 0;
-	switch(qrand() % 3){
+	switch(qrand() % 4){
 	case 0:
 		type = 0;
 		qDebug() << "Meteor hit";
@@ -780,6 +805,11 @@ void Simulation::disaster(){
 		qDebug() << "Hunger hit";
 		type = 2;
 		//Hunger
+		break;
+	case 3:
+		qDebug() << "Big Killer";
+		type = 2;
+		//Kill all big cells, small survive
 		break;
 	}
 	
@@ -826,6 +856,11 @@ void Simulation::disaster(){
 			case 2:{
 				cells[realX][realY][realZ].energy /= 10;
 				cells[realX][realY][realZ].energy2 /= 10;
+			}break;
+			case 3:{
+				if(cells[realX][realY][realZ].size > GENOME_SIZE / 5){
+					killCell(&cells[realX][realY][realZ]);
+				}
 			}break;
 			}
 			

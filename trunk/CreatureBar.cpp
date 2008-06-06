@@ -25,6 +25,9 @@ CreatureBar::CreatureBar()
 	lineage = new QLabel("Lineage: ");
 	layout->addWidget(lineage);
 	
+	size = new QLabel("Size: ");
+	layout->addWidget(size);
+	
 	genome = new QTextEdit();
 	genome->setReadOnly(true);
 	layout->addWidget(genome);
@@ -137,6 +140,7 @@ void CreatureBar::cellSelected(struct Cell cell){
 	generation->setText("Generation: "+QString::number(cell.generation));
 	id->setText("ID: "+QString::number(cell.id));
 	lineage->setText("Lineage: "+QString::number(cell.lineage));
+	size->setText("Size: "+QString::number(cell.size));
 	genome->clear();
 	for(uint i = 0; i < cell.genome_size; i++){
 		genome->append(operationName(cell.genome[i]));
