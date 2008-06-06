@@ -358,14 +358,16 @@ void Simulation::executeCell(int x, int y, int z){
 				cell->energy = cell->energy / 2 + tmpCell->energy;				
 				tmpCell->energy = tempEnergy / 2;
 				
-				struct Cell tmp;
+				//struct Cell tmp;
 				/*memcpy(&tmp, tmpCell, sizeof(struct Cell));
 				memcpy(tmpCell, cell, sizeof(struct Cell));
 				memcpy(cell, &tmp, sizeof(struct Cell));
 				*/
-				tmp = *tmpCell;
+				/*tmp = *tmpCell;
 				*tmpCell = *cell;
-				*cell = tmp;
+				*cell = tmp;*/
+				
+				qSwap(cell,tmpCell);
 				
 				struct Place *p = tmpCell->place;
 				tmpCell->place = cell->place;
