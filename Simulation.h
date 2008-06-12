@@ -68,9 +68,9 @@ struct Cell{
 	uint brain;
 	struct Place *place;
 	uint size;
-};
+}; 
 
-struct Place{
+struct Place{ 
 	bool dead; //can we reproduce at this place?
 };
 
