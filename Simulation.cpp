@@ -358,16 +358,10 @@ void Simulation::executeCell(int x, int y, int z){
 				cell->energy = cell->energy / 2 + tmpCell->energy;				
 				tmpCell->energy = tempEnergy / 2;
 				
-				//struct Cell tmp;
-				/*memcpy(&tmp, tmpCell, sizeof(struct Cell));
-				memcpy(tmpCell, cell, sizeof(struct Cell));
-				memcpy(cell, &tmp, sizeof(struct Cell));
-				*/
-				/*tmp = *tmpCell;
+				struct Cell tmp;
+				tmp = *tmpCell;
 				*tmpCell = *cell;
-				*cell = tmp;*/
-				
-				qSwap(cell,tmpCell);
+				*cell = tmp;
 				
 				struct Place *p = tmpCell->place;
 				tmpCell->place = cell->place;
@@ -553,7 +547,9 @@ void Simulation::executeCell(int x, int y, int z){
 			}else{
 				cell->reproduced++;
 			}
-		}		
+		}else{
+			cell->reproduced++;
+		}
 	}else{
 		cell->reproduced++;
 	}
@@ -652,6 +648,10 @@ bool Simulation::reproduce(struct Cell *cell, struct Cell *neighbour,uchar *outp
 		neighbour->size = copied;
 		return true;
 	}
+	
+	/*if(neighbour->generation >= LIVING){
+		killCell(neighbour);
+	}*/
 	
 	return false;
 }

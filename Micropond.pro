@@ -13,3 +13,5 @@ SOURCES += CreatureBar.cpp \
     main.cpp
 FORMS += 
 RESOURCES += 
+CONFIG += debug_and_release
+
