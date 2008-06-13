@@ -34,11 +34,14 @@ void Simulation::resume(){
  */
 void Simulation::run(){
 	//mutex->acquire(1);
-	qsrand(time(NULL));
+	//qsrand(time(NULL));
+	qsrand(0);
 	
 	init();
 	
 	int x,y,z;
+	struct Cell *cell;
+	struct Place *world;
 	
 	round = 0;
 	mutex->release(1);
@@ -60,27 +63,30 @@ void Simulation::run(){
 			canExecuteNext = MAX_EXECUTION_ROW;
 		}
 		
+		cell = &cells[x][y][z];
+		world = cell->place;
+		
 #ifdef DEAD_MUTATION
 		//if there is one make the cell mutate
-		if(!cells[x][y][z].generation && !world[x][y][z].dead){
-			mutateCell(&cells[x][y][z]);
+		if(cell->generation && !world->dead){
+			mutateCell(cell);
 		}
 #endif
 		
 		//kills a cell if there is not energy left and it's a child
-		if(!cells[x][y][z].energy && cells[x][y][z].generation >= LIVING){
-			killCell(&cells[x][y][z]);
-		}else if(!world[x][y][z].dead){
+		if(!cell->energy && cell->generation >= LIVING){
+			killCell(cell);
+		}else if(!world->dead){
 			//call the execution of its code
 			Simulation::executeCell(x,y,z);
 		}
 		
 		
-		if(cells[x][y][z].generation >= LIVING && cells[x][y][z].bad){
+		if(cell->generation >= LIVING && cell->bad){
 			double killValue = 64.0 /
-				(( cells[x][y][z].bad) * ( cells[x][y][z].bad));
+				(( cell->bad) * ( cell->bad));
 			if(((int) killValue) == 0 || !(qrand() % (int) killValue)){
-				killCell(&cells[x][y][z]);
+				killCell(cell);
 			}
 		}
 		
