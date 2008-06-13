@@ -20,7 +20,7 @@
 
 #define EAT_ENERGY GENOME_SIZE //amount of energy gained from eating
 
-#define LIVING 3 //minimum generation to be considered alive
+#define LIVING 2 //minimum generation to be considered alive
 
 #define MAX_EXECUTION_ROW 5 //how many cells can be executed in a row
 
@@ -33,8 +33,8 @@
 #define UP 4
 #define DOWN 5
 
-#define MUTATION_RATE_REPRODUCTION 400
-#define MUTATION_RATE_EXECUTION 1000
+#define MUTATION_RATE_REPRODUCTION 1000
+#define MUTATION_RATE_EXECUTION 5000
 #define MUTATION_RATE_NON_LIVING 30
 //#define MAX_MUTATIONS_NON_LIVING 3
 

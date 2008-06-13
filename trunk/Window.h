@@ -18,12 +18,21 @@ public:
 	
 public slots:
 	void valueChanged(int val);
-	
+	void ageView();
+	void genomeView();
+	void lineageView();
+	void logoView();
+	void sizeView();
+	void energyView();
+	void energy2View();
+	void toxicView();
+	void close();
 private:
 	Simulation *simulation;
 	Renderer *renderer;
 	CreatureBar *creatureBar;
 	QSlider *slider;
+	QActionGroup *viewsGroup;
 };
 
 #endif /*WINDOW_H_*/

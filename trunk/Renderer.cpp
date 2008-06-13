@@ -35,7 +35,7 @@ QColor Renderer::getColor(struct Cell *cell, int mode){
 			}else{
 				if(cell->generation >= LIVING_CELL){
 					int hash = 0;
-					for(uint i = 0; i < cell->genome_size;i++ ){
+					for(uint i = 0; i < cell->size;i++ ){
 						if(cell->genome[i] != cell->genome_size-1){
 							hash += cell->genome[i];
 							hash %= cell->genome_size * 5;
@@ -135,7 +135,7 @@ void Renderer::changeColorMode(int mode){
 
 void Renderer::mousePressEvent ( QMouseEvent * event ){
 	if(event->button() == Qt::RightButton){
-		changeColorMode((colorMode + 1) % RENDERMODES);		
+		//changeColorMode((colorMode + 1) % RENDERMODES);		
 	}else if(event->button() == Qt::LeftButton){
 		simulation->pause();
 		struct Cell *cell = simulation->cell(event->x(),event->y(),0);
