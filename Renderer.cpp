@@ -82,9 +82,9 @@ QColor Renderer::getColor(struct Cell *cell, int mode){
 				b = 254;
 			}else{
 				if(cell->generation >= LIVING_CELL){
-					r = cell->size * cell->size;
-					g = cell->size * cell->size;
-					b = cell->size * cell->size;
+					r = cell->size * 2 + 50;
+					g = cell->size + 50;
+					b = cell->size * 2;
 				}
 			}
 		}break;
