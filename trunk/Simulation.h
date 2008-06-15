@@ -9,6 +9,7 @@
 #define DEAD_MUTATION //mutates dead cells
 //#define EXECUTION_ERRORS //creates random execution errors
 #define REPRODUCTION_ERRORS //mutates genome when reproducing
+#define BAD_KILLS
 
 #define WORLD_X 800
 #define WORLD_Y 600
@@ -33,9 +34,9 @@
 #define UP 4
 #define DOWN 5
 
-#define MUTATION_RATE_REPRODUCTION 5000
-#define MUTATION_RATE_EXECUTION 10000
-#define MUTATION_RATE_NON_LIVING 40
+#define MUTATION_RATE_REPRODUCTION 20000
+#define MUTATION_RATE_EXECUTION 100000
+#define MUTATION_RATE_NON_LIVING 200
 //#define MAX_MUTATIONS_NON_LIVING 3
 
 #define ENERGY_ADDED 3000
@@ -43,7 +44,7 @@
 
 #define ENERGY_DECREASE 5000000
 
-#define ENERGY2_CONVERSION_GAIN 15
+#define ENERGY2_CONVERSION_GAIN 12
 
 #define MIN_COPY 5
 
@@ -52,7 +53,6 @@
 #define LANDSCAPE_LINES 6
 
 #define MAX_EXECUTING 4000
-
 
 struct Cell{
 	uint genome_size;
@@ -131,6 +131,8 @@ private:
 	int nextz;
 	bool nextSet;
 	int canExecuteNext;
+	
+	unsigned long mutated;
 };
 
 #endif /*SIMULATION_H_*/

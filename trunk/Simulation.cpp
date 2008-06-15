@@ -4,6 +4,7 @@
 Simulation::Simulation()
 {
 	cellid = 0;
+	mutated = 0;
 	running = true;
 	
 	mutex = new QSemaphore(0);
@@ -19,10 +20,12 @@ Simulation::~Simulation()
 
 void Simulation::pause(){
 	mutex->acquire(1);
+	qDebug() << "mutated " << mutated;
 }
 
 void Simulation::resume(){
 	count = 0;
+	mutated = 0;
 	mutex->release(1);
 }
 
@@ -34,8 +37,8 @@ void Simulation::resume(){
  */
 void Simulation::run(){
 	//mutex->acquire(1);
-	//qsrand(time(NULL));
-	qsrand(0);
+	qsrand(time(NULL));
+	//qsrand(0);
 	
 	init();
 	
@@ -68,7 +71,7 @@ void Simulation::run(){
 		
 #ifdef DEAD_MUTATION
 		//if there is one make the cell mutate
-		if(cell->generation && !world->dead){
+		if(!cell->generation && !world->dead){
 			mutateCell(cell);
 		}
 #endif
@@ -81,14 +84,17 @@ void Simulation::run(){
 			Simulation::executeCell(x,y,z);
 		}
 		
-		
-		if(cell->generation >= LIVING && cell->bad){
-			double killValue = 64.0 /
+#ifdef BAD_KILLS
+		if(cell->generation >= LIVING && cell->bad > 3){
+			double killValue = 90.0 /
 				(( cell->bad) * ( cell->bad));
-			if(((int) killValue) == 0 || !(qrand() % (int) killValue)){
+			
+			//qDebug() << "bad" << killValue << cell->bad;
+			if(((int) killValue) == 0 || (qrand() % (int) killValue) == 0){
 				killCell(cell);
 			}
 		}
+#endif
 		
 #ifdef DECREASE_ENERGY
 		if(round % ENERGY_DECREASE == 0){
@@ -201,7 +207,7 @@ bool Simulation::accessOk(struct Cell *source, struct Cell *dest, char guess,boo
 		return true;
 	}
 	
-	int access_chance = 100 - (int)(66.0 * temp - 33.0);
+	int access_chance = 10 - (int)(6.0 * temp - 3.0);
 	
 	if(access_chance == 0)
 		return true;
@@ -305,15 +311,16 @@ void Simulation::executeCell(int x, int y, int z){
 		case 9://while(register){
 			if(!reg){
 				int tempP = genome_pointer;
-				while(cell->genome[genome_pointer] != 10 &&
+				uchar *comm = &cell->genome[genome_pointer];
+				while(*comm != 10 &&
 						cell->energy &&
 						!stop){
 					
 					genome_pointer++;
-					/*if(genome_pointer >= GENOME_SIZE)
-						genome_pointer = 0;*/
+					comm++;
 					
 					cell->energy--;
+					
 					if(genome_pointer == tempP ||
 					   genome_pointer >= GENOME_SIZE){
 						stop = true;
@@ -328,13 +335,12 @@ void Simulation::executeCell(int x, int y, int z){
 		case 10://}
 			if(reg){
 				int tempP = genome_pointer;
-				while(cell->genome[genome_pointer] != 9 &&
+				uchar *comm = &cell->genome[genome_pointer];
+				while(*comm != 9 &&
 						cell->energy &&
 						!stop){
 					genome_pointer--;
-					/*if(genome_pointer < 0){
-						genome_pointer = GENOME_SIZE-1;*/
-					
+					comm--;
 					cell->energy--;
 					
 					if(genome_pointer == tempP || 
@@ -354,8 +360,8 @@ void Simulation::executeCell(int x, int y, int z){
 			struct Position pos = getNeighbour(x,y,z,facing);
 			tmpCell = &cells[pos.x][pos.y][pos.z];
 			
-			if(tmpCell != cell && accessOk(cell, tmpCell, reg,false) && cell->energy2 >= 5){
-				cell->energy2 -= 5;
+			if(tmpCell != cell && accessOk(cell, tmpCell, reg,false) && cell->energy2 >= 3){
+				cell->energy2 -= 3;
 				int tempEnergy = cell->energy2;				
 				cell->energy2 = cell->energy2 / 2 + tmpCell->energy2;				
 				tmpCell->energy2 = tempEnergy / 2;
@@ -396,8 +402,8 @@ void Simulation::executeCell(int x, int y, int z){
 			}
 		}break;
 		case 14:{//remove bad
-			if(cell->bad && cell->energy >= ENERGY2_CONVERSION_GAIN / 4){
-				cell->bad--;
+			if(cell->bad > 2 && cell->energy >= ENERGY2_CONVERSION_GAIN / 4){
+				cell->bad -= 2;
 				cell->energy -= ENERGY2_CONVERSION_GAIN / 4;
 			}
 		}break;
@@ -489,7 +495,7 @@ void Simulation::executeCell(int x, int y, int z){
 			if(cell->energy2){
 				cell->energy2--;
 				cell->energy += ENERGY2_CONVERSION_GAIN;
-				if(!(qrand() % 10)){
+				if(!(qrand() % 15)){
 					cell->bad++;
 				}
 			}
@@ -551,7 +557,7 @@ void Simulation::executeCell(int x, int y, int z){
 			if(reproduce(cell,neighbour,output_buffer)){
 				cell->reproduced = 0;
 			}else{
-				cell->reproduced++;
+				//cell->reproduced++;
 			}
 		}else{
 			cell->reproduced++;
@@ -756,26 +762,32 @@ void Simulation::mutateCell(struct Cell *cell){
 		}
 	}
 #else
-	double prob =  GENOME_SIZE / MUTATION_RATE_NON_LIVING;
+	//TODO: create better algo
+	double prob =  (double)GENOME_SIZE / (double)MUTATION_RATE_NON_LIVING;
 	
 	register int max = cell->bad;
-	if(max > GENOME_SIZE / 4){
-		max = GENOME_SIZE / 4;
+	if(max > GENOME_SIZE / 6){
+		max = GENOME_SIZE / 6;
 	}
 	
-	max = (int)((double)max * prob);
+	//qDebug() << "maxb =" << max;
 	
 	if(max < 2){
 		max = 2;
 	}
 	
 	max = qrand() % max;
+	max++;
+	max = (int)((double)max * prob);
+	
+	//qDebug() << "maxc =" << max;
 	
 	for(int i = 0; i < max; i++){
-		int pos = qrand() % GENOME_SIZE;
+		int pos = qrand() % (GENOME_SIZE / 3);
 		cell->genome[pos] = randomOperation();
 	}
-
+	
+	mutated += max;
 #endif
 }
 
