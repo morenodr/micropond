@@ -235,7 +235,7 @@ void Simulation::executeCell(int x, int y, int z){
 	int reg = 0; //internal register to be used for anything
 	int temp = 0; //temp register
 	uint executed = 0;
-	uint killCounter = 0; //only allow a certain amout of kills
+	uint specCommands = 0; //only allow a certain amout of kills
 	
 	//Execute cell until no more energy is left
 	while(cell->energy && !stop && executed < MAX_EXECUTING){
@@ -384,8 +384,11 @@ void Simulation::executeCell(int x, int y, int z){
 				z = pos.z;
 				cell = &cells[x][y][z];
 				stop = true;
+				specCommands++;
 			}
-			
+			if(specCommands >= SPECIAL_COMMANDS){
+				stop = true;
+			}
 		}break;
 		case 13:{ // kill
 			struct Position pos = getNeighbour(x,y,z,facing);
@@ -395,9 +398,9 @@ void Simulation::executeCell(int x, int y, int z){
 					cell->energy2){
 				killCell(tmpCell);
 				cell->energy2--;
-				killCounter++;
+				specCommands++;
 			}
-			if(killCounter >= 4){
+			if(specCommands >= SPECIAL_COMMANDS){
 				stop = true;
 			}
 		}break;
@@ -541,7 +544,26 @@ void Simulation::executeCell(int x, int y, int z){
 				reg = 0;
 			}
 			break;
-		case 28: //end
+		case 28: //if not
+			if(reg){
+				reg++;
+				if(reg >= GENOME_OPERATIONS ){
+					reg = 0;
+				}
+			}
+			break;
+		case 29: //if
+			if(!reg){
+				reg++;
+				if(reg >= GENOME_OPERATIONS ){
+					reg = 0;
+				}
+			}
+			break;
+		case 30: //number of directions
+			reg = DIRECTIONS;
+			break;
+		case 31: //end
 			stop = true;
 			break;
 		}
@@ -610,10 +632,10 @@ bool Simulation::reproduce(struct Cell *cell, struct Cell *neighbour,uchar *outp
 			case 2://duplication or removal
 				loop = qrand() % GENOME_SIZE;
 				break;
-			case 3:{//insert command
+			case 3:{//remove command
 				loop++;
 				}break;
-			case 4:{//remove command
+			case 4:{//insert command
 				loop--;
 				}break;
 			}
@@ -863,22 +885,22 @@ void Simulation::disaster(){
 			
 			switch(type){
 			case 0:{
-				if(qrand() % 10){
+				if(qrand() % 3){
 					killCell(&cells[realX][realY][realZ]);
 				}
 			}break;
 			case 1:{
-				if(qrand() % 10){
+				if(qrand() % 3){
 					killCell(&cells[realX][realY][realZ]);
 					cells[realX][realY][realZ].bad = 10;
 				}
 			}break;
 			case 2:{
-				cells[realX][realY][realZ].energy /= 10;
-				cells[realX][realY][realZ].energy2 /= 10;
+				cells[realX][realY][realZ].energy /= 20;
+				cells[realX][realY][realZ].energy2 /= 20;
 			}break;
 			case 3:{
-				if(cells[realX][realY][realZ].size > GENOME_SIZE / 5){
+				if(cells[realX][realY][realZ].size > GENOME_SIZE / 6){
 					killCell(&cells[realX][realY][realZ]);
 				}
 			}break;

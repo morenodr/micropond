@@ -45,10 +45,10 @@ QString CreatureBar::operationName(uchar operation){
 		return "reset";
 		break;
 	case 1: //pointer ++
-		return "pointer--";
+		return "pointer++";
 		break;
 	case 2: //pointer --
-		return "pointer++";
+		return "pointer--";
 		break;
 	case 3: //register ++
 		return "register++";
@@ -126,6 +126,15 @@ QString CreatureBar::operationName(uchar operation){
 		return "is outpointer == max?";
 		break;
 	case 28://end
+		return "if(!reg)";
+		break;
+	case 29://end
+		return "if(reg)";
+		break;
+	case 30://end
+		return "reg = number of directions";
+		break;
+	case 31://end
 		return "stop";
 		break;
 	}
