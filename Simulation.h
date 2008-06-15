@@ -16,7 +16,7 @@
 #define WORLD_Z 1
 #define GENOME_SIZE 100 //number of operations in a genome
 
-#define GENOME_OPERATIONS 29 //number of different operations
+#define GENOME_OPERATIONS 32 //number of different operations
 #define NO_REP_OPERATION 11 //id of the NO REPRODUCE operation
 
 #define EAT_ENERGY GENOME_SIZE //amount of energy gained from eating
@@ -34,7 +34,7 @@
 #define UP 4
 #define DOWN 5
 
-#define MUTATION_RATE_REPRODUCTION 20000
+#define MUTATION_RATE_REPRODUCTION 7000
 #define MUTATION_RATE_EXECUTION 100000
 #define MUTATION_RATE_NON_LIVING 200
 //#define MAX_MUTATIONS_NON_LIVING 3
@@ -53,6 +53,8 @@
 #define LANDSCAPE_LINES 6
 
 #define MAX_EXECUTING 4000
+
+#define SPECIAL_COMMANDS 10 //number of allowed special commands like kill, move
 
 struct Cell{
 	uint genome_size;

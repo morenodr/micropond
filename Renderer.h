@@ -17,7 +17,7 @@
 
 #define RENDERMODES 8
 
-#define LIVING_CELL 2
+#define LIVING_CELL 3
 
 #define SHOW_LANDSCAPE true
 
