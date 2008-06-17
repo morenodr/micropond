@@ -25,7 +25,7 @@ class Renderer: public QLabel
 {
 	Q_OBJECT
 public:
-	Renderer(Simulation *sim);
+	Renderer(Simulation *sim,QSemaphore *sem);
 	virtual ~Renderer();
 	
 	void mousePressEvent ( QMouseEvent * event );
@@ -42,6 +42,7 @@ private:
 	void updatePicture();
 	Simulation *simulation;
 	int colorMode;
+	QSemaphore *sema; //controls the rendering and loading
 };
 
 #endif /*RENDERER_H_*/

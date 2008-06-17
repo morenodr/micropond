@@ -28,6 +28,9 @@ CreatureBar::CreatureBar()
 	size = new QLabel("Size: ");
 	layout->addWidget(size);
 	
+	toxic = new QLabel("Toxic: ");
+	layout->addWidget(toxic);
+	
 	genome = new QTextEdit();
 	genome->setReadOnly(true);
 	layout->addWidget(genome);
@@ -135,6 +138,9 @@ QString CreatureBar::operationName(uchar operation){
 		return "reg = number of directions";
 		break;
 	case 31://end
+		return "reg = neighbour facing";
+		break;
+	case 32://end
 		return "stop";
 		break;
 	}
@@ -150,6 +156,7 @@ void CreatureBar::cellSelected(struct Cell cell){
 	id->setText("ID: "+QString::number(cell.id));
 	lineage->setText("Lineage: "+QString::number(cell.lineage));
 	size->setText("Size: "+QString::number(cell.size));
+	toxic->setText("Toxic: "+QString::number(cell.bad));
 	genome->clear();
 	for(uint i = 0; i < cell.genome_size; i++){
 		genome->append(operationName(cell.genome[i]));
