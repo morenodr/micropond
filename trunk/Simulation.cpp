@@ -12,6 +12,7 @@ Simulation::Simulation()
 	energyAdd = ENERGY_ADDED;
 	nextSet = false;
 	canExecuteNext = true;
+	initialized = false;
 }
 
 Simulation::~Simulation()
@@ -40,7 +41,9 @@ void Simulation::run(){
 	qsrand(time(NULL));
 	//qsrand(0);
 	
-	init();
+	if(!initialized){
+		init();
+	}
 	
 	int x,y,z;
 	struct Cell *cell;
@@ -76,14 +79,6 @@ void Simulation::run(){
 		}
 #endif
 		
-		//kills a cell if there is not energy left and it's a child
-		if(!cell->energy && cell->generation >= LIVING){
-			killCell(cell);
-		}else if(!world->dead){
-			//call the execution of its code
-			Simulation::executeCell(x,y,z);
-		}
-		
 #ifdef BAD_KILLS
 		if(cell->generation >= LIVING && cell->bad > 3){
 			double killValue = 90.0 /
@@ -93,8 +88,18 @@ void Simulation::run(){
 			if(((int) killValue) == 0 || (qrand() % (int) killValue) == 0){
 				killCell(cell);
 			}
+			continue;
 		}
 #endif
+		
+		//kills a cell if there is not energy left and it's a child
+		if(!cell->energy && cell->generation >= LIVING && qrand() % 4){
+			killCell(cell);
+		}else if(!world->dead){
+			//call the execution of its code
+			Simulation::executeCell(x,y,z);
+		}
+		
 		
 #ifdef DECREASE_ENERGY
 		if(round % ENERGY_DECREASE == 0){
@@ -129,8 +134,9 @@ void Simulation::killCell(struct Cell *cell){
 	cell->reproduced = 0;
 	cell->brain = 0;
 	cell->size = 1;
-
-	int randStuff = GENOME_SIZE / 5;
+	cell->facing = qrand() % DIRECTIONS;
+	
+	int randStuff = GENOME_SIZE / 4;
 	for(int i = 0; i < randStuff; i++){
 		cell->genome[i] = randomOperation();
 	}
@@ -231,7 +237,7 @@ void Simulation::executeCell(int x, int y, int z){
 	
 	genome_pointer = 0;
 	int pointer = 0;//general pointer
-	uchar facing = WEST;
+	uchar facing = cell->facing;
 	int reg = 0; //internal register to be used for anything
 	int temp = 0; //temp register
 	uint executed = 0;
@@ -478,9 +484,7 @@ void Simulation::executeCell(int x, int y, int z){
 		case 23:{//eat energy and modify neighbour genome
 			struct Position pos = getNeighbour(x,y,z,facing);
 			tmpCell = &cells[pos.x][pos.y][pos.z];
-			if((!tmpCell->generation ||
-					(cell->generation >= LIVING  && !(qrand() % 5))) &&
-					accessOk(cell, tmpCell, reg,false)){
+			if(accessOk(cell, tmpCell, reg,false)){
 				if(tmpCell->genome[pointer] == reg && reg != 0 
 						&& reg != GENOME_OPERATIONS - 1){
 					tmpCell->genome[pointer] = 0;
@@ -498,7 +502,7 @@ void Simulation::executeCell(int x, int y, int z){
 			if(cell->energy2){
 				cell->energy2--;
 				cell->energy += ENERGY2_CONVERSION_GAIN;
-				if(!(qrand() % 15)){
+				if(!(qrand() % 30)){
 					cell->bad++;
 				}
 			}
@@ -561,13 +565,20 @@ void Simulation::executeCell(int x, int y, int z){
 			}
 			break;
 		case 30: //number of directions
-			reg = DIRECTIONS;
+			reg = DIRECTIONS - 1;
 			break;
-		case 31: //end
+		case 31:{ //see neighbour facing
+			struct Position pos = getNeighbour(x,y,z,facing);
+			tmpCell = &cells[pos.x][pos.y][pos.z];
+			reg = tmpCell->facing;
+		}break;
+		case 32: //end
 			stop = true;
 			break;
 		}
 	}
+	
+	cell->facing = facing;
 	
 	output_pointer = 0;
 	
@@ -579,16 +590,14 @@ void Simulation::executeCell(int x, int y, int z){
 			if(reproduce(cell,neighbour,output_buffer)){
 				cell->reproduced = 0;
 			}else{
-				//cell->reproduced++;
+				cell->reproduced++;
 			}
-		}else{
-			cell->reproduced++;
 		}
 	}else{
 		cell->reproduced++;
 	}
 	
-	if(cell->generation >= LIVING && cell->reproduced > 3){
+	if(cell->generation >= LIVING && cell->reproduced > 4){
 		killCell(cell);
 	}
 }
@@ -761,6 +770,8 @@ void Simulation::init(){
 		
 		lines++;
 	}
+	
+	initialized = true;
 }
 
 /**
@@ -866,7 +877,11 @@ void Simulation::disaster(){
 	int size = qrand() % 50 + 50;
 	
 	if(qrand() % 10 == 0){ //10% chance of a big disaster
-		size *= 3;
+		if(qrand() % 50 == 0){ // again, 2% chance for a huge disaster
+			size *= 6;
+		}else{
+			size *= 3;
+		}
 	}
 	
 	for(int xLoop = x - size / 2; xLoop < x + size / 2; xLoop++){
@@ -968,4 +983,40 @@ struct Position Simulation::getNeighbour(int x, int y, int z, uchar direction){
 	pos.y = y;
 	pos.z = 0;//z;
 	return pos;
+}
+
+void Simulation::saveWorld(QString file){
+	QFile out(file);
+	out.open(QIODevice::WriteOnly | QIODevice::Truncate);
+	qDebug() << sizeof(cells);
+	QByteArray tempCells((char *)cells,sizeof(cells));
+	out.write(tempCells);
+	QByteArray tempWorld((char *)world,sizeof(world));
+	out.write(tempWorld);
+	
+	qDebug() << "saved" << file;
+	out.close();
+}
+
+void Simulation::loadWorld(QString file){
+	QFile in(file);
+	in.open(QIODevice::ReadOnly);
+	
+	QByteArray tempCells = in.read(sizeof(cells));
+	memcpy(*cells, tempCells.data(), sizeof(cells));
+	
+	QByteArray tempWorld = in.read(sizeof(world));
+	memcpy(*world, tempWorld.data(), sizeof(world));
+	
+	for(int x = 0; x < WORLD_X; x++){
+		for(int y = 0; y < WORLD_Y; y++){
+			for(int z = 0; z < WORLD_Z; z++){
+				cells[x][y][z].place = &world[x][y][z];
+			}
+		}
+	}
+	
+	qDebug() << "loaded" << file;
+	in.close();
+	initialized = true;
 }

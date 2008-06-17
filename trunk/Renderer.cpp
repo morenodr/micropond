@@ -1,8 +1,9 @@
 #include "Renderer.h"
 #include <QtGui>
 
-Renderer::Renderer(Simulation *sim)
+Renderer::Renderer(Simulation *sim,QSemaphore *sem)
 {
+	sema = sem;
 	simulation = sim;
 	colorMode = GENOME;
 }
@@ -109,6 +110,7 @@ QColor Renderer::getColor(struct Cell *cell, int mode){
 }
 
 void Renderer::updatePicture(){	
+	sema->acquire(1);
 	int sizeX = simulation->x();
 	int sizeY = simulation->y();
 	
@@ -126,6 +128,8 @@ void Renderer::updatePicture(){
 	simulation->resume();
 	setPixmap(QPixmap::fromImage (temp));
 	qDebug() << "cells executed: " << counter;
+
+	sema->release(1);
 }
 
 void Renderer::changeColorMode(int mode){

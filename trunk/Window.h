@@ -27,12 +27,15 @@ public slots:
 	void energy2View();
 	void toxicView();
 	void close();
+	void load(QString file);
+	void save(QString file);
 private:
 	Simulation *simulation;
 	Renderer *renderer;
 	CreatureBar *creatureBar;
 	QSlider *slider;
 	QActionGroup *viewsGroup;
+	QSemaphore *sema; //controls the rendering and loading
 };
 
 #endif /*WINDOW_H_*/

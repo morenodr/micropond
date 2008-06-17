@@ -16,7 +16,7 @@
 #define WORLD_Z 1
 #define GENOME_SIZE 100 //number of operations in a genome
 
-#define GENOME_OPERATIONS 32 //number of different operations
+#define GENOME_OPERATIONS 33 //number of different operations
 #define NO_REP_OPERATION 11 //id of the NO REPRODUCE operation
 
 #define EAT_ENERGY GENOME_SIZE //amount of energy gained from eating
@@ -39,7 +39,7 @@
 #define MUTATION_RATE_NON_LIVING 200
 //#define MAX_MUTATIONS_NON_LIVING 3
 
-#define ENERGY_ADDED 3000
+#define ENERGY_ADDED 5000
 #define ENERGY_FREQUENCY 25
 
 #define ENERGY_DECREASE 5000000
@@ -54,7 +54,7 @@
 
 #define MAX_EXECUTING 4000
 
-#define SPECIAL_COMMANDS 10 //number of allowed special commands like kill, move
+#define SPECIAL_COMMANDS 5 //number of allowed special commands like kill, move
 
 struct Cell{
 	uint genome_size;
@@ -70,6 +70,7 @@ struct Cell{
 	uint brain;
 	struct Place *place;
 	uint size;
+	uchar facing;
 }; 
 
 struct Place{ 
@@ -106,6 +107,10 @@ public:
 	void setEnergyAdd(uint value){ energyAdd = value;};
 	uint getEnergyAdd(){return energyAdd;};
 	uint getMaxEnergyAdd(){ return ENERGY_ADDED;};
+	
+	void saveWorld(QString file);
+	void loadWorld(QString file);
+	
 private:
 	struct Cell cells[WORLD_X][WORLD_Y][WORLD_Z];
 	struct Place world[WORLD_X][WORLD_Y][WORLD_Z];
@@ -135,6 +140,7 @@ private:
 	int canExecuteNext;
 	
 	unsigned long mutated;
+	bool initialized;
 };
 
 #endif /*SIMULATION_H_*/

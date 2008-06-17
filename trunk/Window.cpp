@@ -2,8 +2,11 @@
 
 Window::Window()
 {
+	sema = new QSemaphore(1);
 	simulation = new Simulation();
-	renderer = new Renderer(simulation);
+	renderer = new Renderer(simulation,sema);
+	//TODO: create menu entry, and remove. use Window::load
+	simulation->loadWorld("/home/asraniel/test3");
 	simulation->start();
 }
 
@@ -137,10 +140,32 @@ void Window::toxicView(){
 	renderer->changeColorMode(7);
 }
 
+void Window::load(QString file){
+	sema->acquire(1);
+	simulation->resume();
+	simulation->stopIt();
+	while(!simulation->isFinished());
+	simulation->loadWorld(file);
+	simulation->start();
+	sema->release(1);
+}
+
+void Window::save(QString file){
+	sema->acquire(1);
+	simulation->resume();
+	simulation->stopIt();
+	while(!simulation->isFinished());
+	simulation->saveWorld(file);
+	simulation->start();
+	sema->release(1);
+}
+
 void Window::close(){
 	renderer->close();
 	//delete renderer;
 	simulation->resume();
 	simulation->stopIt();
+	//TODO: create menu entry, and remove. use Window::save
+	save("/home/asraniel/test2");
 	qApp->quit();
 }

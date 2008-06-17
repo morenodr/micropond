@@ -22,6 +22,7 @@ private:
 	QLabel *lineage;
 	QLabel *picture;
 	QLabel *size;
+	QLabel *toxic;
 	QTextEdit *genome;
 };
 
