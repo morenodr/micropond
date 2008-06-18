@@ -67,47 +67,53 @@ void Window::initGui(){
 	QMenu *views = new QMenu("Viewmode");
 	
 	viewsGroup = new QActionGroup(this);
+	viewsGroup->setExclusive(true);
 	
 	QAction *age = new QAction("Age",viewsGroup);
 	connect(age, SIGNAL(triggered()), this, SLOT(ageView()));
-	views->addAction(age);
-	age->setChecked(true);
+	age->setCheckable(true);
 	
 	QAction *genome = new QAction("Genome",viewsGroup);
 	connect(genome, SIGNAL(triggered()), this, SLOT(genomeView()));
-	views->addAction(genome);
+	genome->setCheckable(true);
+	genome->setChecked(true);
 	
 	QAction *lineage = new QAction("Lineage",viewsGroup);
 	connect(lineage, SIGNAL(triggered()), this, SLOT(lineageView()));
-	views->addAction(lineage);
+	lineage->setCheckable(true);
 		
 	QAction *logo = new QAction("Logo",viewsGroup);
 	connect(logo, SIGNAL(triggered()), this, SLOT(logoView()));
-	views->addAction(logo);
+	logo->setCheckable(true);
 			
 	QAction *size = new QAction("Size",viewsGroup);
 	connect(size, SIGNAL(triggered()), this, SLOT(sizeView()));
-	views->addAction(size);
+	size->setCheckable(true);
 	
 	QAction *energy = new QAction("Energy",viewsGroup);
 	connect(energy, SIGNAL(triggered()), this, SLOT(energyView()));
-	views->addAction(energy);
+	energy->setCheckable(true);
 	
 	QAction *energy2 = new QAction("Energy 2",viewsGroup);
 	connect(energy2, SIGNAL(triggered()), this, SLOT(energy2View()));
-	views->addAction(energy2);
+	energy2->setCheckable(true);
 		
 	QAction *toxic = new QAction("Toxics",viewsGroup);
 	connect(toxic, SIGNAL(triggered()), this, SLOT(toxicView()));
-	views->addAction(toxic);
+	views->addActions(viewsGroup->actions());
+	toxic->setCheckable(true);
 	
 	pondsGroup = new QActionGroup(this);
+	pondsGroup->setExclusive(true);
 	connect(pondsGroup , SIGNAL(triggered(QAction *)), this, SLOT(selectPond(QAction *)));
 	QMenu *ponds = new QMenu("Ponds");
 	for(int i = 0; i < THREADS; i++){
 		QAction *pond = new QAction(QString::number(i),pondsGroup);
-		ponds->addAction(pond);
-	}	
+		pond->setCheckable(true);
+		if(i == 0)
+			pond->setChecked(true);
+	}
+	ponds->addActions(pondsGroup->actions());
 	
 	menuBar->addMenu(file);
 	menuBar->addMenu(views);
