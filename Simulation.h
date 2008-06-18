@@ -87,7 +87,7 @@ class Simulation: public QThread
 {
 	Q_OBJECT
 public:
-	Simulation();
+	Simulation(int id);
 	virtual ~Simulation();
 	void run();
 	void stopIt(){running = false;};
@@ -110,6 +110,8 @@ public:
 	
 	void saveWorld(QString file);
 	void loadWorld(QString file);
+	int id(){return myId;}
+	int executed();
 	
 private:
 	struct Cell cells[WORLD_X][WORLD_Y][WORLD_Z];
@@ -141,6 +143,7 @@ private:
 	
 	unsigned long mutated;
 	bool initialized;
+	int myId;
 };
 
 #endif /*SIMULATION_H_*/

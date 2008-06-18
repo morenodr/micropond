@@ -1,8 +1,9 @@
 #include "Simulation.h"
 #include <cstring>
 
-Simulation::Simulation()
+Simulation::Simulation(int id)
 {
+	myId = id;
 	cellid = 0;
 	mutated = 0;
 	running = true;
@@ -21,13 +22,18 @@ Simulation::~Simulation()
 
 void Simulation::pause(){
 	mutex->acquire(1);
-	qDebug() << "mutated " << mutated;
+	//qDebug() << "mutated " << mutated << "in pond" << myId;
 }
 
 void Simulation::resume(){
-	count = 0;
 	mutated = 0;
 	mutex->release(1);
+}
+
+int Simulation::executed(){
+	uint temp = count;
+	count = 0;
+	return temp;
 }
 
 /*
@@ -38,7 +44,7 @@ void Simulation::resume(){
  */
 void Simulation::run(){
 	//mutex->acquire(1);
-	qsrand(time(NULL));
+	qsrand(time(NULL) + myId*1000);
 	//qsrand(0);
 	
 	if(!initialized){
@@ -539,7 +545,7 @@ void Simulation::executeCell(int x, int y, int z){
 			}
 		}break;
 		case 26: //random
-			reg = qrand() % GENOME_OPERATIONS;
+			reg = randomOperation();
 			break;
 		case 27: //test output pointer
 			if(output_pointer != GENOME_SIZE - 1){
@@ -846,21 +852,21 @@ void Simulation::disaster(){
 	switch(qrand() % 4){
 	case 0:
 		type = 0;
-		qDebug() << "Meteor hit";
+		qDebug() << "Meteor hit pond" << myId;
 		//Meteor that kills most live
 		break;
 	case 1:
-		qDebug() << "Poison meteor hit";
+		qDebug() << "Poison meteor hit pond"<< myId;
 		type = 1;
 		//Meteor that kills most live and posons the place
 		break;
 	case 2:
-		qDebug() << "Hunger hit";
+		qDebug() << "Hunger hit pond"<< myId;
 		type = 2;
 		//Hunger
 		break;
 	case 3:
-		qDebug() << "Big Killer";
+		qDebug() << "Big Killer hit pond"<< myId;
 		type = 2;
 		//Kill all big cells, small survive
 		break;

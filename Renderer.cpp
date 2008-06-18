@@ -127,7 +127,7 @@ void Renderer::updatePicture(){
 	
 	simulation->resume();
 	setPixmap(QPixmap::fromImage (temp));
-	qDebug() << "cells executed: " << counter;
+	//qDebug() << "Pond:"<< simulation->id() << "cells executed: " << counter;
 
 	sema->release(1);
 }
@@ -148,7 +148,7 @@ void Renderer::mousePressEvent ( QMouseEvent * event ){
 			qDebug() << "got"<<event->x() << event->y();
 			struct Cell tempCell = *cell;
 			emit cellSelected(tempCell);
-		}	
+		}
 		
 		simulation->resume();
 	}
