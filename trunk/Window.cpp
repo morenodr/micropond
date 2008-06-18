@@ -3,11 +3,30 @@
 Window::Window()
 {
 	sema = new QSemaphore(1);
-	simulation = new Simulation();
+	simus = new QList<Simulation *>();
+	for(int i = 0; i < THREADS; i++){
+		Simulation *temp = new Simulation(i);
+		temp->start();
+		simus->append(temp);
+	}
+	
+	
+	simulation = simus->at(0); //select first thread as default
 	renderer = new Renderer(simulation,sema);
 	//TODO: create menu entry, and remove. use Window::load
-	simulation->loadWorld("/home/asraniel/test3");
-	simulation->start();
+	/*simulation->loadWorld("/home/asraniel/test3");*/
+	stat();
+}
+
+void Window::stat(){
+	unsigned long total = 0;
+	for(int i = 0; i < THREADS; i++){
+		uint temp = simus->at(i)->executed();
+		total += temp;
+		qDebug() << "pond" << i << "executed:" << temp;
+	}	
+	qDebug() << "total executed:" << total;
+	QTimer::singleShot(STAT_INTERVAL, this, SLOT(stat()));
 }
 
 void Window::initGui(){
@@ -82,8 +101,17 @@ void Window::initGui(){
 	connect(toxic, SIGNAL(triggered()), this, SLOT(toxicView()));
 	views->addAction(toxic);
 	
+	pondsGroup = new QActionGroup(this);
+	connect(pondsGroup , SIGNAL(triggered(QAction *)), this, SLOT(selectPond(QAction *)));
+	QMenu *ponds = new QMenu("Ponds");
+	for(int i = 0; i < THREADS; i++){
+		QAction *pond = new QAction(QString::number(i),pondsGroup);
+		ponds->addAction(pond);
+	}	
+	
 	menuBar->addMenu(file);
 	menuBar->addMenu(views);
+	menuBar->addMenu(ponds);
 	setMenuBar(menuBar);
 	
 	resize(200,200);
@@ -95,13 +123,24 @@ void Window::valueChanged(int val){
 }
 
 void Window::closeEvent( QCloseEvent * event ){
-	renderer->close();
-	//delete renderer;
-	simulation->resume();
-	simulation->stopIt();
-	while(simulation->isRunning());
-	//delete simulation;
+	closing();
 	event->accept();
+}
+
+void Window::close(){
+	closing();
+	//TODO: create menu entry, and remove. use Window::save
+	//save("/home/asraniel/test2");
+	qApp->quit();
+}
+
+void Window::closing(){
+	renderer->close();
+	for(int i = 0; i < simus->size() ; i++){
+		simus->at(i)->resume();
+		simus->at(i)->stopIt();
+		while(simus->at(i)->isRunning());
+	}
 }
 
 Window::~Window()
@@ -160,12 +199,14 @@ void Window::save(QString file){
 	sema->release(1);
 }
 
-void Window::close(){
-	renderer->close();
-	//delete renderer;
-	simulation->resume();
-	simulation->stopIt();
-	//TODO: create menu entry, and remove. use Window::save
-	save("/home/asraniel/test2");
-	qApp->quit();
+void Window::selectPond(QAction * pond){
+	sema->acquire(1);
+	int pondId = pond->text().toInt();
+	simulation = simus->at(pondId);
+	renderer->setSimulation(simulation);
+	
+	slider->setRange(0, simulation->getMaxEnergyAdd());
+	slider->setValue(simulation->getEnergyAdd());
+		
+	sema->release(1);
 }

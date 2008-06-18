@@ -30,6 +30,10 @@ public:
 	
 	void mousePressEvent ( QMouseEvent * event );
 	static QColor getColor(struct Cell *cell, int mode);
+	void setSimulation(Simulation *sim){
+		simulation->resume();
+		simulation = sim;
+	}
 	
 signals:
 	void cellSelected(struct Cell cell);

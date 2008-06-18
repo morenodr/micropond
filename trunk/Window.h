@@ -7,6 +7,9 @@
 #include "Simulation.h"
 #include "CreatureBar.h"
 
+#define THREADS 2
+#define STAT_INTERVAL 1000
+
 class Window: public QMainWindow
 {
 	Q_OBJECT
@@ -29,13 +32,20 @@ public slots:
 	void close();
 	void load(QString file);
 	void save(QString file);
+	void selectPond(QAction * pond);
+	void stat();
+	
 private:
+	void closing();
+	
 	Simulation *simulation;
 	Renderer *renderer;
 	CreatureBar *creatureBar;
 	QSlider *slider;
 	QActionGroup *viewsGroup;
+	QActionGroup *pondsGroup;
 	QSemaphore *sema; //controls the rendering and loading
+	QList <Simulation *>*simus;
 };
 
 #endif /*WINDOW_H_*/
