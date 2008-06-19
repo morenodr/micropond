@@ -46,6 +46,8 @@ private:
 	QActionGroup *pondsGroup;
 	QSemaphore *sema; //controls the rendering and loading
 	QList <Simulation *>*simus;
+	QQueue <struct Cell>*genepool;
+	QSemaphore *genepoolblocker;
 };
 
 #endif /*WINDOW_H_*/

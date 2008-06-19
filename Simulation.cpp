@@ -1,8 +1,10 @@
 #include "Simulation.h"
 #include <cstring>
 
-Simulation::Simulation(int id)
+Simulation::Simulation(QQueue <struct Cell>*pool,QSemaphore *geneblocker,int id)
 {
+	genepool = pool;
+	genepoolblocker = geneblocker;
 	myId = id;
 	cellid = 0;
 	mutated = 0;
@@ -22,17 +24,17 @@ Simulation::~Simulation()
 
 void Simulation::pause(){
 	mutex->acquire(1);
-	//qDebug() << "mutated " << mutated << "in pond" << myId;
 }
 
 void Simulation::resume(){
-	mutated = 0;
 	mutex->release(1);
 }
 
 int Simulation::executed(){
 	uint temp = count;
 	count = 0;
+	//qDebug() << "mutated " << mutated << "in pond" << myId;
+	mutated = 0;
 	return temp;
 }
 
@@ -141,6 +143,7 @@ void Simulation::killCell(struct Cell *cell){
 	cell->brain = 0;
 	cell->size = 1;
 	cell->facing = qrand() % DIRECTIONS;
+	cell->homePond = myId;
 	
 	int randStuff = GENOME_SIZE / 4;
 	for(int i = 0; i < randStuff; i++){
@@ -172,13 +175,13 @@ void Simulation::regenerateEnergy(){
 	if(x <= WORLD_X / 2){
 		mod *= x / (WORLD_X / 2.0);
 	}else{
-		mod *= 1.0 - (x / WORLD_X );
+		mod *= 2.0 - (x / (WORLD_X / 2.0) );
 	}
 	
 	if(y <= WORLD_Y / 2){
 		mod *= y / (WORLD_Y / 2.0);
 	}else{
-		mod *= 1.0 - (y / WORLD_Y );
+		mod *= 2.0 - (y / (WORLD_Y / 2.0) );
 	}
 	
 	mod += 0.1;
@@ -188,7 +191,7 @@ void Simulation::regenerateEnergy(){
 	
 	if(cell->bad > 1){
 		cell->bad--;
-	}else if(qrand() % 10 == 0){
+	}else if(qrand() % 5 == 0){
 		cell->bad++;
 	}
 }
@@ -491,8 +494,8 @@ void Simulation::executeCell(int x, int y, int z){
 			struct Position pos = getNeighbour(x,y,z,facing);
 			tmpCell = &cells[pos.x][pos.y][pos.z];
 			if(accessOk(cell, tmpCell, reg,false)){
-				if(tmpCell->genome[pointer] == reg && reg != 0 
-						&& reg != GENOME_OPERATIONS - 1){
+				if(temp != 0 && temp != GENOME_OPERATIONS - 1 &&
+						tmpCell->genome[pointer] == temp){
 					tmpCell->genome[pointer] = 0;
 					
 					//eat energy
@@ -695,6 +698,8 @@ bool Simulation::reproduce(struct Cell *cell, struct Cell *neighbour,uchar *outp
 		neighbour->brain = 0;
 		
 		neighbour->size = copied;
+		
+		neighbour->homePond = cell->homePond;
 		return true;
 	}
 	
@@ -801,7 +806,7 @@ void Simulation::mutateCell(struct Cell *cell){
 		}
 	}
 #else
-	//TODO: create better algo
+	/*//TODO: create better algo
 	double prob =  (double)GENOME_SIZE / (double)MUTATION_RATE_NON_LIVING;
 	
 	register int max = cell->bad;
@@ -819,7 +824,16 @@ void Simulation::mutateCell(struct Cell *cell){
 	max++;
 	max = (int)((double)max * prob);
 	
-	//qDebug() << "maxc =" << max;
+	//qDebug() << "maxc =" << max;*/
+	
+	int max = cell->bad;
+	if(max > GENOME_SIZE / 6){
+		max = GENOME_SIZE / 6;
+	}
+	if(max){
+		max++;
+		max = qrand() % max;
+	}
 	
 	for(int i = 0; i < max; i++){
 		int pos = qrand() % (GENOME_SIZE / 3);
@@ -849,7 +863,7 @@ struct Cell *Simulation::cell(int x, int y, int z){
  */
 void Simulation::disaster(){
 	int type = 0;
-	switch(qrand() % 4){
+	switch(qrand() % 5){
 	case 0:
 		type = 0;
 		qDebug() << "Meteor hit pond" << myId;
@@ -867,8 +881,12 @@ void Simulation::disaster(){
 		break;
 	case 3:
 		qDebug() << "Big Killer hit pond"<< myId;
-		type = 2;
+		type = 3;
 		//Kill all big cells, small survive
+		break;
+	case 4:
+		qDebug() << "Living meteor hit pond"<< myId<<"!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!";
+		type = 4;
 		break;
 	}
 	
@@ -880,15 +898,17 @@ void Simulation::disaster(){
 	int realX, realY, realZ;
 	realZ = 0; //special case anyway, what to do in a 3d env?
 	
-	int size = qrand() % 50 + 50;
+	int size = qrand() % 30 + 70;
 	
-	if(qrand() % 10 == 0){ //10% chance of a big disaster
-		if(qrand() % 50 == 0){ // again, 2% chance for a huge disaster
+	if(qrand() % 10 == 0 && type != 4){ //10% chance of a big disaster
+		if(qrand() % 10 == 0){ // again, 2% chance for a huge disaster
 			size *= 6;
 		}else{
 			size *= 3;
 		}
 	}
+	
+	QQueue <struct Cell>*tempVoyagers = new QQueue<struct Cell>();
 	
 	for(int xLoop = x - size / 2; xLoop < x + size / 2; xLoop++){
 		
@@ -906,12 +926,12 @@ void Simulation::disaster(){
 			
 			switch(type){
 			case 0:{
-				if(qrand() % 3){
+				if(qrand() % 40){
 					killCell(&cells[realX][realY][realZ]);
 				}
 			}break;
 			case 1:{
-				if(qrand() % 3){
+				if(qrand() % 20){
 					killCell(&cells[realX][realY][realZ]);
 					cells[realX][realY][realZ].bad = 10;
 				}
@@ -925,10 +945,37 @@ void Simulation::disaster(){
 					killCell(&cells[realX][realY][realZ]);
 				}
 			}break;
+			case 4:{
+				if(qrand() % 300 == 0 && cells[realX][realY][realZ].generation >= LIVING){
+					genepoolblocker->acquire(1);
+					struct Cell voyager = cells[realX][realY][realZ];
+					if(!genepool->isEmpty()){
+						cells[realX][realY][realZ] = genepool->dequeue();
+						cells[realX][realY][realZ].place = &world[realX][realY][realZ];
+					}
+					tempVoyagers->enqueue(voyager);
+					genepoolblocker->release(1);
+				}else{
+					killCell(&cells[realX][realY][realZ]);
+				}
+			}break;
 			}
 			
 		}
 	}
+	
+	if(type == 4){
+		genepoolblocker->acquire(1);
+		while(!tempVoyagers->isEmpty()){
+			if(genepool->size() > 70 ){ //only hold 70 cells, remove one if too many
+				genepool->removeAt(qrand() % genepool->size());
+			}
+			genepool->enqueue(tempVoyagers->dequeue());
+		}
+		genepoolblocker->release(1);
+	}
+	
+	delete tempVoyagers;
 	
 }
 

@@ -63,17 +63,17 @@ QColor Renderer::getColor(struct Cell *cell, int mode){
 				}
 			}
 			break;
-		case LOGO:
+		case HOME:
 			if(cell->place->dead && SHOW_LANDSCAPE){
 				r = 254;
 				g = 254;
 				b = 254;
 			}else{
-				if(cell->generation >= LIVING_CELL){
-					r = cell->genome[0] * 10;
-					g = cell->genome[0] * 10;
-					b = cell->genome[0] * 10;
-				}
+				//if(cell->generation >= LIVING_CELL){
+					r = cell->homePond * 31 + 70;
+					g = cell->homePond * 31 * 3 + 20;
+					b = cell->homePond * 31 * 5 + 20;
+				//}
 			}
 			break;
 		case LANDSCAPE:{
@@ -84,8 +84,8 @@ QColor Renderer::getColor(struct Cell *cell, int mode){
 			}else{
 				if(cell->generation >= LIVING_CELL){
 					r = cell->size * 2 + 50;
-					g = cell->size + 50;
-					b = cell->size * 2;
+					g = cell->size + 100;
+					b = cell->size * 5;
 				}
 			}
 		}break;
