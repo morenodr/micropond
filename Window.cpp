@@ -62,10 +62,27 @@ void Window::initGui(){
 	//MENU
 	QMenuBar *menuBar = new QMenuBar();
 	QMenu *file = new QMenu("File");
-	QAction *close = new QAction("close",this);
+	QAction *close = new QAction("Close",this);
 	connect(close , SIGNAL(triggered()), this, SLOT(close()));
-	file->addAction(close);
 	
+	QAction *save = new QAction("Save pond as",this);
+	connect(save , SIGNAL(triggered()), this, SLOT(savePond()));
+		
+	QAction *load = new QAction("Load pond",this);
+	connect(load , SIGNAL(triggered()), this, SLOT(loadPond()));
+	
+	QAction *reset = new QAction("Reset pond",this);
+	connect(reset , SIGNAL(triggered()), this, SLOT(resetPond()));
+		
+	QAction *resetAll= new QAction("Reset all ponds",this);
+	connect(resetAll , SIGNAL(triggered()), this, SLOT(resetAllPonds()));
+	
+	file->addAction(save);
+	file->addAction(load);
+	file->addAction(reset);
+	file->addAction(resetAll);
+	file->addAction(close);
+
 	QMenu *views = new QMenu("Viewmode");
 	
 	viewsGroup = new QActionGroup(this);
@@ -194,6 +211,9 @@ void Window::load(QString file){
 	while(!simulation->isFinished());
 	simulation->loadWorld(file);
 	simulation->start();
+
+	slider->setRange(0, simulation->getMaxEnergyAdd());
+	slider->setValue(simulation->getEnergyAdd());
 	sema->release(1);
 }
 
@@ -204,6 +224,63 @@ void Window::save(QString file){
 	while(!simulation->isFinished());
 	simulation->saveWorld(file);
 	simulation->start();
+
+	sema->release(1);
+}
+
+void Window::savePond(){
+	QFileDialog::Options options;
+	QString selectedFilter;
+	QString fileName = QFileDialog::getSaveFileName(this,
+	                             tr("Save pond"),
+	                             QDir::homePath(),
+								tr("Micropond files (*.pnd)"),
+	                            &selectedFilter,
+	                             options);
+	if (!fileName.isEmpty()){
+		if(!fileName.endsWith(".pnd")){
+			fileName+=".pnd";
+		}
+		save(fileName);
+	}
+}
+
+void Window::loadPond(){
+	QFileDialog::Options options;
+	QString selectedFilter;
+	QString fileName = QFileDialog::getOpenFileName(this,
+	                             tr("Load pond file"),
+	                             QDir::homePath(),
+	                             tr("Micropond files (*.pnd)"),
+	                            &selectedFilter,
+	                             options);
+	if (!fileName.isEmpty()){
+		load(fileName);
+	}
+}
+
+void Window::resetPond(){
+	sema->acquire(1);
+	simulation->resume();
+	simulation->stopIt();
+	while(!simulation->isFinished());
+	simulation->init();
+	simulation->start();
+
+	sema->release(1);
+}
+
+void Window::resetAllPonds(){
+	sema->acquire(1);
+	
+	for(int i = 0; i < simus->size() ; i++){
+		simus->at(i)->resume();
+		simus->at(i)->stopIt();
+		while(simus->at(i)->isRunning());
+		simus->at(i)->init();
+		simus->at(i)->start();
+	}
+
 	sema->release(1);
 }
 

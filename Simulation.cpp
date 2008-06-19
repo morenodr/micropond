@@ -9,7 +9,6 @@ Simulation::Simulation(QQueue <struct Cell>*pool,QSemaphore *geneblocker,int id)
 	cellid = 0;
 	mutated = 0;
 	running = true;
-	
 	mutex = new QSemaphore(0);
 	count = 0;
 	energyAdd = ENERGY_ADDED;
@@ -45,6 +44,7 @@ int Simulation::executed(){
  * running variable to false
  */
 void Simulation::run(){
+	running = true;
 	//mutex->acquire(1);
 	qsrand(time(NULL) + myId*1000);
 	//qsrand(0);
@@ -59,6 +59,7 @@ void Simulation::run(){
 	
 	round = 0;
 	mutex->release(1);
+	
 	while(running){
 	    //mutex->acquire(1);
 		round++;
