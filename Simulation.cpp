@@ -409,10 +409,8 @@ void Simulation::executeCell(int x, int y, int z){
 			struct Position pos = getNeighbour(x,y,z,facing);
 			tmpCell = &cells[pos.x][pos.y][pos.z];
 			if(cell->generation >= LIVING  &&
-					accessOk(cell, tmpCell, reg,false) &&
-					cell->energy2){
+					accessOk(cell, tmpCell, reg,false)){
 				killCell(tmpCell);
-				cell->energy2--;
 				specCommands++;
 			}
 			if(specCommands >= SPECIAL_COMMANDS){
@@ -864,29 +862,28 @@ struct Cell *Simulation::cell(int x, int y, int z){
 void Simulation::disaster(){
 	int type = 0;
 	switch(qrand() % 5){
-	case 0:
-		type = 0;
+	case Meteor:
+		type = Meteor;
 		qDebug() << "Meteor hit pond" << myId;
 		//Meteor that kills most live
 		break;
-	case 1:
+	case Poison:
 		qDebug() << "Poison meteor hit pond"<< myId;
-		type = 1;
+		type = Poison;
 		//Meteor that kills most live and posons the place
 		break;
-	case 2:
+	case Hunger:
 		qDebug() << "Hunger hit pond"<< myId;
-		type = 2;
-		//Hunger
+		type = Hunger;
 		break;
-	case 3:
+	case Killer:
 		qDebug() << "Big Killer hit pond"<< myId;
-		type = 3;
+		type = Killer;
 		//Kill all big cells, small survive
 		break;
-	case 4:
+	case Living:
 		qDebug() << "Living meteor hit pond"<< myId<<"!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!";
-		type = 4;
+		type = Living;
 		break;
 	}
 	
@@ -925,35 +922,38 @@ void Simulation::disaster(){
 				continue;
 			
 			switch(type){
-			case 0:{
+			case Meteor:{
 				if(qrand() % 40){
 					killCell(&cells[realX][realY][realZ]);
 				}
 			}break;
-			case 1:{
+			case Poison:{
 				if(qrand() % 20){
 					killCell(&cells[realX][realY][realZ]);
 					cells[realX][realY][realZ].bad = 10;
 				}
 			}break;
-			case 2:{
+			case Hunger:{
 				cells[realX][realY][realZ].energy /= 20;
 				cells[realX][realY][realZ].energy2 /= 20;
 			}break;
-			case 3:{
+			case Killer:{
 				if(cells[realX][realY][realZ].size > GENOME_SIZE / 6){
 					killCell(&cells[realX][realY][realZ]);
 				}
 			}break;
-			case 4:{
-				if(qrand() % 300 == 0 && cells[realX][realY][realZ].generation >= LIVING){
+			case Living:{
+				if(qrand() % 300 == 0){
 					genepoolblocker->acquire(1);
 					struct Cell voyager = cells[realX][realY][realZ];
-					if(!genepool->isEmpty()){
+					if(!genepool->isEmpty()){ //replace current cell with one of the pool
 						cells[realX][realY][realZ] = genepool->dequeue();
 						cells[realX][realY][realZ].place = &world[realX][realY][realZ];
 					}
-					tempVoyagers->enqueue(voyager);
+					//if replaced cell lives, put it in the pool
+					if(cells[realX][realY][realZ].generation >= LIVING){
+						tempVoyagers->enqueue(voyager);
+					}
 					genepoolblocker->release(1);
 				}else{
 					killCell(&cells[realX][realY][realZ]);

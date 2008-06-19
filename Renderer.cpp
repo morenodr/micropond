@@ -69,11 +69,11 @@ QColor Renderer::getColor(struct Cell *cell, int mode){
 				g = 254;
 				b = 254;
 			}else{
-				//if(cell->generation >= LIVING_CELL){
+				if(cell->generation >= LIVING_CELL){
 					r = cell->homePond * 31 + 70;
 					g = cell->homePond * 31 * 3 + 20;
 					b = cell->homePond * 31 * 5 + 20;
-				//}
+				}
 			}
 			break;
 		case LANDSCAPE:{

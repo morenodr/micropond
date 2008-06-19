@@ -1,13 +1,13 @@
 #include "Window.h"
 
-Window::Window()
+Window::Window(int threads)
 {
 	sema = new QSemaphore(1);
 	genepool = new QQueue<struct Cell>();
 	genepoolblocker = new QSemaphore(1);
 	
 	simus = new QList<Simulation *>();
-	for(int i = 0; i < THREADS; i++){
+	for(int i = 0; i < threads; i++){
 		Simulation *temp = new Simulation(genepool,genepoolblocker,i);
 		temp->start();
 		simus->append(temp);
@@ -22,7 +22,7 @@ Window::Window()
 
 void Window::stat(){
 	unsigned long total = 0;
-	for(int i = 0; i < THREADS; i++){
+	for(int i = 0; i < simus->size(); i++){
 		uint temp = simus->at(i)->executed();
 		total += temp;
 		qDebug() << "pond" << i << "executed:" << temp;
@@ -109,7 +109,7 @@ void Window::initGui(){
 	pondsGroup->setExclusive(true);
 	connect(pondsGroup , SIGNAL(triggered(QAction *)), this, SLOT(selectPond(QAction *)));
 	QMenu *ponds = new QMenu("Ponds");
-	for(int i = 0; i < THREADS; i++){
+	for(int i = 0; i < simus->size(); i++){
 		QAction *pond = new QAction(QString::number(i),pondsGroup);
 		pond->setCheckable(true);
 		if(i == 0)
