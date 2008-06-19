@@ -122,6 +122,7 @@ public:
 	void loadWorld(QString file);
 	int id(){return myId;}
 	int executed();
+	void init();
 	
 private:
 	struct Cell cells[WORLD_X][WORLD_Y][WORLD_Z];
@@ -134,7 +135,6 @@ private:
 	
 	uint energyAdd;
 	
-	void init();
 	inline uchar randomOperation();
 	inline int randomX();
 	inline int randomY();

@@ -34,6 +34,10 @@ public slots:
 	void save(QString file);
 	void selectPond(QAction * pond);
 	void stat();
+	void savePond();
+	void loadPond();
+	void resetPond();
+	void resetAllPonds();
 	
 private:
 	void closing();
