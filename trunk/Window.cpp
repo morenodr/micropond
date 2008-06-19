@@ -25,7 +25,7 @@ void Window::stat(){
 	for(int i = 0; i < simus->size(); i++){
 		uint temp = simus->at(i)->executed();
 		total += temp;
-		qDebug() << "pond" << i << "executed:" << temp;
+		//qDebug() << "pond" << i << "executed:" << temp;
 	}	
 	qDebug() << "total executed:" << total;
 	QTimer::singleShot(STAT_INTERVAL, this, SLOT(stat()));

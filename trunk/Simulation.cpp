@@ -71,9 +71,9 @@ void Simulation::run(){
 			canExecuteNext--;
 		}else{
 			//Select random cell
-			x = qrand() % WORLD_X;
-			y = qrand() % WORLD_Y;
-			z = 0;//qrand() % WORLD_Z;
+			x = randomX();
+			y = randomY();
+			z = randomZ();
 			canExecuteNext = MAX_EXECUTION_ROW;
 		}
 		
@@ -93,7 +93,7 @@ void Simulation::run(){
 				(( cell->bad) * ( cell->bad));
 			
 			//qDebug() << "bad" << killValue << cell->bad;
-			if(((int) killValue) == 0 || (qrand() % (int) killValue) == 0){
+			if(((int) killValue) == 0 || (randValue((int) killValue)) == 0){
 				killCell(cell);
 			}
 			continue;
@@ -101,7 +101,7 @@ void Simulation::run(){
 #endif
 		
 		//kills a cell if there is not energy left and it's a child
-		if(!cell->energy && cell->generation >= LIVING && qrand() % 4){
+		if(!cell->energy && cell->generation >= LIVING && randValue(4)){
 			killCell(cell);
 		}else if(!world->dead){
 			//call the execution of its code
@@ -125,7 +125,7 @@ void Simulation::run(){
 		}
 		
 		//disaster :-)
-		if(qrand() % DISASTER_CHANCE == 0){
+		if(randValue(DISASTER_CHANCE) == 0){
 			disaster();
 		}
 		
@@ -142,7 +142,7 @@ void Simulation::killCell(struct Cell *cell){
 	cell->reproduced = 0;
 	cell->brain = 0;
 	cell->size = 1;
-	cell->facing = qrand() % DIRECTIONS;
+	cell->facing = randValue(DIRECTIONS);
 	cell->homePond = myId;
 	
 	int randStuff = GENOME_SIZE / 4;
@@ -161,9 +161,9 @@ void Simulation::killCell(struct Cell *cell){
  * regenarates the energy of one cell
  */
 void Simulation::regenerateEnergy(){
-	double x = qrand() % WORLD_X;
-	double y = qrand() % WORLD_Y;
-	double z = qrand() % WORLD_Z;
+	double x = randomX();
+	double y = randomY();
+	double z = randomZ();
 	
 	if(world[(int)x][(int)y][(int)z].dead){
 		return;
@@ -191,7 +191,7 @@ void Simulation::regenerateEnergy(){
 	
 	if(cell->bad > 1){
 		cell->bad--;
-	}else if(qrand() % 5 == 0){
+	}else if(randValue(5) == 0){
 		cell->bad++;
 	}
 }
@@ -227,7 +227,7 @@ bool Simulation::accessOk(struct Cell *source, struct Cell *dest, char guess,boo
 	if(access_chance == 0)
 		return true;
 	
-	return !(qrand() % access_chance);
+	return !(randValue(access_chance));
 }
 
 /**
@@ -639,14 +639,14 @@ bool Simulation::reproduce(struct Cell *cell, struct Cell *neighbour,uchar *outp
 		}
 		
 #ifdef REPRODUCTION_ERRORS
-		if(!(qrand() % MUTATION_RATE_REPRODUCTION)){
-			switch(qrand() % 5){
+		if(!(randValue(MUTATION_RATE_REPRODUCTION))){
+			switch(randValue(5)){
 			case 0:
 			case 1://command replacement
 				neighbour->genome[i] = randomOperation();
 				break;
 			case 2://duplication or removal
-				loop = qrand() % GENOME_SIZE;
+				loop = randValue(GENOME_SIZE);
 				break;
 			case 3:{//remove command
 				loop++;
@@ -742,14 +742,14 @@ void Simulation::init(){
 	int lines = 0;
 	while(lines < LANDSCAPE_LINES){
 		struct Position start;
-		start.x = qrand() % WORLD_X;
-		start.y = qrand() % WORLD_Y;
-		start.z = 0;
+		start.x = randomX();
+		start.y = randomY();
+		start.z = randomZ();
 		
 		struct Position end;
-		end.x = qrand() % WORLD_X;
-		end.y = qrand() % WORLD_Y;
-		end.z = 0;
+		end.x = randomX();
+		end.y = randomY();
+		end.z = randomZ();
 		
 		x = start.x;
 		y = start.y;
@@ -834,7 +834,7 @@ void Simulation::mutateCell(struct Cell *cell){
 	}
 	
 	for(int i = 0; i < max; i++){
-		int pos = qrand() % (GENOME_SIZE / 3);
+		int pos = randValue(GENOME_SIZE / 3);
 		cell->genome[pos] = randomOperation();
 	}
 	
@@ -846,7 +846,25 @@ void Simulation::mutateCell(struct Cell *cell){
  * returns a random operation
  */
 inline uchar Simulation::randomOperation(){
-	return (uchar)(qrand() % GENOME_OPERATIONS);
+	//return (uchar)(qrand() % GENOME_OPERATIONS);
+	return uchar(qrand() * randScale * GENOME_OPERATIONS);
+}
+
+inline int Simulation::randomX(){
+	return int(qrand() * randScale * WORLD_X);
+}
+
+inline int Simulation::randomY(){
+	return int(qrand() * randScale * WORLD_Y);
+}
+
+inline int Simulation::randomZ(){
+	return 0;
+	//return int(qrand() * randScale * WORLD_Z);
+}
+
+inline int Simulation::randValue(int value){
+	return int(qrand() * randScale * value);
 }
 
 /**
@@ -861,7 +879,7 @@ struct Cell *Simulation::cell(int x, int y, int z){
  */
 void Simulation::disaster(){
 	int type = 0;
-	switch(qrand() % 5){
+	switch(randValue(5)){
 	case Meteor:
 		type = Meteor;
 		qDebug() << "Meteor hit pond" << myId;
@@ -889,16 +907,16 @@ void Simulation::disaster(){
 	
 	int x,y;
 	
-	x = qrand() % WORLD_X;
-	y = qrand() % WORLD_Y;
+	x = randomX();
+	y = randomY();
 	
 	int realX, realY, realZ;
 	realZ = 0; //special case anyway, what to do in a 3d env?
 	
-	int size = qrand() % 30 + 70;
+	int size = randValue(30) + 70;
 	
-	if(qrand() % 10 == 0 && type != 4){ //10% chance of a big disaster
-		if(qrand() % 10 == 0){ // again, 2% chance for a huge disaster
+	if(randValue(10) == 0 && type != 4){ //10% chance of a big disaster
+		if(randValue(10) == 0){ // again, 2% chance for a huge disaster
 			size *= 6;
 		}else{
 			size *= 3;
@@ -923,12 +941,12 @@ void Simulation::disaster(){
 			
 			switch(type){
 			case Meteor:{
-				if(qrand() % 40){
+				if(randValue(40)){
 					killCell(&cells[realX][realY][realZ]);
 				}
 			}break;
 			case Poison:{
-				if(qrand() % 20){
+				if(randValue(20)){
 					killCell(&cells[realX][realY][realZ]);
 					cells[realX][realY][realZ].bad = 10;
 				}
@@ -943,7 +961,7 @@ void Simulation::disaster(){
 				}
 			}break;
 			case Living:{
-				if(qrand() % 300 == 0){
+				if(randValue(300) == 0){
 					genepoolblocker->acquire(1);
 					struct Cell voyager = cells[realX][realY][realZ];
 					if(!genepool->isEmpty()){ //replace current cell with one of the pool
@@ -968,7 +986,7 @@ void Simulation::disaster(){
 		genepoolblocker->acquire(1);
 		while(!tempVoyagers->isEmpty()){
 			if(genepool->size() > 70 ){ //only hold 70 cells, remove one if too many
-				genepool->removeAt(qrand() % genepool->size());
+				genepool->removeAt(randValue(genepool->size()));
 			}
 			genepool->enqueue(tempVoyagers->dequeue());
 		}

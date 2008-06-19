@@ -136,6 +136,11 @@ private:
 	
 	void init();
 	inline uchar randomOperation();
+	inline int randomX();
+	inline int randomY();
+	inline int randomZ();
+	inline int randValue(int value);
+	
 	void executeCell(int x, int y, int z);
 	void mutateCell(struct Cell *cell);
 	void killCell(struct Cell *cell);
@@ -157,6 +162,7 @@ private:
 	
 	QQueue <struct Cell>*genepool;
 	QSemaphore *genepoolblocker;
+	static const qreal randScale  = 1 / (1. + RAND_MAX);
 };
 
 #endif /*SIMULATION_H_*/
