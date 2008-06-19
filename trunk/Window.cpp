@@ -3,13 +3,15 @@
 Window::Window()
 {
 	sema = new QSemaphore(1);
+	genepool = new QQueue<struct Cell>();
+	genepoolblocker = new QSemaphore(1);
+	
 	simus = new QList<Simulation *>();
 	for(int i = 0; i < THREADS; i++){
-		Simulation *temp = new Simulation(i);
+		Simulation *temp = new Simulation(genepool,genepoolblocker,i);
 		temp->start();
 		simus->append(temp);
 	}
-	
 	
 	simulation = simus->at(0); //select first thread as default
 	renderer = new Renderer(simulation,sema);
@@ -82,7 +84,7 @@ void Window::initGui(){
 	connect(lineage, SIGNAL(triggered()), this, SLOT(lineageView()));
 	lineage->setCheckable(true);
 		
-	QAction *logo = new QAction("Logo",viewsGroup);
+	QAction *logo = new QAction("Home pond",viewsGroup);
 	connect(logo, SIGNAL(triggered()), this, SLOT(logoView()));
 	logo->setCheckable(true);
 			

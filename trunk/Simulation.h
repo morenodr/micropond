@@ -34,9 +34,9 @@
 #define UP 4
 #define DOWN 5
 
-#define MUTATION_RATE_REPRODUCTION 7000
-#define MUTATION_RATE_EXECUTION 100000
-#define MUTATION_RATE_NON_LIVING 200
+#define MUTATION_RATE_REPRODUCTION 10000
+//#define MUTATION_RATE_EXECUTION 100000
+//#define MUTATION_RATE_NON_LIVING 200
 //#define MAX_MUTATIONS_NON_LIVING 3
 
 #define ENERGY_ADDED 5000
@@ -71,6 +71,7 @@ struct Cell{
 	struct Place *place;
 	uint size;
 	uchar facing;
+	uint homePond;
 }; 
 
 struct Place{ 
@@ -87,7 +88,7 @@ class Simulation: public QThread
 {
 	Q_OBJECT
 public:
-	Simulation(int id);
+	Simulation(QQueue <struct Cell>*pool,QSemaphore *geneblocker,int id);
 	virtual ~Simulation();
 	void run();
 	void stopIt(){running = false;};
@@ -144,6 +145,9 @@ private:
 	unsigned long mutated;
 	bool initialized;
 	int myId;
+	
+	QQueue <struct Cell>*genepool;
+	QSemaphore *genepoolblocker;
 };
 
 #endif /*SIMULATION_H_*/

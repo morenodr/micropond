@@ -9,7 +9,7 @@
 #define GENERATION 0
 #define GENOME 1
 #define LINEAGE 2
-#define LOGO 3
+#define HOME 3
 #define LANDSCAPE 4
 #define ENERGY 5
 #define ENERGY2 6
