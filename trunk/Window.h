@@ -14,7 +14,7 @@ class Window: public QMainWindow
 {
 	Q_OBJECT
 public:
-	Window();
+	Window(int threads);
 	virtual ~Window();
 	void initGui();
 	void closeEvent ( QCloseEvent * event );

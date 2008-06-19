@@ -52,9 +52,18 @@
 
 #define LANDSCAPE_LINES 6
 
-#define MAX_EXECUTING 2000
+#define MAX_EXECUTING 1500
 
 #define SPECIAL_COMMANDS 5 //number of allowed special commands like kill, move
+
+enum Disasters
+{
+	Meteor,
+	Poison,
+	Hunger,
+	Killer,
+	Living
+};
 
 struct Cell{
 	uint genome_size;
