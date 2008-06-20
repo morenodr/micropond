@@ -1,6 +1,27 @@
 #include "Simulation.h"
 #include <cstring>
 
+/*
+ * 
+ * #ifdef Q_OS_WIN quint32 bigrand() {
+ *  return qrand() << 15 | qrand(); } 
+ * #else quint32 bigrand() { 
+ *  return qrand(); 
+ * } #endif
+ * 
+ * bigrand() { 
+ * return (qrand() & 0x9FFE) << 18 | (qrand() & 0x9FFE) << 4 | (qrand() & 0x9F00) >> 11; 
+ * }
+ */
+
+quint32 bigrand() {
+#ifdef Q_OS_WIN 
+	return qrand() << 15 | qrand(); } 
+#else
+	return qrand(); 
+#endif
+} 
+
 Simulation::Simulation(QQueue <struct Cell>*pool,QSemaphore *geneblocker,int id)
 {
 	genepool = pool;
@@ -865,7 +886,7 @@ inline int Simulation::randomZ(){
 }
 
 inline int Simulation::randValue(int value){
-	return int(qrand() * randScale * value);
+	return int(bigrand() * randScale * value);
 }
 
 /**
