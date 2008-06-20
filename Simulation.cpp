@@ -16,9 +16,10 @@
 
 quint32 bigrand() {
 #ifdef Q_OS_WIN 
-	return qrand() << 15 | qrand();
+	return (qrand() << 15) | qrand();
 #else
-	return qrand(); 
+	return (qrand() << 15) | qrand();
+	//return qrand(); 
 #endif
 } 
 
@@ -886,7 +887,7 @@ inline int Simulation::randomZ(){
 }
 
 inline int Simulation::randValue(int value){
-	return int(bigrand() * randScale * value);
+	return int(bigrand() * randScaleBig * value);
 }
 
 /**
