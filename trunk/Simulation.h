@@ -163,10 +163,11 @@ private:
 	QQueue <struct Cell>*genepool;
 	QSemaphore *genepoolblocker;
 	static const qreal randScale  = 1 / (1. + RAND_MAX);
+	
 #ifdef Q_OS_WIN 
 	static const qreal randScaleBig  = 1 / (1. + 1073741824); //2^30
 #else
-	static const qreal randScaleBig  = randScale;
+	static const qreal randScaleBig  = 1 / (1. + RAND_MAX);
 #endif
 	
 };
