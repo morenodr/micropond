@@ -16,7 +16,7 @@
 
 quint32 bigrand() {
 #ifdef Q_OS_WIN 
-	return qrand() << 15 | qrand(); } 
+	return qrand() << 15 | qrand();
 #else
 	return qrand(); 
 #endif
