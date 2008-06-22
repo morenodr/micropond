@@ -6,6 +6,9 @@ Renderer::Renderer(Simulation *sim,QSemaphore *sem)
 	sema = sem;
 	simulation = sim;
 	colorMode = GENOME;
+#ifdef SAVE_PICTURES
+	imageCounter = 0;
+#endif
 }
 void Renderer::update(){
 	updatePicture();
@@ -70,9 +73,9 @@ QColor Renderer::getColor(struct Cell *cell, int mode){
 				b = 254;
 			}else{
 				if(cell->generation >= LIVING_CELL){
-					r = cell->homePond * 31 + 70;
-					g = cell->homePond * 31 * 3 + 20;
-					b = cell->homePond * 31 * 5 + 20;
+					r = cell->homePond;
+					g = cell->homePond >> 5;
+					b = cell->homePond >> 8;
 				}
 			}
 			break;
@@ -123,12 +126,18 @@ void Renderer::updatePicture(){
 			temp.setPixel(x,y,getColor(cell,colorMode).rgb());
 		}
 	}
+	
 	int counter = simulation->counter();
 	
 	simulation->resume();
 	setPixmap(QPixmap::fromImage (temp));
 	//qDebug() << "Pond:"<< simulation->id() << "cells executed: " << counter;
 
+#ifdef SAVE_PICTURES
+	temp.save(QDir::homePath()+"/asdf"+QString::number(imageCounter)+".png");
+	imageCounter++;
+#endif
+	
 	sema->release(1);
 }
 
