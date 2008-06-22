@@ -601,7 +601,14 @@ void Simulation::executeCell(int x, int y, int z){
 			tmpCell = &cells[pos.x][pos.y][pos.z];
 			reg = tmpCell->facing;
 		}break;
-		case 32: //end
+		case 32:{ //see neighbour facing
+			struct Position pos = getNeighbour(x,y,z,facing);
+			tmpCell = &cells[pos.x][pos.y][pos.z];
+			if(accessOk(cell, tmpCell, reg,false)){
+				reg = tmpCell->genome[pointer];
+			}
+		}break;
+		case 33: //end
 			stop = true;
 			break;
 		}
@@ -615,7 +622,7 @@ void Simulation::executeCell(int x, int y, int z){
 	if(output_buffer[0] != NO_REP_OPERATION){
 		struct Position pos = getNeighbour(x,y,z,facing);
 		struct Cell *neighbour = &cells[pos.x][pos.y][pos.z];
-		if(accessOk(cell, neighbour, reg,false)){
+		if(accessOk(cell, neighbour, reg,false) && accessOk(cell, neighbour, reg,false)){
 			if(reproduce(cell,neighbour,output_buffer)){
 				cell->reproduced = 0;
 			}else{
@@ -702,6 +709,10 @@ bool Simulation::reproduce(struct Cell *cell, struct Cell *neighbour,uchar *outp
 	}
 	
 	if(copied >= MIN_COPY){
+		if(neighbour->generation >= LIVING){
+			neighbour->energy += neighbour->size;
+		}
+		
 		if(cell->id == 0){
 			cell->id = ++cellid;
 			cell->lineage = cell->id;
@@ -720,6 +731,7 @@ bool Simulation::reproduce(struct Cell *cell, struct Cell *neighbour,uchar *outp
 		neighbour->size = copied;
 		
 		neighbour->homePond = cell->homePond;
+		
 		return true;
 	}
 	
@@ -1006,11 +1018,13 @@ void Simulation::disaster(){
 	
 	if(type == 4){
 		genepoolblocker->acquire(1);
-		while(!tempVoyagers->isEmpty()){
+		int max = 10;
+		while(!tempVoyagers->isEmpty() && max){
 			if(genepool->size() > 70 ){ //only hold 70 cells, remove one if too many
 				genepool->removeAt(randValue(genepool->size()));
 			}
 			genepool->enqueue(tempVoyagers->dequeue());
+			max--;
 		}
 		genepoolblocker->release(1);
 	}

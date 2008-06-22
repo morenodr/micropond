@@ -141,6 +141,9 @@ QString CreatureBar::operationName(uchar operation){
 		return "reg = neighbour facing";
 		break;
 	case 32://end
+		return "Read neighbour genome";
+		break;
+	case 33://end
 		return "stop";
 		break;
 	}

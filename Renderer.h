@@ -21,6 +21,10 @@
 
 #define SHOW_LANDSCAPE true
 
+// ffmpeg -r 10 -qscale 1 -i asdf%d.png micropond.avi  
+//#define SAVE_PICTURES 
+
+
 class Renderer: public QLabel
 {
 	Q_OBJECT
@@ -47,6 +51,10 @@ private:
 	Simulation *simulation;
 	int colorMode;
 	QSemaphore *sema; //controls the rendering and loading
+	
+#ifdef SAVE_PICTURES
+	int imageCounter;
+#endif
 };
 
 #endif /*RENDERER_H_*/

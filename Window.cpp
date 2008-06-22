@@ -5,10 +5,11 @@ Window::Window(int threads)
 	sema = new QSemaphore(1);
 	genepool = new QQueue<struct Cell>();
 	genepoolblocker = new QSemaphore(1);
+	qsrand(time(NULL));
 	
 	simus = new QList<Simulation *>();
 	for(int i = 0; i < threads; i++){
-		Simulation *temp = new Simulation(genepool,genepoolblocker,i);
+		Simulation *temp = new Simulation(genepool,genepoolblocker,qrand());
 		temp->start();
 		simus->append(temp);
 	}
