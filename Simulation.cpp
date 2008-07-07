@@ -37,6 +37,7 @@ Simulation::Simulation(QQueue <struct Cell>*pool,QSemaphore *geneblocker,int id)
 	nextSet = false;
 	canExecuteNext = true;
 	initialized = false;
+	catas = false;
 }
 
 Simulation::~Simulation()
@@ -147,8 +148,12 @@ void Simulation::run(){
 			regenerateEnergy();
 		}
 		
+		if(round == SAVE_TIME){
+			catas = true;
+		}
+		
 		//disaster :-)
-		if(randValue(DISASTER_CHANCE) == 0){
+		if(randValue(DISASTER_CHANCE) == 0 && catas){
 			disaster();
 		}
 		
@@ -774,6 +779,7 @@ bool Simulation::reproduce(struct Cell *cell, struct Cell *neighbour,uchar *outp
  * Initialize each cell
  */
 void Simulation::init(){
+	catas = false;
 	int x = 0;
 	int y = 0;
 	int z = 0;
@@ -1017,8 +1023,8 @@ void Simulation::disaster(){
 				}
 			}break;
 			case Hunger:{
-				cells[realX][realY][realZ].energy /= 20;
-				cells[realX][realY][realZ].energy2 /= 20;
+				cells[realX][realY][realZ].energy /= 10;
+				cells[realX][realY][realZ].energy2 /= 10;
 			}break;
 			case Killer:{
 				if(cells[realX][realY][realZ].size > GENOME_SIZE / 6){
@@ -1157,4 +1163,5 @@ void Simulation::loadWorld(QString file){
 	qDebug() << "loaded" << file;
 	in.close();
 	initialized = true;
+	catas = true;
 }

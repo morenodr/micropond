@@ -51,7 +51,9 @@
 
 #define MIN_COPY 5
 
-#define DISASTER_CHANCE 8003252
+#define DISASTER_CHANCE 5000000
+
+#define SAVE_TIME 300000000 //+- 3 minutes with no disasters
 
 #define LANDSCAPE_LINES 6
 
@@ -166,6 +168,8 @@ private:
 	QQueue <struct Cell>*genepool;
 	QSemaphore *genepoolblocker;
 	static const double randScale  = 1.0 / (1.0 + RAND_MAX);
+	
+	bool catas;
 	
 #ifdef Q_OS_WIN 
 	static const double randScaleBig  = 1.0 / (1.0 + 1073741824.0); //2^30
