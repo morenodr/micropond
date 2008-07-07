@@ -144,7 +144,13 @@ QString CreatureBar::operationName(uchar operation){
 		return "Read neighbour genome";
 		break;
 	case 33://end
+		return "reproduce";
+		break;
+	case 34://end
 		return "stop";
+		break;
+	case 35://end
+		return "stop && reproduce";
 		break;
 	}
 	return "NOT DEFINED"+QString::number(operation);

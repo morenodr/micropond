@@ -10,13 +10,14 @@
 //#define EXECUTION_ERRORS //creates random execution errors
 #define REPRODUCTION_ERRORS //mutates genome when reproducing
 #define BAD_KILLS
+#define MUST_REPRODUCE //creatures get killed if they don't reproduce
 
 #define WORLD_X 800
 #define WORLD_Y 600
 #define WORLD_Z 1
 #define GENOME_SIZE 100 //number of operations in a genome
 
-#define GENOME_OPERATIONS 34 //number of different operations
+#define GENOME_OPERATIONS 36 //number of different operations
 #define NO_REP_OPERATION 11 //id of the NO REPRODUCE operation
 
 #define EAT_ENERGY GENOME_SIZE //amount of energy gained from eating
@@ -34,7 +35,7 @@
 #define UP 4
 #define DOWN 5
 
-#define MUTATION_RATE_REPRODUCTION 20000
+#define MUTATION_RATE_REPRODUCTION 2000
 //#define MUTATION_RATE_EXECUTION 100000
 //#define MUTATION_RATE_NON_LIVING 200
 //#define MAX_MUTATIONS_NON_LIVING 3
@@ -42,13 +43,15 @@
 #define ENERGY_ADDED 5000
 #define ENERGY_FREQUENCY 25
 
+#define REPRODUCTION_COST_FACTOR 2
+
 #define ENERGY_DECREASE 5000000
 
 #define ENERGY2_CONVERSION_GAIN 17
 
 #define MIN_COPY 5
 
-#define DISASTER_CHANCE 6000000
+#define DISASTER_CHANCE 8003252
 
 #define LANDSCAPE_LINES 6
 
@@ -162,12 +165,12 @@ private:
 	
 	QQueue <struct Cell>*genepool;
 	QSemaphore *genepoolblocker;
-	static const qreal randScale  = 1 / (1. + RAND_MAX);
+	static const double randScale  = 1.0 / (1.0 + RAND_MAX);
 	
 #ifdef Q_OS_WIN 
-	static const qreal randScaleBig  = 1 / (1. + 1073741824); //2^30
+	static const double randScaleBig  = 1.0 / (1.0 + 1073741824.0); //2^30
 #else
-	static const qreal randScaleBig  = 1 / (1. + RAND_MAX);
+	static const double randScaleBig  = 1.0 / (1.0 + RAND_MAX);
 #endif
 	
 };

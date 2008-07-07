@@ -1,12 +1,17 @@
 TEMPLATE = app
 TARGET = Micropond
 QT += core \
-    gui
-HEADERS += CreatureBar.h \
+    gui \
+    network
+HEADERS += Outgoing.h \
+    Incoming.h \
+    CreatureBar.h \
     Renderer.h \
     Simulation.h \
     Window.h
-SOURCES += CreatureBar.cpp \
+SOURCES += Outgoing.cpp \
+    Incoming.cpp \
+    CreatureBar.cpp \
     Renderer.cpp \
     Simulation.cpp \
     Window.cpp \
