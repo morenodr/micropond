@@ -6,8 +6,10 @@
 #include "Renderer.h"
 #include "Simulation.h"
 #include "CreatureBar.h"
+#include "Incoming.h"
+#include "Outgoing.h"
 
-#define THREADS 2
+#define THREADS 1
 #define STAT_INTERVAL 1000
 
 class Window: public QMainWindow
@@ -52,6 +54,8 @@ private:
 	QList <Simulation *>*simus;
 	QQueue <struct Cell>*genepool;
 	QSemaphore *genepoolblocker;
+	Incoming *incRequests;
+	Outgoing *outRequests;
 };
 
 #endif /*WINDOW_H_*/

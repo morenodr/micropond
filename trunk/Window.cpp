@@ -19,6 +19,9 @@ Window::Window(int threads)
 	//TODO: create menu entry, and remove. use Window::load
 	/*simulation->loadWorld("/home/asraniel/test3");*/
 	stat();
+	
+	//incRequests = new Incoming(genepool,genepoolblocker);
+	//outRequests = new Outgoing(genepool,genepoolblocker);
 }
 
 void Window::stat(){
@@ -29,6 +32,7 @@ void Window::stat(){
 		//qDebug() << "pond" << i << "executed:" << temp;
 	}	
 	qDebug() << "total executed:" << total;
+	setWindowTitle("Micropond    CPS: " + QString::number(total));
 	QTimer::singleShot(STAT_INTERVAL, this, SLOT(stat()));
 }
 

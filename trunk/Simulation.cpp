@@ -1,5 +1,6 @@
 #include "Simulation.h"
 #include <cstring>
+#include <stdlib.h>
 
 /*
  * 
@@ -10,15 +11,15 @@
  * } #endif
  * 
  * bigrand() { 
- * return (qrand() & 0x9FFE) << 18 | (qrand() & 0x9FFE) << 4 | (qrand() & 0x9F00) >> 11; 
+ * return (qrand() & 0x9FFE) << 18 | (qrand() & 0x9FFE) << 4 | (rand() & 0x9F00) >> 11; 
  * }
  */
 
-quint32 bigrand() {
+int bigrand() {
 #ifdef Q_OS_WIN 
-	return (qrand() << 15) | qrand();
+	return (rand() << 15) | rand();
 #else
-	return qrand(); 
+	return rand(); 
 #endif
 } 
 
@@ -32,7 +33,7 @@ Simulation::Simulation(QQueue <struct Cell>*pool,QSemaphore *geneblocker,int id)
 	running = true;
 	mutex = new QSemaphore(0);
 	count = 0;
-	energyAdd = ENERGY_ADDED;
+	energyAdd = ENERGY_ADDED / 2 + randValue(ENERGY_ADDED / 2);
 	nextSet = false;
 	canExecuteNext = true;
 	initialized = false;
@@ -67,7 +68,7 @@ int Simulation::executed(){
 void Simulation::run(){
 	running = true;
 	//mutex->acquire(1);
-	qsrand(time(NULL) + myId*1000);
+	srand(myId);
 	//qsrand(0);
 	
 	if(!initialized){
@@ -211,7 +212,7 @@ void Simulation::regenerateEnergy(){
 	struct Cell *cell = &cells[(int)x][(int)y][(int)z];
 	cell->energy += (int)((double)energyAdd * mod);
 	
-	if(cell->bad > 1){
+	if(cell->bad > 1 && randValue(2)){
 		cell->bad--;
 	}else if(randValue(5) == 0){
 		cell->bad++;
@@ -262,6 +263,7 @@ void Simulation::executeCell(int x, int y, int z){
 	int output_pointer = 0; //pointer to the outputbuffer
 	uchar output_buffer[GENOME_SIZE]; //outputbuffer, needed for reproducing
 	bool stop = false;
+	bool reproducing = true;
 	struct Cell *tmpCell; //temporary cell
 	
 	memset(output_buffer, NO_REP_OPERATION, GENOME_SIZE * sizeof(uchar));
@@ -287,8 +289,8 @@ void Simulation::executeCell(int x, int y, int z){
 		
 #ifdef EXECUTION_ERRORS
 		//execution perturbation
-		if(qrand() % MUTATION_RATE_EXECUTION == 0){
-			switch(qrand() % 3){
+		if(rand() % MUTATION_RATE_EXECUTION == 0){
+			switch(rand() % 3){
 			case 0:
 				inst = randomOperation();
 				break;
@@ -296,7 +298,7 @@ void Simulation::executeCell(int x, int y, int z){
 				reg = randomOperation();
 				break;
 			case 2:
-				pointer = qrand() % GENOME_SIZE;
+				pointer = rand() % GENOME_SIZE;
 				break;
 			}
 		}
@@ -531,7 +533,7 @@ void Simulation::executeCell(int x, int y, int z){
 			if(cell->energy2){
 				cell->energy2--;
 				cell->energy += ENERGY2_CONVERSION_GAIN;
-				if(!(qrand() % 30)){
+				if(!(rand() % 30)){
 					cell->bad++;
 				}
 			}
@@ -608,8 +610,30 @@ void Simulation::executeCell(int x, int y, int z){
 				reg = tmpCell->genome[pointer];
 			}
 		}break;
-		case 33: //end
+		case 33:{
+			if(output_buffer[0] != NO_REP_OPERATION && 
+					cell->energy >= cell->size * REPRODUCTION_COST_FACTOR){
+				cell->energy -= cell->size * REPRODUCTION_COST_FACTOR;
+				struct Position pos = getNeighbour(x,y,z,facing);
+				struct Cell *neighbour = &cells[pos.x][pos.y][pos.z];
+				if(accessOk(cell, neighbour, reg,false) && accessOk(cell, neighbour, reg,false)){
+					if(reproduce(cell,neighbour,output_buffer)){
+						cell->reproduced = 0;
+					}
+				}
+			}
+			memset(output_buffer, NO_REP_OPERATION, GENOME_SIZE * sizeof(uchar));
+			specCommands++;
+			if(specCommands >= SPECIAL_COMMANDS){
+				stop = true;
+			}
+		}break;
+		case 34: //end
 			stop = true;
+			reproducing = false;
+			break;
+		case 35: //end and reproduce
+			stop = true;			
 			break;
 		}
 	}
@@ -619,7 +643,9 @@ void Simulation::executeCell(int x, int y, int z){
 	output_pointer = 0;
 	
 	//jeah, we can reproduce something
-	if(output_buffer[0] != NO_REP_OPERATION){
+	if(output_buffer[0] != NO_REP_OPERATION && reproducing && 
+			cell->energy >= cell->size * REPRODUCTION_COST_FACTOR){
+		cell->energy -= cell->size * REPRODUCTION_COST_FACTOR;
 		struct Position pos = getNeighbour(x,y,z,facing);
 		struct Cell *neighbour = &cells[pos.x][pos.y][pos.z];
 		if(accessOk(cell, neighbour, reg,false) && accessOk(cell, neighbour, reg,false)){
@@ -633,9 +659,11 @@ void Simulation::executeCell(int x, int y, int z){
 		cell->reproduced++;
 	}
 	
+#ifdef MUST_REPRODUCE
 	if(cell->generation >= LIVING && cell->reproduced > 4){
 		killCell(cell);
 	}
+#endif
 }
 
 /**
@@ -788,10 +816,11 @@ void Simulation::init(){
 		x = start.x;
 		y = start.y;
 		z = start.z;
-		while(x != end.x || y != end.y || z != end.z){
+		while(x != end.x || y != end.y){
 			world[x][y][z].dead = true;
 			cells[x][y][z].energy = 0;
 			cells[x][y][z].bad = 0;
+			
 			if(x < end.x){
 				x++;
 			}else if(x > end.x){
@@ -827,7 +856,7 @@ void Simulation::mutateCell(struct Cell *cell){
 	for(int i = 0; i < GENOME_SIZE; i++){
 		if(cell->genome[i] != GENOME_OPERATIONS-1){
 			stops = 0;
-			if(qrand() % MUTATION_RATE_NON_LIVING == 0){
+			if(rand() % MUTATION_RATE_NON_LIVING == 0){
 				cell->genome[i] = randomOperation();
 			}
 		}else{
@@ -852,7 +881,7 @@ void Simulation::mutateCell(struct Cell *cell){
 		max = 2;
 	}
 	
-	max = qrand() % max;
+	max = rand() % max;
 	max++;
 	max = (int)((double)max * prob);
 	
@@ -864,7 +893,7 @@ void Simulation::mutateCell(struct Cell *cell){
 	}
 	if(max){
 		max++;
-		max = qrand() % max;
+		max = rand() % max;
 	}
 	
 	for(int i = 0; i < max; i++){
@@ -880,21 +909,21 @@ void Simulation::mutateCell(struct Cell *cell){
  * returns a random operation
  */
 inline uchar Simulation::randomOperation(){
-	//return (uchar)(qrand() % GENOME_OPERATIONS);
-	return uchar(qrand() * randScale * GENOME_OPERATIONS);
+	//return (uchar)(rand() % GENOME_OPERATIONS);
+	return uchar(rand() * randScale * GENOME_OPERATIONS);
 }
 
 inline int Simulation::randomX(){
-	return int(qrand() * randScale * WORLD_X);
+	return int(rand() * randScale * WORLD_X);
 }
 
 inline int Simulation::randomY(){
-	return int(qrand() * randScale * WORLD_Y);
+	return int(rand() * randScale * WORLD_Y);
 }
 
 inline int Simulation::randomZ(){
 	return 0;
-	//return int(qrand() * randScale * WORLD_Z);
+	//return int(rand() * randScale * WORLD_Z);
 }
 
 inline int Simulation::randValue(int value){
@@ -944,13 +973,15 @@ void Simulation::disaster(){
 	x = randomX();
 	y = randomY();
 	
+	qDebug() << type << x << y;
+	
 	int realX, realY, realZ;
 	realZ = 0; //special case anyway, what to do in a 3d env?
 	
 	int size = randValue(30) + 70;
 	
 	if(randValue(10) == 0 && type != 4){ //10% chance of a big disaster
-		if(randValue(10) == 0){ // again, 2% chance for a huge disaster
+		if(randValue(4) == 0){ // again, 2% chance for a huge disaster
 			size *= 6;
 		}else{
 			size *= 3;
