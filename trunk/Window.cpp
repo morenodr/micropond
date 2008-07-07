@@ -16,8 +16,6 @@ Window::Window(int threads)
 	
 	simulation = simus->at(0); //select first thread as default
 	renderer = new Renderer(simulation,sema);
-	//TODO: create menu entry, and remove. use Window::load
-	/*simulation->loadWorld("/home/asraniel/test3");*/
 	stat();
 	
 	//incRequests = new Incoming(genepool,genepoolblocker);
@@ -159,8 +157,6 @@ void Window::closeEvent( QCloseEvent * event ){
 
 void Window::close(){
 	closing();
-	//TODO: create menu entry, and remove. use Window::save
-	//save("/home/asraniel/test2");
 	qApp->quit();
 }
 
