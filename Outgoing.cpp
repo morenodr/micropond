@@ -30,7 +30,8 @@ void Outgoing::transfer(){
 	
 	qDebug() << "starting transfer";
 	
-	if(socket->waitForReadyRead()){
+	if(socket->waitForReadyRead(2000)){
+		qDebug() << "hmm";
 		quint32 number = 55;
 		QDataStream in(socket);
 		in >> number;

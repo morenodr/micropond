@@ -1,4 +1,5 @@
 #include "Window.h"
+#include "NetworkConfig.h"
 
 Window::Window(int threads)
 {
@@ -18,8 +19,8 @@ Window::Window(int threads)
 	renderer = new Renderer(simulation,sema);
 	stat();
 	
-	//incRequests = new Incoming(genepool,genepoolblocker);
-	//outRequests = new Outgoing(genepool,genepoolblocker);
+	incRequests = new Incoming(genepool,genepoolblocker);
+	outRequests = new Outgoing(genepool,genepoolblocker);
 }
 
 void Window::stat(){
@@ -137,9 +138,16 @@ void Window::initGui(){
 	}
 	ponds->addActions(pondsGroup->actions());
 	
+	//Options menu
+	QMenu *options = new QMenu("Options");
+	QAction *remote = new QAction("Remote ponds",this);
+	connect(remote, SIGNAL(triggered()), this, SLOT(configNetwork()));
+	options->addAction(remote);
+	
 	menuBar->addMenu(file);
 	menuBar->addMenu(views);
 	menuBar->addMenu(ponds);
+	menuBar->addMenu(options);
 	setMenuBar(menuBar);
 	
 	resize(200,200);
@@ -283,6 +291,12 @@ void Window::resetAllPonds(){
 	}
 
 	sema->release(1);
+}
+
+void  Window::configNetwork(){
+	NetworkConfig networkConfig(outRequests);
+	networkConfig.exec();
+	
 }
 
 void Window::selectPond(QAction * pond){

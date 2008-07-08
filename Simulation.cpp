@@ -948,7 +948,7 @@ struct Cell *Simulation::cell(int x, int y, int z){
  */
 void Simulation::disaster(){
 	int type = 0;
-	switch(randValue(5)){
+	switch(randValue(6)){
 	case Meteor:
 		type = Meteor;
 		qDebug() << "Meteor hit pond" << myId;
@@ -971,6 +971,10 @@ void Simulation::disaster(){
 	case Living:
 		qDebug() << "Living meteor hit pond"<< myId<<"!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!";
 		type = Living;
+		break;
+	case Flood:
+		qDebug() << "Flood hit pond"<< myId;
+		type = Flood;
 		break;
 	}
 	
@@ -1029,6 +1033,12 @@ void Simulation::disaster(){
 			case Killer:{
 				if(cells[realX][realY][realZ].size > GENOME_SIZE / 6){
 					killCell(&cells[realX][realY][realZ]);
+				}
+			}break;
+			case Flood:{
+				if(cells[realX][realY][realZ].size < GENOME_SIZE / 6){
+					killCell(&cells[realX][realY][realZ]);
+					cells[realX][realY][realZ].energy *= 3;
 				}
 			}break;
 			case Living:{
