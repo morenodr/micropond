@@ -14,13 +14,15 @@ NetworkConfig::NetworkConfig(Outgoing *outgoing)
 	connect(ok, SIGNAL(clicked()), this, SLOT(save()));
 	QPushButton *add = new QPushButton("Add");
 	connect(add, SIGNAL(clicked()), this, SLOT(add()));
+	QPushButton *remove = new QPushButton("Remove");
+	connect(remove, SIGNAL(clicked()), this, SLOT(remove()));
 	
 	host = new QLineEdit();
 	port = new QSpinBox();
 	port->setMaximum(65554);
 	port->setValue(PORT);
 	
-	QListWidget *list = new QListWidget(this);
+	list = new QListWidget(this);
 	
 	layout2->addWidget(host,0,0);
 	layout2->addWidget(port,0,1);
@@ -33,7 +35,8 @@ NetworkConfig::NetworkConfig(Outgoing *outgoing)
 		list->addItem(tmpHost.name +" : " + QString::number(tmpHost.port));
 	}
 	
-	layout2->addWidget(ok,2,2);
+	layout2->addWidget(remove,2,2);
+	layout2->addWidget(ok,3,2);
 	setLayout(layout2);
 	resize(listWidget->width() + 50,300);
 }
@@ -43,9 +46,19 @@ NetworkConfig::~NetworkConfig()
 }
 
 void NetworkConfig::add(){
-	out->addHost(host->text() , port->value());
+	if(!host->text().isEmpty()){
+		out->addHost(host->text() , port->value());
+	}
 }
 
+void NetworkConfig::remove(){
+	QList<QListWidgetItem *> items = list->selectedItems();
+	if(items.size()){
+		int row = list->row(items.at(0));
+		out->deleteHost(row);
+		delete list->takeItem(row);
+	}	
+}
 
 void NetworkConfig::save(){
 	accept();
