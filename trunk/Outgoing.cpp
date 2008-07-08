@@ -1,5 +1,5 @@
 #include "Outgoing.h"
- 
+
 Outgoing::Outgoing(QQueue <struct Cell>*pool,QSemaphore *geneblocker)
 {
         genepool = pool;

@@ -1,4 +1,5 @@
 #include "NetworkConfig.h"
+#include "Incoming.h"
 
 NetworkConfig::NetworkConfig(Outgoing *outgoing)
 {
@@ -16,6 +17,9 @@ NetworkConfig::NetworkConfig(Outgoing *outgoing)
 	
 	host = new QLineEdit();
 	port = new QSpinBox();
+	port->setMaximum(65554);
+	port->setValue(PORT);
+	
 	QListWidget *list = new QListWidget(this);
 	
 	layout2->addWidget(host,0,0);
