@@ -17,6 +17,8 @@ public slots:
 	void remove();
 	
 private:
+	void addPond(int index);
+	
 	Outgoing *out;
 	QLineEdit *host;
 	QSpinBox *port;
