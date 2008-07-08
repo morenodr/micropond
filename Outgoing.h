@@ -24,11 +24,15 @@ public slots:
 	void deleteHost(int index);
 	void addHost(QString host, quint16 port);
 	struct s_host getHost(int index);
+	void socketReadyRead();
+	void socketTimeout ();
 	
 private:
 	QQueue <struct Cell>*genepool;
 	QSemaphore *genepoolblocker;
 	QList <struct s_host>*hosts;
+	QTimer *timeoutTimer;
+	QTcpSocket *socket;
 };
 
 #endif /*OUTGOING_H_*/
