@@ -14,11 +14,13 @@ public:
 public slots:
 	void save();
 	void add();
+	void remove();
 	
 private:
 	Outgoing *out;
 	QLineEdit *host;
 	QSpinBox *port;
+	QListWidget *list;
 };
 
 #endif /*NETWORKCONFIG_H_*/
