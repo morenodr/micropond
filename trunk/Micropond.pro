@@ -3,13 +3,15 @@ TARGET = Micropond
 QT += core \
     gui \
     network
-HEADERS += Outgoing.h \
+HEADERS += NetworkConfig.h \
+    Outgoing.h \
     Incoming.h \
     CreatureBar.h \
     Renderer.h \
     Simulation.h \
     Window.h
-SOURCES += Outgoing.cpp \
+SOURCES += NetworkConfig.cpp \
+    Outgoing.cpp \
     Incoming.cpp \
     CreatureBar.cpp \
     Renderer.cpp \

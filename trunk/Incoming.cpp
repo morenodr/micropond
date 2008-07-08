@@ -20,6 +20,7 @@ Incoming::~Incoming()
 
 void Incoming::accept(){
 	QTcpSocket *connection = server->nextPendingConnection();
+	qDebug() << "looking at connection";
 	if(connection){
 		qDebug() << "received connection";
 		genepoolblocker->acquire(1);

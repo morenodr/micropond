@@ -67,7 +67,8 @@ enum Disasters
 	Poison,
 	Hunger,
 	Killer,
-	Living
+	Living,
+	Flood
 };
 
 struct Cell{
