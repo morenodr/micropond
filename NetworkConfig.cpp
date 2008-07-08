@@ -31,8 +31,7 @@ NetworkConfig::NetworkConfig(Outgoing *outgoing)
 	layout2->addWidget(list,1,0,1,3);
 	
 	for(int i = 0; i < out->size(); i++){
-		struct s_host tmpHost = out->getHost(i);
-		list->addItem(tmpHost.name +" : " + QString::number(tmpHost.port));
+		addPond(i);
 	}
 	
 	layout2->addWidget(remove,2,2);
@@ -45,9 +44,15 @@ NetworkConfig::~NetworkConfig()
 {
 }
 
+void NetworkConfig::addPond(int index){
+	struct s_host tmpHost = out->getHost(index);
+	list->addItem(tmpHost.name +" : " + QString::number(tmpHost.port));
+}
+
 void NetworkConfig::add(){
 	if(!host->text().isEmpty()){
 		out->addHost(host->text() , port->value());
+		addPond(out->size() - 1);
 	}
 }
 
