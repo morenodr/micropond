@@ -7,7 +7,7 @@ Outgoing::Outgoing(QQueue <struct Cell>*pool,QSemaphore *geneblocker)
  
         hosts = new QList <struct s_host>();
  
-        addHost("127.0.0.1",5443);
+        //addHost("127.0.0.1",5443);
  
         QTimer::singleShot(INTERVAL, this, SLOT(transfer()));
         timeoutTimer = new QTimer();
@@ -23,8 +23,10 @@ Outgoing::~Outgoing()
 void Outgoing::transfer(){
         socket = new QTcpSocket();
  
-        if(!hosts->size())
-                return;
+        if(!hosts->size()){
+    		QTimer::singleShot(INTERVAL, this, SLOT(transfer()));
+            return;
+        }
  
         int target = qrand() % hosts->size();
  
@@ -70,6 +72,7 @@ void Outgoing::socketTimeout ()
         socket->close();
         timeoutTimer->stop();
         delete socket;
+        QTimer::singleShot(INTERVAL, this, SLOT(transfer()));
 }
  
 void Outgoing::deleteHost(int index){

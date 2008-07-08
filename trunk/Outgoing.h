@@ -24,6 +24,7 @@ public slots:
 	void deleteHost(int index);
 	void addHost(QString host, quint16 port);
 	struct s_host getHost(int index);
+	int size(){ return hosts->size();}
 	void socketReadyRead();
 	void socketTimeout ();
 	
