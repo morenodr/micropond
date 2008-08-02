@@ -148,6 +148,7 @@ void Simulation::run(){
 			regenerateEnergy();
 		}
 		
+#ifdef DISASTERS
 		if(round == SAVE_TIME){
 			catas = true;
 		}
@@ -156,6 +157,7 @@ void Simulation::run(){
 		if(randValue(DISASTER_CHANCE) == 0 && catas){
 			disaster();
 		}
+#endif
 		
 		//mutex->release(1);
 	}
@@ -172,6 +174,9 @@ void Simulation::killCell(struct Cell *cell){
 	cell->size = 1;
 	cell->facing = randValue(DIRECTIONS);
 	cell->homePond = myId;
+	cell->genome_operations = GENOME_OPERATIONS;
+	
+#ifdef RANDOM_INITIAL_CELLS
 	
 	int randStuff = GENOME_SIZE / 4;
 	for(int i = 0; i < randStuff; i++){
@@ -183,6 +188,39 @@ void Simulation::killCell(struct Cell *cell){
 			(GENOME_SIZE - randStuff) * sizeof(uchar));
 	
 	cell->genome[GENOME_SIZE] = 0x00;
+#else
+	memset(cell->genome,
+				GENOME_OPERATIONS - 1,
+				GENOME_SIZE * sizeof(uchar));
+		
+	cell->genome[GENOME_SIZE] = 0x00;
+#endif
+}
+
+void Simulation::addCell(uchar *genome, uint size){
+	//get random cell, that is not a wall
+	int x,y,z;
+	
+	do{
+		x = randomX();
+		y = randomY();
+		z = randomZ();
+	}while(world[x][y][z].dead);
+	
+	//kill the cell
+	struct Cell *cell = &cells[x][y][z];
+	killCell(cell);
+	
+	//put the new genome in it and fill the blanks
+	if(size > GENOME_SIZE){
+		qDebug() << "error, the genome size is too big";
+	}
+	
+	memset(cell->genome,
+				GENOME_OPERATIONS - 1,
+				GENOME_SIZE * sizeof(uchar));
+	
+	memcpy(cell->genome, genome, size);
 }
 
 /**
@@ -314,7 +352,6 @@ void Simulation::executeCell(int x, int y, int z){
 			pointer = 0;
 			reg = 0;
 			temp = 0;
-			facing = WEST;
 			break;
 		case 1: //pointer ++
 			pointer++;
@@ -349,9 +386,9 @@ void Simulation::executeCell(int x, int y, int z){
 		case 7: //read output buffer to register
 			reg = output_buffer[pointer];
 			break;
-		case 8: //look into direction specified in the register
+		case 8:{ //look into direction specified in the register
 			facing = reg % DIRECTIONS;
-			break;
+		}break;
 		case 9://while(register){
 			if(!reg){
 				int tempP = genome_pointer;
@@ -702,18 +739,17 @@ bool Simulation::reproduce(struct Cell *cell, struct Cell *neighbour,uchar *outp
 		
 #ifdef REPRODUCTION_ERRORS
 		if(!(randValue(MUTATION_RATE_REPRODUCTION))){
-			switch(randValue(5)){
-			case 0:
-			case 1://command replacement
+			switch(randValue(4)){
+			case 0://command replacement
 				neighbour->genome[i] = randomOperation();
 				break;
-			case 2://duplication or removal
+			case 1://duplication or removal
 				loop = randValue(GENOME_SIZE);
 				break;
-			case 3:{//remove command
+			case 2:{//remove command
 				loop++;
 				}break;
-			case 4:{//insert command
+			case 3:{//insert command
 				loop--;
 				}break;
 			}
@@ -855,43 +891,7 @@ void Simulation::init(){
 /**
  * mutates the whole genome
  */
-void Simulation::mutateCell(struct Cell *cell){	
-	
-#ifdef OLDSTYLE_MUTATION
-	int stops = 0;
-	for(int i = 0; i < GENOME_SIZE; i++){
-		if(cell->genome[i] != GENOME_OPERATIONS-1){
-			stops = 0;
-			if(rand() % MUTATION_RATE_NON_LIVING == 0){
-				cell->genome[i] = randomOperation();
-			}
-		}else{
-			stops++;
-			if(stops == 4){
-				break;
-			}
-		}
-	}
-#else
-	/*//TODO: create better algo
-	double prob =  (double)GENOME_SIZE / (double)MUTATION_RATE_NON_LIVING;
-	
-	register int max = cell->bad;
-	if(max > GENOME_SIZE / 6){
-		max = GENOME_SIZE / 6;
-	}
-	
-	//qDebug() << "maxb =" << max;
-	
-	if(max < 2){
-		max = 2;
-	}
-	
-	max = rand() % max;
-	max++;
-	max = (int)((double)max * prob);
-	
-	//qDebug() << "maxc =" << max;*/
+void Simulation::mutateCell(struct Cell *cell){
 	
 	int max = cell->bad;
 	if(max > GENOME_SIZE / 6){
@@ -908,7 +908,7 @@ void Simulation::mutateCell(struct Cell *cell){
 	}
 	
 	mutated += max;
-#endif
+
 }
 
 /**

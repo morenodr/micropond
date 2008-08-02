@@ -1,5 +1,6 @@
 #include "Window.h"
 #include "NetworkConfig.h"
+#include "CellEditor.h"
 
 Window::Window(int threads)
 {
@@ -143,6 +144,12 @@ void Window::initGui(){
 	QAction *remote = new QAction("Remote ponds",this);
 	connect(remote, SIGNAL(triggered()), this, SLOT(configNetwork()));
 	options->addAction(remote);
+#ifdef DEVELOPER_MODE
+	
+	QAction *addCell = new QAction("Add cell",this);
+	connect(addCell, SIGNAL(triggered()), this, SLOT(addCell()));
+	options->addAction(addCell);
+#endif
 	
 	menuBar->addMenu(file);
 	menuBar->addMenu(views);
@@ -297,6 +304,11 @@ void  Window::configNetwork(){
 	NetworkConfig networkConfig(outRequests);
 	networkConfig.exec();
 	
+}
+
+void Window::addCell(){
+	CellEditor editor(simulation);
+	editor.exec();
 }
 
 void Window::selectPond(QAction * pond){

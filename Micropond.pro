@@ -3,14 +3,16 @@ TARGET = Micropond
 QT += core \
     gui \
     network
-HEADERS += NetworkConfig.h \
+HEADERS += CellEditor.h \
+    NetworkConfig.h \
     Outgoing.h \
     Incoming.h \
     CreatureBar.h \
     Renderer.h \
     Simulation.h \
     Window.h
-SOURCES += NetworkConfig.cpp \
+SOURCES += CellEditor.cpp \
+    NetworkConfig.cpp \
     Outgoing.cpp \
     Incoming.cpp \
     CreatureBar.cpp \

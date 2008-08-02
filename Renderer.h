@@ -22,7 +22,7 @@
 #define SHOW_LANDSCAPE true
 
 // ffmpeg -r 10 -qscale 1 -i asdf%d.png micropond.avi  
-//#define SAVE_PICTURES 
+#define SAVE_PICTURES 
 
 
 class Renderer: public QLabel
