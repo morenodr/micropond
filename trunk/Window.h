@@ -12,6 +12,8 @@
 #define THREADS 1
 #define STAT_INTERVAL 1000
 
+#define DEVELOPER_MODE
+
 class Window: public QMainWindow
 {
 	Q_OBJECT
@@ -41,6 +43,7 @@ public slots:
 	void resetPond();
 	void resetAllPonds();
 	void configNetwork();
+	void addCell();
 	
 private:
 	void closing();

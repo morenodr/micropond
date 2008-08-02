@@ -5,7 +5,6 @@ NetworkConfig::NetworkConfig(Outgoing *outgoing)
 {
 	out = outgoing;
 	
-	QWidget *listWidget = new QWidget;
 	setWindowTitle("Configure remote ponds");
 	
 	QGridLayout *layout2 = new QGridLayout(); //main widget
@@ -37,7 +36,6 @@ NetworkConfig::NetworkConfig(Outgoing *outgoing)
 	layout2->addWidget(remove,2,2);
 	layout2->addWidget(ok,3,2);
 	setLayout(layout2);
-	resize(listWidget->width() + 50,300);
 }
 
 NetworkConfig::~NetworkConfig()

@@ -4,13 +4,22 @@
 #include <QtCore>
 
 #define VARIED_ENERGY //does not give the whole playing field the same energy
-//#define OLDSTYLE_MUTATION   //older and slower way to mutate
 //#define DECREASE_ENERGY //decreases energy over time
-#define DEAD_MUTATION //mutates dead cells
 //#define EXECUTION_ERRORS //creates random execution errors
+
 #define REPRODUCTION_ERRORS //mutates genome when reproducing
+//comment out if you want debug mode  -----start
+
+#define DEAD_MUTATION //mutates dead cells
+
+#define RANDOM_INITIAL_CELLS
+
+#define DISASTERS
+
 #define BAD_KILLS
 #define MUST_REPRODUCE //creatures get killed if they don't reproduce
+
+//comment out if you want debug mode -------end
 
 #define WORLD_X 800
 #define WORLD_Y 600
@@ -47,7 +56,7 @@
 
 #define ENERGY_DECREASE 5000000
 
-#define ENERGY2_CONVERSION_GAIN 17
+#define ENERGY2_CONVERSION_GAIN 13
 
 #define MIN_COPY 5
 
@@ -57,7 +66,7 @@
 
 #define LANDSCAPE_LINES 6
 
-#define MAX_EXECUTING 1500
+#define MAX_EXECUTING 1300
 
 #define SPECIAL_COMMANDS 5 //number of allowed special commands like kill, move
 
@@ -73,6 +82,7 @@ enum Disasters
 
 struct Cell{
 	uint genome_size;
+	uint genome_operations;
 	qlonglong id;
 	qlonglong parent;
 	uint generation;
@@ -129,6 +139,7 @@ public:
 	int id(){return myId;}
 	int executed();
 	void init();
+	void addCell(uchar *genome, uint size);
 	
 private:
 	struct Cell cells[WORLD_X][WORLD_Y][WORLD_Z];

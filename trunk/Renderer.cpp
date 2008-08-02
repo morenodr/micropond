@@ -40,7 +40,7 @@ QColor Renderer::getColor(struct Cell *cell, int mode){
 				if(cell->generation >= LIVING_CELL){
 					int hash = 0;
 					for(uint i = 0; i < cell->size;i++ ){
-						if(cell->genome[i] != cell->genome_size-1){
+						if(cell->genome[i] != cell->genome_operations - 1){
 							hash += cell->genome[i];
 							hash %= cell->genome_size * 5;
 						}else{
@@ -127,7 +127,7 @@ void Renderer::updatePicture(){
 		}
 	}
 	
-	int counter = simulation->counter();
+	//int counter = simulation->counter();
 	
 	simulation->resume();
 	setPixmap(QPixmap::fromImage (temp));
