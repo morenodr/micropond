@@ -70,7 +70,7 @@
 
 #define DISASTER_CHANCE 5000000
 
-#define SAVE_TIME 3000000000 //+- 3 minutes with no disasters
+#define SAVE_TIME 300000000 //+- 3 minutes with no disasters
 
 #define LANDSCAPE_LINES 6
 
