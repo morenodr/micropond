@@ -147,9 +147,12 @@ QString CreatureBar::operationName(uchar operation){
 		return "reproduce";
 		break;
 	case 34://end
-		return "stop";
+		return "create energy2";
 		break;
 	case 35://end
+		return "stop";
+		break;
+	case 36://end
 		return "stop && reproduce";
 		break;
 	}
