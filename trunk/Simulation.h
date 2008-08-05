@@ -3,22 +3,28 @@
 
 #include <QtCore>
 
-#define VARIED_ENERGY //does not give the whole playing field the same energy
-//#define DECREASE_ENERGY //decreases energy over time
-//#define EXECUTION_ERRORS //creates random execution errors
 
-#define REPRODUCTION_ERRORS //mutates genome when reproducing
+
+#define ANTICLEANROOM
+
 //comment out if you want debug mode  -----start
+#ifdef ANTICLEANROOM
 
-#define DEAD_MUTATION //mutates dead cells
+	#define VARIED_ENERGY //does not give the whole playing field the same energy
+	//#define DECREASE_ENERGY //decreases energy over time
+	//#define EXECUTION_ERRORS //creates random execution errors
 
-#define RANDOM_INITIAL_CELLS
+	#define REPRODUCTION_ERRORS //mutates genome when reproducing
+	#define DEAD_MUTATION //mutates dead cells
+	
+	#define RANDOM_INITIAL_CELLS
+	
+	#define DISASTERS
+	
+	#define BAD_KILLS
+	#define MUST_REPRODUCE //creatures get killed if they don't reproduce
 
-#define DISASTERS
-
-#define BAD_KILLS
-#define MUST_REPRODUCE //creatures get killed if they don't reproduce
-
+#endif
 //comment out if you want debug mode -------end
 
 #define WORLD_X 800
@@ -26,7 +32,7 @@
 #define WORLD_Z 1
 #define GENOME_SIZE 100 //number of operations in a genome
 
-#define GENOME_OPERATIONS 36 //number of different operations
+#define GENOME_OPERATIONS 37 //number of different operations
 #define NO_REP_OPERATION 11 //id of the NO REPRODUCE operation
 
 #define EAT_ENERGY GENOME_SIZE //amount of energy gained from eating
@@ -60,9 +66,11 @@
 
 #define MIN_COPY 5
 
+#define MAX_ENERGY 2000
+
 #define DISASTER_CHANCE 5000000
 
-#define SAVE_TIME 300000000 //+- 3 minutes with no disasters
+#define SAVE_TIME 3000000000 //+- 3 minutes with no disasters
 
 #define LANDSCAPE_LINES 6
 

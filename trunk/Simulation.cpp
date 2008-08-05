@@ -172,7 +172,7 @@ void Simulation::killCell(struct Cell *cell){
 	cell->reproduced = 0;
 	cell->brain = 0;
 	cell->size = 1;
-	cell->facing = randValue(DIRECTIONS);
+	cell->facing = 0;//randValue(DIRECTIONS);
 	cell->homePond = myId;
 	cell->genome_operations = GENOME_OPERATIONS;
 	
@@ -253,7 +253,9 @@ void Simulation::regenerateEnergy(){
 	mod += 0.1;
 #endif
 	struct Cell *cell = &cells[(int)x][(int)y][(int)z];
-	cell->energy += (int)((double)energyAdd * mod);
+	if(cell->energy < MAX_ENERGY){
+		cell->energy += (int)((double)energyAdd * mod);
+	}
 	
 	if(cell->bad > 1 && randValue(2)){
 		cell->bad--;
@@ -475,7 +477,7 @@ void Simulation::executeCell(int x, int y, int z){
 			struct Position pos = getNeighbour(x,y,z,facing);
 			tmpCell = &cells[pos.x][pos.y][pos.z];
 			if(cell->generation >= LIVING  &&
-					accessOk(cell, tmpCell, reg,false)){
+					randValue(4) == 0){
 				killCell(tmpCell);
 				specCommands++;
 			}
@@ -545,7 +547,7 @@ void Simulation::executeCell(int x, int y, int z){
 		case 22:{ //seek most energy
 			uint max = 0;
 			for(int i = 0; i < DIRECTIONS; i++){
-				struct Position pos = getNeighbour(x,y,z,facing);
+				struct Position pos = getNeighbour(x,y,z,i);
 				tmpCell = &cells[pos.x][pos.y][pos.z];
 				if(max < tmpCell->energy){
 					reg = i;
@@ -571,7 +573,7 @@ void Simulation::executeCell(int x, int y, int z){
 				}
 			}
 		}break;
-		case 24:{
+		case 24:{//remove bad
 			if(cell->energy2){
 				cell->energy2--;
 				cell->energy += ENERGY2_CONVERSION_GAIN;
@@ -621,7 +623,7 @@ void Simulation::executeCell(int x, int y, int z){
 				reg = 0;
 			}
 			break;
-		case 28: //if not
+		case 28: //if
 			if(reg){
 				reg++;
 				if(reg >= GENOME_OPERATIONS ){
@@ -629,7 +631,7 @@ void Simulation::executeCell(int x, int y, int z){
 				}
 			}
 			break;
-		case 29: //if
+		case 29: //if not
 			if(!reg){
 				reg++;
 				if(reg >= GENOME_OPERATIONS ){
@@ -645,14 +647,14 @@ void Simulation::executeCell(int x, int y, int z){
 			tmpCell = &cells[pos.x][pos.y][pos.z];
 			reg = tmpCell->facing;
 		}break;
-		case 32:{ //see neighbour facing
+		case 32:{ //read neighbour genome
 			struct Position pos = getNeighbour(x,y,z,facing);
 			tmpCell = &cells[pos.x][pos.y][pos.z];
 			if(accessOk(cell, tmpCell, reg,false)){
 				reg = tmpCell->genome[pointer];
 			}
 		}break;
-		case 33:{
+		case 33:{ //reproduce
 			if(output_buffer[0] != NO_REP_OPERATION && 
 					cell->energy >= cell->size * REPRODUCTION_COST_FACTOR){
 				cell->energy -= cell->size * REPRODUCTION_COST_FACTOR;
@@ -670,11 +672,17 @@ void Simulation::executeCell(int x, int y, int z){
 				stop = true;
 			}
 		}break;
-		case 34: //end
+		case 34: //create energy 2
+			if(cell->energy >= ENERGY2_CONVERSION_GAIN * 2){
+				cell->energy -= ENERGY2_CONVERSION_GAIN * 2;
+				cell->energy2++;
+			}
+			break;
+		case 35: //end
 			stop = true;
 			reproducing = false;
 			break;
-		case 35: //end and reproduce
+		case 36: //end and reproduce
 			stop = true;			
 			break;
 		}
