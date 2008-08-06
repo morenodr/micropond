@@ -11,8 +11,10 @@
 #ifndef CELLEDITOR_H_
 #define CELLEDITOR_H_
 
-class CellEditor: public QDialog {
+class CellEditor: public QDialog
+{
 	Q_OBJECT
+
 public:
 	CellEditor(Simulation *sim);
 	virtual ~CellEditor();
