@@ -4,6 +4,7 @@ QT += core \
     gui \
     network
 HEADERS += CellEditor.h \
+    CellEditor.h \
     NetworkConfig.h \
     Outgoing.h \
     Incoming.h \
@@ -12,6 +13,7 @@ HEADERS += CellEditor.h \
     Simulation.h \
     Window.h
 SOURCES += CellEditor.cpp \
+    CellEditor.cpp \
     NetworkConfig.cpp \
     Outgoing.cpp \
     Incoming.cpp \
