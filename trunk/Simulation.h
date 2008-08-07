@@ -66,7 +66,7 @@
 
 #define MIN_COPY 5
 
-#define MAX_ENERGY 7000
+#define MAX_ENERGY 6000
 
 #define DISASTER_CHANCE 5000000
 
