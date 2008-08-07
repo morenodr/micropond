@@ -3,25 +3,25 @@
 #include <stdlib.h>
 
 /*
- * 
+ *
  * #ifdef Q_OS_WIN quint32 bigrand() {
- *  return qrand() << 15 | qrand(); } 
- * #else quint32 bigrand() { 
- *  return qrand(); 
+ *  return qrand() << 15 | qrand(); }
+ * #else quint32 bigrand() {
+ *  return qrand();
  * } #endif
- * 
- * bigrand() { 
- * return (qrand() & 0x9FFE) << 18 | (qrand() & 0x9FFE) << 4 | (rand() & 0x9F00) >> 11; 
+ *
+ * bigrand() {
+ * return (qrand() & 0x9FFE) << 18 | (qrand() & 0x9FFE) << 4 | (rand() & 0x9F00) >> 11;
  * }
  */
 
 int bigrand() {
-#ifdef Q_OS_WIN 
+#ifdef Q_OS_WIN
 	return (rand() << 15) | rand();
 #else
-	return rand(); 
+	return rand();
 #endif
-} 
+}
 
 Simulation::Simulation(QQueue <struct Cell>*pool,QSemaphore *geneblocker,int id)
 {
@@ -33,7 +33,7 @@ Simulation::Simulation(QQueue <struct Cell>*pool,QSemaphore *geneblocker,int id)
 	running = true;
 	mutex = new QSemaphore(0);
 	count = 0;
-	energyAdd = ENERGY_ADDED / 2 + randValue(ENERGY_ADDED / 2);
+	energyAdd = (2 * ENERGY_ADDED / 3) + randValue(ENERGY_ADDED / 3);
 	nextSet = false;
 	canExecuteNext = true;
 	initialized = false;
@@ -71,18 +71,18 @@ void Simulation::run(){
 	//mutex->acquire(1);
 	srand(myId);
 	//qsrand(0);
-	
+
 	if(!initialized){
 		init();
 	}
-	
+
 	int x,y,z;
 	struct Cell *cell;
 	struct Place *world;
-	
+
 	round = 0;
 	mutex->release(1);
-	
+
 	while(running){
 	    //mutex->acquire(1);
 		round++;
@@ -100,22 +100,22 @@ void Simulation::run(){
 			z = randomZ();
 			canExecuteNext = MAX_EXECUTION_ROW;
 		}
-		
+
 		cell = &cells[x][y][z];
 		world = cell->place;
-		
+
 #ifdef DEAD_MUTATION
 		//if there is one make the cell mutate
 		if(!cell->generation && !world->dead){
 			mutateCell(cell);
 		}
 #endif
-		
+
 #ifdef BAD_KILLS
 		if(cell->generation >= LIVING && cell->bad > 3){
 			double killValue = 90.0 /
 				(( cell->bad) * ( cell->bad));
-			
+
 			//qDebug() << "bad" << killValue << cell->bad;
 			if(((int) killValue) == 0 || (randValue((int) killValue)) == 0){
 				killCell(cell);
@@ -123,7 +123,7 @@ void Simulation::run(){
 			continue;
 		}
 #endif
-		
+
 		//kills a cell if there is not energy left and it's a child
 		if(!cell->energy && cell->generation >= LIVING && randValue(4)){
 			killCell(cell);
@@ -131,8 +131,8 @@ void Simulation::run(){
 			//call the execution of its code
 			Simulation::executeCell(x,y,z);
 		}
-		
-		
+
+
 #ifdef DECREASE_ENERGY
 		if(round % ENERGY_DECREASE == 0){
 			qDebug() << "Decrease energy";
@@ -147,18 +147,18 @@ void Simulation::run(){
 		if(!(round % ENERGY_FREQUENCY)){
 			regenerateEnergy();
 		}
-		
+
 #ifdef DISASTERS
 		if(round == SAVE_TIME){
 			catas = true;
 		}
-		
+
 		//disaster :-)
 		if(randValue(DISASTER_CHANCE) == 0 && catas){
 			disaster();
 		}
 #endif
-		
+
 		//mutex->release(1);
 	}
 }
@@ -172,27 +172,27 @@ void Simulation::killCell(struct Cell *cell){
 	cell->reproduced = 0;
 	cell->brain = 0;
 	cell->size = 1;
-	cell->facing = 0;//randValue(DIRECTIONS);
+	cell->facing = 0; //randValue(DIRECTIONS);
 	cell->homePond = myId;
 	cell->genome_operations = GENOME_OPERATIONS;
-	
+
 #ifdef RANDOM_INITIAL_CELLS
-	
+
 	int randStuff = GENOME_SIZE / 4;
 	for(int i = 0; i < randStuff; i++){
 		cell->genome[i] = randomOperation();
 	}
-	
+
 	memset(&cell->genome[randStuff],
 			GENOME_OPERATIONS - 1,
 			(GENOME_SIZE - randStuff) * sizeof(uchar));
-	
+
 	cell->genome[GENOME_SIZE] = 0x00;
 #else
 	memset(cell->genome,
 				GENOME_OPERATIONS - 1,
 				GENOME_SIZE * sizeof(uchar));
-		
+
 	cell->genome[GENOME_SIZE] = 0x00;
 #endif
 }
@@ -200,27 +200,28 @@ void Simulation::killCell(struct Cell *cell){
 void Simulation::addCell(uchar *genome, uint size){
 	//get random cell, that is not a wall
 	int x,y,z;
-	
+
 	do{
 		x = randomX();
 		y = randomY();
 		z = randomZ();
 	}while(world[x][y][z].dead);
-	
+
 	//kill the cell
 	struct Cell *cell = &cells[x][y][z];
 	killCell(cell);
-	
+
 	//put the new genome in it and fill the blanks
 	if(size > GENOME_SIZE){
 		qDebug() << "error, the genome size is too big";
 	}
-	
+
 	memset(cell->genome,
 				GENOME_OPERATIONS - 1,
 				GENOME_SIZE * sizeof(uchar));
-	
+
 	memcpy(cell->genome, genome, size);
+
 }
 
 /**
@@ -230,33 +231,33 @@ void Simulation::regenerateEnergy(){
 	double x = randomX();
 	double y = randomY();
 	double z = randomZ();
-	
+
 	if(world[(int)x][(int)y][(int)z].dead){
 		return;
 	}
-	
+
 	double mod = 1.0;
-	
+
 #ifdef VARIED_ENERGY
 	if(x <= WORLD_X / 2){
 		mod *= x / (WORLD_X / 2.0);
 	}else{
 		mod *= 2.0 - (x / (WORLD_X / 2.0) );
 	}
-	
+
 	if(y <= WORLD_Y / 2){
 		mod *= y / (WORLD_Y / 2.0);
 	}else{
 		mod *= 2.0 - (y / (WORLD_Y / 2.0) );
 	}
-	
+
 	mod += 0.1;
 #endif
 	struct Cell *cell = &cells[(int)x][(int)y][(int)z];
 	if(cell->energy < MAX_ENERGY){
 		cell->energy += (int)((double)energyAdd * mod);
 	}
-	
+
 	if(cell->bad > 1 && randValue(2)){
 		cell->bad--;
 	}else if(randValue(5) == 0){
@@ -275,26 +276,26 @@ bool Simulation::accessOk(struct Cell *source, struct Cell *dest, char guess,boo
 	if(dest->place->dead){
 		return false;
 	}
-	
+
 	if(dest->generation <= LIVING ||
 			dest->genome[0] == guess ||
 			(dest->genome[0] == source->genome[0] && good)){
 		return true;
 	}
-	
+
 	double temp = (double)source->size / dest->size;
-	
+
 	if(temp < 0.5){
 		return false;
 	}else if(temp > 2){
 		return true;
 	}
-	
+
 	int access_chance = 10 - (int)(6.0 * temp - 3.0);
-	
+
 	if(access_chance == 0)
 		return true;
-	
+
 	return !(randValue(access_chance));
 }
 
@@ -310,9 +311,9 @@ void Simulation::executeCell(int x, int y, int z){
 	bool stop = false;
 	bool reproducing = true;
 	struct Cell *tmpCell; //temporary cell
-	
+
 	memset(output_buffer, NO_REP_OPERATION, GENOME_SIZE * sizeof(uchar));
-	
+
 	genome_pointer = 0;
 	int pointer = 0;//general pointer
 	uchar facing = cell->facing;
@@ -320,18 +321,18 @@ void Simulation::executeCell(int x, int y, int z){
 	int temp = 0; //temp register
 	uint executed = 0;
 	uint specCommands = 0; //only allow a certain amout of kills
-	
+
 	//Execute cell until no more energy is left
 	while(cell->energy && !stop && executed < MAX_EXECUTING){
 		executed++;
 		inst = cell->genome[genome_pointer];
 		genome_pointer++;
-		
+
 		if(genome_pointer > GENOME_SIZE-1){
 			genome_pointer = 0;
 		}
 		cell->energy--;
-		
+
 #ifdef EXECUTION_ERRORS
 		//execution perturbation
 		if(rand() % MUTATION_RATE_EXECUTION == 0){
@@ -348,7 +349,7 @@ void Simulation::executeCell(int x, int y, int z){
 			}
 		}
 #endif
-		
+
 		switch(inst){
 		case 0:
 			pointer = 0;
@@ -398,18 +399,18 @@ void Simulation::executeCell(int x, int y, int z){
 				while(*comm != 10 &&
 						cell->energy &&
 						!stop){
-					
+
 					genome_pointer++;
 					comm++;
-					
+
 					cell->energy--;
-					
+
 					if(genome_pointer == tempP ||
 					   genome_pointer >= GENOME_SIZE){
 						stop = true;
 					}
 				}
-				
+
 				genome_pointer++;
 				if(genome_pointer >= GENOME_SIZE)
 					genome_pointer = 0;
@@ -425,13 +426,13 @@ void Simulation::executeCell(int x, int y, int z){
 					genome_pointer--;
 					comm--;
 					cell->energy--;
-					
-					if(genome_pointer == tempP || 
+
+					if(genome_pointer == tempP ||
 							genome_pointer < 0){
 						stop = true;
 					}
 				}
-				
+
 				genome_pointer++;
 				if(genome_pointer >= GENOME_SIZE)
 					genome_pointer = 0;
@@ -442,26 +443,26 @@ void Simulation::executeCell(int x, int y, int z){
 		case 12:{ //move
 			struct Position pos = getNeighbour(x,y,z,facing);
 			tmpCell = &cells[pos.x][pos.y][pos.z];
-			
+
 			if(tmpCell != cell && accessOk(cell, tmpCell, reg,false) && cell->energy2 >= 3){
 				cell->energy2 -= 3;
-				int tempEnergy = cell->energy2;				
-				cell->energy2 = cell->energy2 / 2 + tmpCell->energy2;				
+				int tempEnergy = cell->energy2;
+				cell->energy2 = cell->energy2 / 2 + tmpCell->energy2;
 				tmpCell->energy2 = tempEnergy / 2;
-				
-				tempEnergy = cell->energy;				
-				cell->energy = cell->energy / 2 + tmpCell->energy;				
+
+				tempEnergy = cell->energy;
+				cell->energy = cell->energy / 2 + tmpCell->energy;
 				tmpCell->energy = tempEnergy / 2;
-				
+
 				struct Cell tmp;
 				tmp = *tmpCell;
 				*tmpCell = *cell;
 				*cell = tmp;
-				
+
 				struct Place *p = tmpCell->place;
 				tmpCell->place = cell->place;
 				cell->place = p;
-				
+
 				x = pos.x;
 				y = pos.y;
 				z = pos.z;
@@ -537,7 +538,7 @@ void Simulation::executeCell(int x, int y, int z){
 		case 20:{//NOP
 			reg = cell->brain;
 		}break;
-		case 21:
+		case 21: //tmp == reg ?
 			if(temp == reg){
 				reg = 1;
 			}else{
@@ -554,7 +555,7 @@ void Simulation::executeCell(int x, int y, int z){
 					max = tmpCell->energy;
 				}
 			}
-		}	 
+		}
 			break;
 		case 23:{//eat energy and modify neighbour genome
 			struct Position pos = getNeighbour(x,y,z,facing);
@@ -563,7 +564,7 @@ void Simulation::executeCell(int x, int y, int z){
 				if(temp != 0 && temp != GENOME_OPERATIONS - 1 &&
 						tmpCell->genome[pointer] == temp){
 					tmpCell->genome[pointer] = 0;
-					
+
 					//eat energy
 					cell->energy2 += EAT_ENERGY / 3;
 					if(tmpCell->energy2 >= (2 * EAT_ENERGY) / 3){
@@ -586,7 +587,7 @@ void Simulation::executeCell(int x, int y, int z){
 			struct Position pos = getNeighbour(x,y,z,facing);
 			tmpCell = &cells[pos.x][pos.y][pos.z];
 			if(accessOk(cell, tmpCell, reg,true)){
-				
+
 				switch(reg){
 					case 0:{ //eject bad particle
 						if(cell->bad){
@@ -607,7 +608,7 @@ void Simulation::executeCell(int x, int y, int z){
 						}
 					}break;
 				}
-				
+
 				uint tmpEnergy = tmpCell->energy + cell->energy;
 				tmpCell->energy = tmpEnergy / 2;
 				cell->energy = tmpEnergy / 2;
@@ -655,7 +656,7 @@ void Simulation::executeCell(int x, int y, int z){
 			}
 		}break;
 		case 33:{ //reproduce
-			if(output_buffer[0] != NO_REP_OPERATION && 
+			if(output_buffer[0] != NO_REP_OPERATION &&
 					cell->energy >= cell->size * REPRODUCTION_COST_FACTOR){
 				cell->energy -= cell->size * REPRODUCTION_COST_FACTOR;
 				struct Position pos = getNeighbour(x,y,z,facing);
@@ -683,17 +684,17 @@ void Simulation::executeCell(int x, int y, int z){
 			reproducing = false;
 			break;
 		case 36: //end and reproduce
-			stop = true;			
+			stop = true;
 			break;
 		}
 	}
-	
+
 	cell->facing = facing;
-	
+
 	output_pointer = 0;
-	
+
 	//jeah, we can reproduce something
-	if(output_buffer[0] != NO_REP_OPERATION && reproducing && 
+	if(output_buffer[0] != NO_REP_OPERATION && reproducing &&
 			cell->energy >= cell->size * REPRODUCTION_COST_FACTOR){
 		cell->energy -= cell->size * REPRODUCTION_COST_FACTOR;
 		struct Position pos = getNeighbour(x,y,z,facing);
@@ -708,7 +709,7 @@ void Simulation::executeCell(int x, int y, int z){
 	}else{
 		cell->reproduced++;
 	}
-	
+
 #ifdef MUST_REPRODUCE
 	if(cell->generation >= LIVING && cell->reproduced > 4){
 		killCell(cell);
@@ -718,33 +719,34 @@ void Simulation::executeCell(int x, int y, int z){
 
 /**
  * reproduce cell.
- * Mutations are introduced 
+ * Mutations are introduced
  * return true if cell has successfully reproduced (if false, only a small
  * part has been reproduced)
  */
 bool Simulation::reproduce(struct Cell *cell, struct Cell *neighbour,uchar *output_buffer){
+
 	if(neighbour->energy == 0)
 		return false;
-	
+
 	int loop = 0;
 	int i = 0;
 	bool stoped = false;
 	int copied = 0;
-	
+
 	int stops = 0;
-	
+
 	for(i = 0; i < GENOME_SIZE && loop < GENOME_SIZE; i++){
 		if(output_buffer[loop] == NO_REP_OPERATION || stops == 4){
 			stoped = true;
 			break;
 		}
-		
+
 		if(output_buffer[loop] == GENOME_SIZE-1){
 			stops++;
 		}else{
 			stops = 0;
 		}
-		
+
 #ifdef REPRODUCTION_ERRORS
 		if(!(randValue(MUTATION_RATE_REPRODUCTION))){
 			switch(randValue(4)){
@@ -764,58 +766,53 @@ bool Simulation::reproduce(struct Cell *cell, struct Cell *neighbour,uchar *outp
 		}else{
 #endif
 			neighbour->genome[i] = output_buffer[loop];
-			
+
 #ifdef REPRODUCTION_ERRORS
 		}
 #endif
-		
+
 		loop++;
 		copied++;
 	}
-	
+
 	/*if(!stoped && i < GENOME_SIZE - 1){
 		neighbour->parent = cell->id;
 		neighbour->lineage = neighbour->id;
 		neighbour->generation = 1;
 	}*/
-	
+
 	if(i < GENOME_SIZE - 1 && i > GENOME_SIZE / 5){
 		memset(neighbour->genome +i*sizeof(uchar),
 				GENOME_OPERATIONS - 1 ,
 				((GENOME_SIZE - 1) - i) * sizeof(uchar));
 	}
-	
+
 	if(copied >= MIN_COPY){
 		if(neighbour->generation >= LIVING){
 			neighbour->energy += neighbour->size;
 		}
-		
+
 		if(cell->id == 0){
 			cell->id = ++cellid;
 			cell->lineage = cell->id;
 		}
-		
+
 		neighbour->id = ++cellid;
-		
+
 		neighbour->parent = cell->id;
-		
+
 		neighbour->generation = cell->generation + 1;
-		
+
 		neighbour->lineage = cell->lineage;
-		
+
 		neighbour->brain = 0;
-		
+
 		neighbour->size = copied;
-		
+
 		neighbour->homePond = cell->homePond;
-		
 		return true;
 	}
-	
-	/*if(neighbour->generation >= LIVING){
-		killCell(neighbour);
-	}*/
-	
+
 	return false;
 }
 
@@ -827,12 +824,12 @@ void Simulation::init(){
 	int x = 0;
 	int y = 0;
 	int z = 0;
-	
+
 	for(x = 0; x < WORLD_X; x++){
 		for(y = 0; y < WORLD_Y; y++){
 			for(z = 0; z < WORLD_Z; z++){
 				killCell(&cells[x][y][z]);
-				
+
 				cells[x][y][z].energy = ENERGY_ADDED;
 				cells[x][y][z].energy2 = 0;
 				cells[x][y][z].bad = 1;
@@ -840,7 +837,7 @@ void Simulation::init(){
 			}
 		}
 	}
-	
+
 	struct Place *place;
 	for(x = 0; x < WORLD_X; x++){
 		for(y = 0; y < WORLD_Y; y++){
@@ -850,19 +847,19 @@ void Simulation::init(){
 			}
 		}
 	}
-	
+
 	int lines = 0;
 	while(lines < LANDSCAPE_LINES){
 		struct Position start;
 		start.x = randomX();
 		start.y = randomY();
 		start.z = randomZ();
-		
+
 		struct Position end;
 		end.x = randomX();
 		end.y = randomY();
 		end.z = randomZ();
-		
+
 		x = start.x;
 		y = start.y;
 		z = start.z;
@@ -870,29 +867,29 @@ void Simulation::init(){
 			world[x][y][z].dead = true;
 			cells[x][y][z].energy = 0;
 			cells[x][y][z].bad = 0;
-			
+
 			if(x < end.x){
 				x++;
 			}else if(x > end.x){
 				x--;
 			}
-			
+
 			if(y < end.y){
 				y++;
 			}else if(y > end.y){
 				y--;
 			}
-			
+
 			if(z < end.z){
 				z++;
 			}else if(z > end.z){
 				z--;
 			}
 		}
-		
+
 		lines++;
 	}
-	
+
 	initialized = true;
 }
 
@@ -900,23 +897,23 @@ void Simulation::init(){
  * mutates the whole genome
  */
 void Simulation::mutateCell(struct Cell *cell){
-	
+
 	int max = cell->bad;
 	if(max > GENOME_SIZE / 6){
 		max = GENOME_SIZE / 6;
 	}
+
 	if(max){
 		max++;
 		max = rand() % max;
 	}
-	
+
 	for(int i = 0; i < max; i++){
 		int pos = randValue(GENOME_SIZE / 3);
 		cell->genome[pos] = randomOperation();
 	}
-	
-	mutated += max;
 
+	mutated += max;
 }
 
 /**
@@ -985,19 +982,19 @@ void Simulation::disaster(){
 		type = Flood;
 		break;
 	}
-	
+
 	int x,y;
-	
+
 	x = randomX();
 	y = randomY();
-	
+
 	qDebug() << type << x << y;
-	
+
 	int realX, realY, realZ;
 	realZ = 0; //special case anyway, what to do in a 3d env?
-	
+
 	int size = randValue(30) + 70;
-	
+
 	if(randValue(10) == 0 && type != 4){ //10% chance of a big disaster
 		if(randValue(4) == 0){ // again, 2% chance for a huge disaster
 			size *= 6;
@@ -1005,23 +1002,23 @@ void Simulation::disaster(){
 			size *= 3;
 		}
 	}
-	
+
 	QQueue <struct Cell>*tempVoyagers = new QQueue<struct Cell>();
-	
+
 	for(int xLoop = x - size / 2; xLoop < x + size / 2; xLoop++){
-		
+
 		for(int yLoop = y - size / 2; yLoop < y + size / 2; yLoop++){
 			realX = xLoop % WORLD_X;
 			realY = yLoop % WORLD_Y;
-			
-			if(realX < 0) 
+
+			if(realX < 0)
 				realX = WORLD_X + realX;
-			if(realY < 0) 
+			if(realY < 0)
 				realY = WORLD_Y + realY;
-			
+
 			if(world[realX][realY][realZ].dead)
 				continue;
-			
+
 			switch(type){
 			case Meteor:{
 				if(randValue(40)){
@@ -1067,10 +1064,10 @@ void Simulation::disaster(){
 				}
 			}break;
 			}
-			
+
 		}
 	}
-	
+
 	if(type == 4){
 		genepoolblocker->acquire(1);
 		int max = 10;
@@ -1083,9 +1080,9 @@ void Simulation::disaster(){
 		}
 		genepoolblocker->release(1);
 	}
-	
+
 	delete tempVoyagers;
-	
+
 }
 
 
@@ -1094,7 +1091,7 @@ void Simulation::disaster(){
  * wraps around edges
  */
 struct Position Simulation::getNeighbour(int x, int y, int z, uchar direction){
-	
+
 	switch(direction){
 	case NORTH:{
 		y--;
@@ -1139,7 +1136,7 @@ struct Position Simulation::getNeighbour(int x, int y, int z, uchar direction){
 	}
 		break;
 	}
-	
+
 	struct Position pos;
 	pos.x = x;
 	pos.y = y;
@@ -1155,7 +1152,7 @@ void Simulation::saveWorld(QString file){
 	out.write(tempCells);
 	QByteArray tempWorld((char *)world,sizeof(world));
 	out.write(tempWorld);
-	
+
 	qDebug() << "saved" << file;
 	out.close();
 }
@@ -1163,13 +1160,13 @@ void Simulation::saveWorld(QString file){
 void Simulation::loadWorld(QString file){
 	QFile in(file);
 	in.open(QIODevice::ReadOnly);
-	
+
 	QByteArray tempCells = in.read(sizeof(cells));
 	memcpy(*cells, tempCells.data(), sizeof(cells));
-	
+
 	QByteArray tempWorld = in.read(sizeof(world));
 	memcpy(*world, tempWorld.data(), sizeof(world));
-	
+
 	for(int x = 0; x < WORLD_X; x++){
 		for(int y = 0; y < WORLD_Y; y++){
 			for(int z = 0; z < WORLD_Z; z++){
@@ -1177,7 +1174,7 @@ void Simulation::loadWorld(QString file){
 			}
 		}
 	}
-	
+
 	qDebug() << "loaded" << file;
 	in.close();
 	initialized = true;

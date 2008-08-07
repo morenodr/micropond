@@ -18,9 +18,13 @@ class CellEditor: public QDialog
 public:
 	CellEditor(Simulation *sim);
 	virtual ~CellEditor();
+public slots:
+	void add();
+	void cancel();
 
 private:
 	Simulation *simu;
+	QTextEdit *genome;
 };
 
 #endif /* CELLEDITOR_H_ */
