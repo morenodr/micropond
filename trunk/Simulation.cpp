@@ -38,6 +38,7 @@ Simulation::Simulation(QQueue <struct Cell>*pool,QSemaphore *geneblocker,int id)
 	canExecuteNext = true;
 	initialized = false;
 	catas = false;
+	totalLiving = 0;
 }
 
 Simulation::~Simulation()
@@ -164,6 +165,8 @@ void Simulation::run(){
 }
 
 void Simulation::killCell(struct Cell *cell){
+	if(cell->parent)
+		totalLiving--;
 	cell->parent = 0;
 	cell->lineage = 0;
 	cell->generation = 0;
@@ -679,11 +682,35 @@ void Simulation::executeCell(int x, int y, int z){
 				cell->energy2++;
 			}
 			break;
-		case 35: //end
+		case 35:{//build wall
+			if(cell->generation >= LIVING){
+				struct Position pos = getNeighbour(x,y,z,facing);
+				tmpCell = &cells[pos.x][pos.y][pos.z];
+				if(accessOk(cell, tmpCell, reg,false)){
+					if(cell->energy2 >= 10 && cell->bad >= 3){
+						tmpCell->place->dead = true;
+						cell->energy2 -= 10;
+						cell->bad -= 3;
+					}
+				}
+			}
+		}break;
+		case 36:{//destroy wall
+			if(cell->generation >= LIVING){
+				struct Position pos = getNeighbour(x,y,z,facing);
+				tmpCell = &cells[pos.x][pos.y][pos.z];
+				if(cell->energy2 >= 10 && cell->bad >= 3){
+					tmpCell->place->dead = false;
+					cell->energy2 -= 10;
+					cell->bad -= 3;
+				}
+			}
+		}break;
+		case 37: //end
 			stop = true;
 			reproducing = false;
 			break;
-		case 36: //end and reproduce
+		case 38: //end and reproduce
 			stop = true;
 			break;
 		}
@@ -790,6 +817,7 @@ bool Simulation::reproduce(struct Cell *cell, struct Cell *neighbour,uchar *outp
 	if(copied >= MIN_COPY){
 		if(neighbour->generation >= LIVING){
 			neighbour->energy += neighbour->size;
+			totalLiving--;
 		}
 
 		if(cell->id == 0){
@@ -802,6 +830,10 @@ bool Simulation::reproduce(struct Cell *cell, struct Cell *neighbour,uchar *outp
 		neighbour->parent = cell->id;
 
 		neighbour->generation = cell->generation + 1;
+
+		if(neighbour->generation >= LIVING){
+			totalLiving++;
+		}
 
 		neighbour->lineage = cell->lineage;
 
@@ -824,6 +856,8 @@ void Simulation::init(){
 	int x = 0;
 	int y = 0;
 	int z = 0;
+
+	memset(cells,sizeof(struct Cell)*x*y*z, 0);
 
 	for(x = 0; x < WORLD_X; x++){
 		for(y = 0; y < WORLD_Y; y++){

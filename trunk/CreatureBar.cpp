@@ -150,9 +150,15 @@ QString CreatureBar::operationName(uchar operation){
 		return "create energy2";
 		break;
 	case 35://end
-		return "stop";
+		return "Kill cell";
 		break;
 	case 36://end
+		return "Unkill cell";
+		break;
+	case 37://end
+		return "stop";
+		break;
+	case 38://end
 		return "stop && reproduce";
 		break;
 	}
