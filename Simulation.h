@@ -21,18 +21,18 @@
 
 	#define DISASTERS
 
-	//#define BAD_KILLS
+	#define BAD_KILLS
 	#define MUST_REPRODUCE //creatures get killed if they don't reproduce
 
 #endif
 //comment out if you want debug mode -------end
 
-#define WORLD_X 640
+#define WORLD_X 680
 #define WORLD_Y 480
 #define WORLD_Z 1
 #define GENOME_SIZE 100 //number of operations in a genome
 
-#define GENOME_OPERATIONS 37 //number of different operations
+#define GENOME_OPERATIONS 39 //number of different operations
 #define NO_REP_OPERATION 11 //id of the NO REPRODUCE operation
 
 #define EAT_ENERGY GENOME_SIZE //amount of energy gained from eating
@@ -62,7 +62,7 @@
 
 #define ENERGY_DECREASE 5000000
 
-#define ENERGY2_CONVERSION_GAIN 13
+#define ENERGY2_CONVERSION_GAIN 6
 
 #define MIN_COPY 5
 
@@ -148,6 +148,7 @@ public:
 	int executed();
 	void init();
 	void addCell(uchar *genome, uint size);
+	quint32 getLiving(){return totalLiving;}
 
 private:
 	struct Cell cells[WORLD_X][WORLD_Y][WORLD_Z];
@@ -190,6 +191,7 @@ private:
 	static const double randScale  = 1.0 / (1.0 + RAND_MAX);
 
 	bool catas;
+	quint32 totalLiving;
 
 #ifdef Q_OS_WIN
 	static const double randScaleBig  = 1.0 / (1.0 + 1073741824.0); //2^30
