@@ -4,8 +4,9 @@
 #include <QtCore>
 
 
-
 //#define CLEANROOM
+
+//#define NANOSTYLE
 
 //comment out if you want debug mode  -----start
 #ifndef CLEANROOM
@@ -19,11 +20,11 @@
 
 	#define RANDOM_INITIAL_CELLS
 
-	#define DISASTERS
-
-	#define BAD_KILLS
-	#define MUST_REPRODUCE //creatures get killed if they don't reproduce
-
+	#ifndef NANOSTYLE
+		#define DISASTERS
+		#define BAD_KILLS
+		#define MUST_REPRODUCE //creatures get killed if they don't reproduce
+	#endif
 #endif
 //comment out if you want debug mode -------end
 
@@ -32,8 +33,13 @@
 #define WORLD_Z 1
 #define GENOME_SIZE 100 //number of operations in a genome
 
-#define GENOME_OPERATIONS 39 //number of different operations
-#define NO_REP_OPERATION 11 //id of the NO REPRODUCE operation
+#ifndef NANOSTYLE
+	#define GENOME_OPERATIONS 39 //number of different operations
+	#define NO_REP_OPERATION 11 //id of the NO REPRODUCE operation
+#else
+	#define GENOME_OPERATIONS 17 //nanopond style
+	#define NO_REP_OPERATION 1 //nanopond style
+#endif
 
 #define EAT_ENERGY GENOME_SIZE //amount of energy gained from eating
 
@@ -120,6 +126,7 @@ struct Position{
 class Simulation: public QThread
 {
 	Q_OBJECT
+
 public:
 	Simulation(QQueue <struct Cell>*pool,QSemaphore *geneblocker,int id);
 	virtual ~Simulation();
@@ -167,14 +174,16 @@ private:
 	inline int randomZ();
 	inline int randValue(int value);
 
-	void executeCell(int x, int y, int z);
-	void mutateCell(struct Cell *cell);
-	void killCell(struct Cell *cell);
-	bool reproduce(struct Cell *cell, struct Cell *neighbour,uchar *output_buffer);
+	virtual void executeCell1(int x, int y, int z); //nano pond style
+	virtual void executeCell2(int x, int y, int z); //custom style
 
-	bool accessOk(struct Cell *source, struct Cell *dest, char guess,bool good);
-	struct Position getNeighbour(int x, int y, int z, uchar direction);
-	void disaster();
+	virtual void mutateCell(struct Cell *cell);
+	virtual void killCell(struct Cell *cell);
+	virtual bool reproduce(struct Cell *cell, struct Cell *neighbour,uchar *output_buffer);
+
+	virtual bool accessOk(struct Cell *source, struct Cell *dest, char guess,bool good);
+	virtual struct Position getNeighbour(int x, int y, int z, uchar direction);
+	virtual void disaster();
 
 	int nextx;
 	int nexty;
@@ -193,12 +202,14 @@ private:
 	bool catas;
 	quint32 totalLiving;
 
+	int genomeOperations;
+	int noRepOperation;
+
 #ifdef Q_OS_WIN
 	static const double randScaleBig  = 1.0 / (1.0 + 1073741824.0); //2^30
 #else
 	static const double randScaleBig  = 1.0 / (1.0 + RAND_MAX);
 #endif
-
 };
 
 #endif /*SIMULATION_H_*/
