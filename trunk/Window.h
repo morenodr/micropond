@@ -22,7 +22,7 @@ public:
 	virtual ~Window();
 	void initGui();
 	void closeEvent ( QCloseEvent * event );
-	
+
 public slots:
 	void valueChanged(int val);
 	void ageView();
@@ -44,10 +44,10 @@ public slots:
 	void resetAllPonds();
 	void configNetwork();
 	void addCell();
-	
+
 private:
 	void closing();
-	
+
 	Simulation *simulation;
 	Renderer *renderer;
 	CreatureBar *creatureBar;
