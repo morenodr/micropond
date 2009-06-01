@@ -176,7 +176,7 @@ void Simulation::run(){
 }
 
 void Simulation::killCell(struct Cell *cell){
-	if(cell->id)
+        if(cell->id && cell->generation)
 		totalLiving--;
 	cell->parent = 0;
 	cell->lineage = 0;
@@ -1045,7 +1045,7 @@ void Simulation::init(){
 	int y = 0;
 	int z = 0;
 
-	memset(cells,sizeof(struct Cell)*x*y*z, 0);
+        memset(cells, 0, sizeof(struct Cell)*WORLD_X*WORLD_Y*WORLD_Z);
 
 	for(x = 0; x < WORLD_X; x++){
 		for(y = 0; y < WORLD_Y; y++){
