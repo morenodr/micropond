@@ -185,7 +185,7 @@ void Window::closing(){
 	for(int i = 0; i < simus->size() ; i++){
 		simus->at(i)->resume();
 		simus->at(i)->stopIt();
-		while(simus->at(i)->isRunning());
+                while(simus->at(i)->isRunning()){};
 	}
 }
 
@@ -229,7 +229,7 @@ void Window::load(QString file){
 	sema->acquire(1);
 	simulation->resume();
 	simulation->stopIt();
-	while(!simulation->isFinished());
+        while(!simulation->isFinished()){};
 	simulation->loadWorld(file);
 	simulation->start();
 
@@ -242,7 +242,7 @@ void Window::save(QString file){
 	sema->acquire(1);
 	simulation->resume();
 	simulation->stopIt();
-	while(!simulation->isFinished());
+        while(!simulation->isFinished()){};
 	simulation->saveWorld(file);
 	simulation->start();
 
@@ -284,7 +284,7 @@ void Window::resetPond(){
 	sema->acquire(1);
 	simulation->resume();
 	simulation->stopIt();
-	while(!simulation->isFinished());
+        while(!simulation->isFinished()){};
 	simulation->init();
 	simulation->start();
 
@@ -297,7 +297,7 @@ void Window::resetAllPonds(){
 	for(int i = 0; i < simus->size() ; i++){
 		simus->at(i)->resume();
 		simus->at(i)->stopIt();
-		while(simus->at(i)->isRunning());
+                while(simus->at(i)->isRunning()){};
 		simus->at(i)->init();
 		simus->at(i)->start();
 	}
