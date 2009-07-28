@@ -72,7 +72,7 @@ int Simulation::executed(){
 void Simulation::run(){
 	running = true;
 	//mutex->acquire(1);
-	srand(myId);
+        qsrand(myId);
 	//qsrand(0);
 
 	if(!initialized){
@@ -575,7 +575,7 @@ void Simulation::executeCell2(int x, int y, int z){
 				if(cell->energy2){
 					cell->energy2--;
 					cell->energy += ENERGY2_CONVERSION_GAIN;
-					if(!(rand() % 30)){
+                                        if(!(qrand() % 30)){
 						cell->bad++;
 					}
 				}
@@ -1127,7 +1127,7 @@ void Simulation::mutateCell(struct Cell *cell){
 
 	if(max){
 		max++;
-		max = rand() % max;
+                max = qrand() % max;
 	}
 
 	for(int i = 0; i < max; i++){
@@ -1142,21 +1142,21 @@ void Simulation::mutateCell(struct Cell *cell){
  * returns a random operation
  */
 inline uchar Simulation::randomOperation(){
-	//return (uchar)(rand() % genomeOperations);
-	return uchar(rand() * randScale * genomeOperations);
+        //return (uchar)(qrand() % genomeOperations);
+        return uchar(qrand() * randScale * genomeOperations);
 }
 
 inline int Simulation::randomX(){
-	return int(rand() * randScale * WORLD_X);
+        return int(qrand() * randScale * WORLD_X);
 }
 
 inline int Simulation::randomY(){
-	return int(rand() * randScale * WORLD_Y);
+        return int(qrand() * randScale * WORLD_Y);
 }
 
 inline int Simulation::randomZ(){
 	return 0;
-	//return int(rand() * randScale * WORLD_Z);
+        //return int(qrand() * randScale * WORLD_Z);
 }
 
 inline int Simulation::randValue(int value){
