@@ -86,7 +86,7 @@ void Simulation::run(){
 	round = 0;
 	mutex->release(1);
 
-	while(running){
+        while(running){
 	    //mutex->acquire(1);
 		round++;
 		count++;
@@ -121,6 +121,8 @@ void Simulation::run(){
 		//add energy every x rounds
 		if(!(round % ENERGY_FREQUENCY)){
 			regenerateEnergy();
+                        if(totalLiving < 0)
+                            totalLiving = 0; //HACK
 		}
 
 #ifdef DISASTERS

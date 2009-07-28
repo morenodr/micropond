@@ -200,7 +200,7 @@ private:
 	static const double randScale  = 1.0 / (1.0 + RAND_MAX);
 
 	bool catas;
-	quint32 totalLiving;
+        qint32 totalLiving;
 
 	int genomeOperations;
 	int noRepOperation;
