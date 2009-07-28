@@ -1003,7 +1003,7 @@ bool Simulation::reproduce(struct Cell *cell, struct Cell *neighbour,uchar *outp
 	}
 
 	if(copied >= MIN_COPY){
-		if(neighbour->generation >= LIVING){
+                if(neighbour->id && neighbour->generation >= LIVING){
 			neighbour->energy += neighbour->size;
 			totalLiving--;
 		}
