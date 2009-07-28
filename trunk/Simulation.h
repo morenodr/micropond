@@ -131,7 +131,7 @@ public:
 	Simulation(QQueue <struct Cell>*pool,QSemaphore *geneblocker,int id);
 	virtual ~Simulation();
 	void run();
-	void stopIt(){running = false;};
+        void stopIt(){running = false;}
 
 	int x(){ return WORLD_X;}
 	int y(){ return WORLD_Y;}
@@ -144,10 +144,10 @@ public:
 	void regenerateEnergy();
 	void pause();
 	void resume();
-	uint counter(){return count;};
-	void setEnergyAdd(uint value){ energyAdd = value;};
-	uint getEnergyAdd(){return energyAdd;};
-	uint getMaxEnergyAdd(){ return ENERGY_ADDED;};
+        uint counter(){return count;}
+        void setEnergyAdd(uint value){ energyAdd = value;}
+        uint getEnergyAdd(){return energyAdd;}
+        uint getMaxEnergyAdd(){ return ENERGY_ADDED;}
 
 	void saveWorld(QString file);
 	void loadWorld(QString file);
