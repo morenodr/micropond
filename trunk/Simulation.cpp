@@ -17,9 +17,9 @@
 
 int bigrand() {
 #ifdef Q_OS_WIN
-	return (rand() << 15) | rand();
+        return (qrand() << 15) | qrand();
 #else
-	return rand();
+        return qrand();
 #endif
 }
 

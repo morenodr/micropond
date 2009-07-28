@@ -4,7 +4,7 @@
 #include <QtGui>
 #include "Simulation.h"
 
-#define UPDATE_INTERVAL 5000
+#define UPDATE_INTERVAL 1000
 
 #define GENERATION 0
 #define GENOME 1
