@@ -30,10 +30,10 @@ void Window::stat(){
 	for(int i = 0; i < simus->size(); i++){
 		uint temp = simus->at(i)->executed();
 		total += temp;
+                qDebug() << "pond" << i << "executed:" << temp;
 
 		temp = simus->at(i)->getLiving();
 		totalLiving += temp;
-		//qDebug() << "pond" << i << "executed:" << temp;
 	}
 	qDebug() << "total executed:" << total;
 	qDebug() << "living:" << totalLiving;
