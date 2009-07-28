@@ -72,7 +72,7 @@ int Simulation::executed(){
 void Simulation::run(){
 	running = true;
 	//mutex->acquire(1);
-        qsrand(myId);
+        qsrand(myId*1234);
 	//qsrand(0);
 
 	if(!initialized){
