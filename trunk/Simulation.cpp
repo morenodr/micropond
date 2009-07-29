@@ -222,9 +222,9 @@ void Simulation::addCell(uchar *genome, uint size){
 	int x,y,z;
 
 	do{
-		x = randomX();
-		y = randomY();
-		z = randomZ();
+            x = randomX();
+            y = randomY();
+            z = randomZ();
 	}while(world[x][y][z].dead);
 
 	//kill the cell
@@ -305,7 +305,7 @@ bool Simulation::accessOk(struct Cell *source, struct Cell *dest, char guess,boo
 
 	double temp = (double)source->size / dest->size;
 
-	if(temp < 0.5){
+        if(temp < 0.4){
 		return false;
 	}else if(temp > 2){
 		return true;
@@ -1285,7 +1285,7 @@ void Simulation::disaster(){
 						cells[realX][realY][realZ].place = &world[realX][realY][realZ];
 					}
 					//if replaced cell lives, put it in the pool
-					if(cells[realX][realY][realZ].generation >= LIVING){
+                                        if(voyager.generation >= LIVING){
 						tempVoyagers->enqueue(voyager);
 					}
 					genepoolblocker->release(1);
