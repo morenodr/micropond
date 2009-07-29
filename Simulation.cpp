@@ -1115,6 +1115,7 @@ void Simulation::init(){
 	}
 
 	initialized = true;
+        totalLiving = 0;
 }
 
 /**
