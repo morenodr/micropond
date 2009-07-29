@@ -441,7 +441,7 @@ void Simulation::executeCell2(int x, int y, int z){
 						genome_pointer = 0;
 				}
 				break;
-			case 11://NOP2, stops reproduction
+                        case 11://NOP
 				break;
 			case 12:{ //move
 				struct Position pos = getNeighbour(x,y,z,facing);
@@ -510,7 +510,7 @@ void Simulation::executeCell2(int x, int y, int z){
 				reg = t;
 				}
 				break;
-			case 17://reset registers
+                        case 17://save reg in brain
 				cell->brain = reg;
 				break;
 			case 18:{//neigbour type
@@ -538,7 +538,7 @@ void Simulation::executeCell2(int x, int y, int z){
 				}
 				stop = true;
 			}break;
-			case 20:{//NOP
+                        case 20:{//recall brain
 				reg = cell->brain;
 			}break;
 			case 21: //tmp == reg ?
@@ -701,6 +701,7 @@ void Simulation::executeCell2(int x, int y, int z){
 					tmpCell = &cells[pos.x][pos.y][pos.z];
 					if(cell->energy2 >= 10 && cell->bad >= 3){
 						tmpCell->place->dead = false;
+                                                tmpCell->energy += 2*ENERGY2_CONVERSION_GAIN;
 						cell->energy2 -= 10;
 						cell->bad -= 3;
 					}
@@ -1224,7 +1225,7 @@ void Simulation::disaster(){
 
 	int size = randValue(30) + 70;
 
-	if(randValue(10) == 0 && type != 4){ //10% chance of a big disaster
+        if(type != Living && randValue(10) == 0){ //10% chance of a big disaster
 		if(randValue(4) == 0){ // again, 2% chance for a huge disaster
 			size *= 6;
 		}else{
