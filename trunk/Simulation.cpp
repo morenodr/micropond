@@ -33,7 +33,7 @@ Simulation::Simulation(QQueue <struct Cell>*pool,QSemaphore *geneblocker,int id)
 	running = true;
 	mutex = new QSemaphore(0);
 	count = 0;
-	energyAdd = (2 * ENERGY_ADDED / 3) + randValue(ENERGY_ADDED / 3);
+        energyAdd = (ENERGY_ADDED / 3) + randValue(2 * ENERGY_ADDED / 3);
 	nextSet = false;
 	canExecuteNext = true;
 	initialized = false;
