@@ -197,7 +197,9 @@ private:
 
 	QQueue <struct Cell>*genepool;
 	QSemaphore *genepoolblocker;
-	static const double randScale  = 1.0 / (1.0 + RAND_MAX);
+        static const double randScale  = 1.0 / (1.0 + RAND_MAX);
+        static const double randScaleX  = WORLD_X / (1.0 + RAND_MAX);
+        static const double randScaleY  = WORLD_Y / (1.0 + RAND_MAX);
 
 	bool catas;
         qint32 totalLiving;
