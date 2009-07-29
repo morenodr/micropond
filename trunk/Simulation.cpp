@@ -121,8 +121,12 @@ void Simulation::run(){
 		//add energy every x rounds
 		if(!(round % ENERGY_FREQUENCY)){
 			regenerateEnergy();
-                        if(totalLiving < 0)
-                            totalLiving = 0; //HACK
+
+                        //HACKS
+                        if(totalLiving < 0){
+                            totalLiving = 0;
+                        }
+                        qsrand(QDateTime::currentDateTime().toTime_t());
 		}
 
 #ifdef DISASTERS
