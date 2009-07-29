@@ -39,6 +39,7 @@ CreatureBar::CreatureBar()
 
 	setWidget(dockWidget);
 	setMinimumWidth(250);
+        setMaximumWidth(300);
 }
 
 QString CreatureBar::operationName(uchar operation){
