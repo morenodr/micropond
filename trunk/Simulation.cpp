@@ -1150,11 +1150,11 @@ inline uchar Simulation::randomOperation(){
 }
 
 inline int Simulation::randomX(){
-        return int(qrand() * randScale * WORLD_X);
+        return int(qrand() * randScaleX);
 }
 
 inline int Simulation::randomY(){
-        return int(qrand() * randScale * WORLD_Y);
+        return int(qrand() * randScaleY);
 }
 
 inline int Simulation::randomZ(){
