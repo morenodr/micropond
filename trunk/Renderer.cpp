@@ -26,9 +26,9 @@ QColor Renderer::getColor(struct Cell *cell, int mode){
 				g = 254;
 				b = 254;
 			}else{
-                                r = qRed(cell->generation);
-                                g = qGreen(cell->generation*2);
-                                b = qBlue(cell->generation*4);
+                                r = qRed((cell->generation / 192) << 16);
+                                g = qGreen((cell->generation << 3));
+                                b = qBlue(cell->generation >> 2);
 			}
 			break;
 		case GENOME:
