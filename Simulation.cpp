@@ -72,7 +72,7 @@ int Simulation::executed(){
 void Simulation::run(){
 	running = true;
 	//mutex->acquire(1);
-        qsrand(myId*1234);
+        qsrand(QDateTime::currentDateTime().toTime_t()+myId*1234);
 	//qsrand(0);
 
 	if(!initialized){
@@ -126,7 +126,7 @@ void Simulation::run(){
                         if(totalLiving < 0){
                             totalLiving = 0;
                         }
-                        qsrand(QDateTime::currentDateTime().toTime_t());
+                        //qsrand(QDateTime::currentDateTime().toTime_t());
 		}
 
 #ifdef DISASTERS
