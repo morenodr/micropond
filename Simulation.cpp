@@ -58,8 +58,6 @@ Simulation::Simulation(QQueue <struct Cell>*pool,QSemaphore *geneblocker,int id)
                 energyMode = Diamonds;
             break;
         }
-
-        energyMode = Diamonds;
 }
 
 Simulation::~Simulation()
