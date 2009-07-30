@@ -42,14 +42,14 @@ QColor Renderer::getColor(struct Cell *cell, int mode){
 					for(uint i = 0; i < cell->size;i++ ){
 						if(cell->genome[i] != cell->genome_operations - 1){
 							hash += cell->genome[i];
-							hash %= cell->genome_size * 5;
+                                                        hash %= 255;
 						}else{
 							break;
 						}
 					}
-					r = hash  * 900;
-					g = hash  * 180;
-					b = hash;
+                                        r = hash*hash << 15;
+                                        g = hash*123 << 2;
+                                        b = hash;
 				}
 			}
 			break;

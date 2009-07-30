@@ -35,9 +35,9 @@ void Window::stat(){
 		temp = simus->at(i)->getLiving();
 		totalLiving += temp;
 	}
-	qDebug() << "total executed:" << total;
-	qDebug() << "living:" << totalLiving;
-	setWindowTitle("Micropond    CPS: " + QString::number(total));
+        //qDebug() << "total executed:" << total;
+        //qDebug() << "living:" << totalLiving;
+        setWindowTitle("Micropond    CPS: " + QString::number(total) +" AL: "+QString::number(totalLiving));
 	QTimer::singleShot(STAT_INTERVAL, this, SLOT(stat()));
 }
 

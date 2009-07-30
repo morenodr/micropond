@@ -41,6 +41,25 @@ Simulation::Simulation(QQueue <struct Cell>*pool,QSemaphore *geneblocker,int id)
 	totalLiving = 0;
 	genomeOperations = GENOME_OPERATIONS;
 	noRepOperation = NO_REP_OPERATION;
+
+        qsrand(QDateTime::currentDateTime().toTime_t()+myId*1234);
+
+        switch(randValue(4)){
+            case 0:
+                energyMode = Even;
+            break;
+            case 1:
+                energyMode = Centered;
+            break;
+            case 2:
+                energyMode = CornerBlobs;
+            break;
+            case 3:
+                energyMode = Diamonds;
+            break;
+        }
+
+        energyMode = Diamonds;
 }
 
 Simulation::~Simulation()
@@ -72,7 +91,7 @@ int Simulation::executed(){
 void Simulation::run(){
 	running = true;
 	//mutex->acquire(1);
-        qsrand(QDateTime::currentDateTime().toTime_t()+myId*1234);
+
 	//qsrand(0);
 
 	if(!initialized){
@@ -130,9 +149,11 @@ void Simulation::run(){
 		}
 
 #ifdef DISASTERS
-		if(round == SAVE_TIME){
-			catas = true;
-		}
+                if(round == SAVE_TIME && totalLiving > 500){
+                    catas = true;
+                }else{
+                    catas = false;
+                }
 
 		//disaster :-)
 		if(randValue(DISASTER_CHANCE) == 0 && catas){
@@ -258,21 +279,34 @@ void Simulation::regenerateEnergy(){
 
 	double mod = 1.0;
 
-#ifdef VARIED_ENERGY
-	if(x <= WORLD_X / 2){
-		mod *= x / (WORLD_X / 2.0);
-	}else{
-		mod *= 2.0 - (x / (WORLD_X / 2.0) );
-	}
+        switch(energyMode){
+            case Even:
+            break;
+            case Centered:
+                if(x <= WORLD_X / 2){
+                    mod *= x / (WORLD_X / 2.0);
+                }else{
+                        mod *= 2.0 - (x / (WORLD_X / 2.0) );
+                }
 
-	if(y <= WORLD_Y / 2){
-		mod *= y / (WORLD_Y / 2.0);
-	}else{
-		mod *= 2.0 - (y / (WORLD_Y / 2.0) );
-	}
+                if(y <= WORLD_Y / 2){
+                        mod *= y / (WORLD_Y / 2.0);
+                }else{
+                        mod *= 2.0 - (y / (WORLD_Y / 2.0) );
+                }
 
-	mod += 0.1;
-#endif
+                mod += 0.1;
+            break;
+            case CornerBlobs:
+                mod = sin((x / (2.*(WORLD_X/3.) ))*2*MY_PI)+cos((y/ (2.*(WORLD_Y/3.) ))*2*MY_PI);
+                mod = qMax(0.08, qMin((double)1.0, mod));
+            break;
+            case Diamonds:
+                mod = sin((x / (WORLD_X/10.))*2*MY_PI)+cos((y/ (WORLD_Y/10. ))*2*MY_PI);
+                mod = qMax(0.08, qMin((double)1.0, mod));
+            break;
+        }
+
 	struct Cell *cell = &cells[(int)x][(int)y][(int)z];
 	if(cell->energy < MAX_ENERGY){
 		cell->energy += (int)((double)energyAdd * mod);
