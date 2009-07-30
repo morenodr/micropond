@@ -2,29 +2,56 @@
 #include <cstring>
 #include <stdlib.h>
 
-/*
- *
- * #ifdef Q_OS_WIN quint32 bigrand() {
- *  return qrand() << 15 | qrand(); }
- * #else quint32 bigrand() {
- *  return qrand();
- * } #endif
- *
- * bigrand() {
- * return (qrand() & 0x9FFE) << 18 | (qrand() & 0x9FFE) << 4 | (rand() & 0x9F00) >> 11;
- * }
- */
 
-int bigrand() {
+inline quint32 Simulation::bigrand() {
 #ifdef Q_OS_WIN
         return (qrand() << 15) | qrand();
 #else
-        return qrand();
+        return randomNumber();
 #endif
+}
+
+inline void Simulation::initRNG(int number){
+     #ifdef Q_OS_WIN
+        qsrand(number);
+    #else
+        nextRNG = number;
+    #endif
+}
+
+inline quint32 Simulation::randomNumber(){
+    #ifdef Q_OS_WIN
+        return qrand();
+    #else
+        nextRNG =( 1103515245 * nextRNG+12345)&(0x7FFFFFFF);
+        return nextRNG;
+        //return qrand();
+    #endif
 }
 
 Simulation::Simulation(QQueue <struct Cell>*pool,QSemaphore *geneblocker,int id)
 {
+        nextRNG = 1;/*
+
+        int i = 0;
+        int *a = new int[1000];
+        for (;i < 1000; i++){
+            a[i] = 0;
+        }
+
+        for (i = 0;i < 1000000; i++){
+            a[randValue(1000)]++;
+        }
+
+        int min = a[0];
+        int max = a[0];
+        for (i = 0;i < 1000; i++){
+            max = qMax(max, a[i]);
+            min = qMin(min, a[i]);
+        }
+
+        qDebug() << min << max;*/
+        initRNG(QDateTime::currentDateTime().toTime_t()+myId*1234);
 	genepool = pool;
 	genepoolblocker = geneblocker;
 	myId = id;
@@ -40,9 +67,7 @@ Simulation::Simulation(QQueue <struct Cell>*pool,QSemaphore *geneblocker,int id)
 	catas = false;
 	totalLiving = 0;
 	genomeOperations = GENOME_OPERATIONS;
-	noRepOperation = NO_REP_OPERATION;
-
-        qsrand(QDateTime::currentDateTime().toTime_t()+myId*1234);
+        noRepOperation = NO_REP_OPERATION;
 
         switch(randValue(5)){
             case 0:
@@ -632,7 +657,7 @@ void Simulation::executeCell2(int x, int y, int z){
 				if(cell->energy2){
 					cell->energy2--;
 					cell->energy += ENERGY2_CONVERSION_GAIN;
-                                        if(!(qrand() % 30)){
+                                        if(!(randomNumber() % 30)){
 						cell->bad++;
 					}
 				}
@@ -1032,16 +1057,16 @@ bool Simulation::reproduce(struct Cell *cell, struct Cell *neighbour,uchar *outp
 			switch(randValue(4)){
 			case 0://command replacement
 				neighbour->genome[i] = randomOperation();
-				break;
+                        break;
 			case 1://duplication or removal
 				loop = randValue(GENOME_SIZE);
-				break;
+                        break;
 			case 2:{//remove command
 				loop++;
-				}break;
+                        }break;
 			case 3:{//insert command
 				loop--;
-				}break;
+                        }break;
 			}
 		}else{
 #endif
@@ -1193,7 +1218,7 @@ void Simulation::mutateCell(struct Cell *cell){
 
 	if(max){
 		max++;
-                max = qrand() % max;
+                max = randomNumber() % max;
 	}
 
 	for(int i = 0; i < max; i++){
@@ -1209,20 +1234,20 @@ void Simulation::mutateCell(struct Cell *cell){
  */
 inline uchar Simulation::randomOperation(){
         //return (uchar)(qrand() % genomeOperations);
-        return uchar(qrand() * randScale * genomeOperations);
+        return uchar(randomNumber() * randScale * genomeOperations);
 }
 
 inline int Simulation::randomX(){
-        return int(qrand() * randScaleX);
+        return int(randomNumber() * randScaleX);
 }
 
 inline int Simulation::randomY(){
-        return int(qrand() * randScaleY);
+        return int(randomNumber() * randScaleY);
 }
 
 inline int Simulation::randomZ(){
 	return 0;
-        //return int(qrand() * randScale * WORLD_Z);
+        //return int(randomNumber() * randScale * WORLD_Z);
 }
 
 inline int Simulation::randValue(int value){

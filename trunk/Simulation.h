@@ -196,6 +196,10 @@ private:
 	virtual struct Position getNeighbour(int x, int y, int z, uchar direction);
 	virtual void disaster();
 
+        inline void initRNG(int number);
+        inline quint32 randomNumber();
+        inline quint32 bigrand();
+
 	int nextx;
 	int nexty;
 	int nextz;
@@ -208,9 +212,12 @@ private:
 
 	QQueue <struct Cell>*genepool;
 	QSemaphore *genepoolblocker;
+
+
         static const double randScale  = 1.0 / (1.0 + RAND_MAX);
         static const double randScaleX  = WORLD_X / (1.0 + RAND_MAX);
         static const double randScaleY  = WORLD_Y / (1.0 + RAND_MAX);
+
 
 	bool catas;
         qint32 totalLiving;
@@ -219,6 +226,8 @@ private:
 	int noRepOperation;
 
         EnergyDistribution energyMode;
+
+        quint32 nextRNG;
 
 #ifdef Q_OS_WIN
 	static const double randScaleBig  = 1.0 / (1.0 + 1073741824.0); //2^30
