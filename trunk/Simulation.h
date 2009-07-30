@@ -48,6 +48,8 @@
 
 #define DIRECTIONS 4 //change if you want 3d
 
+#define SPEEDUP_CELLS 1000
+
 #define NORTH 0
 #define WEST 1
 #define SOUTH 2

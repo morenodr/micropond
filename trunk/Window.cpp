@@ -11,7 +11,8 @@ Window::Window(int threads)
 
 	simus = new QList<Simulation *>();
 	for(int i = 0; i < threads; i++){
-		Simulation *temp = new Simulation(genepool,genepoolblocker,qrand());
+                qDebug() <<"creating simulation"<<i;
+                Simulation *temp = new Simulation(genepool,genepoolblocker,i);
 		temp->start();
 		simus->append(temp);
 	}
