@@ -44,7 +44,7 @@ Simulation::Simulation(QQueue <struct Cell>*pool,QSemaphore *geneblocker,int id)
 
         qsrand(QDateTime::currentDateTime().toTime_t()+myId*1234);
 
-        switch(randValue(4)){
+        switch(randValue(5)){
             case 0:
                 energyMode = Even;
             break;
@@ -57,7 +57,11 @@ Simulation::Simulation(QQueue <struct Cell>*pool,QSemaphore *geneblocker,int id)
             case 3:
                 energyMode = Diamonds;
             break;
+            case 4:
+                energyMode = Energy2Inclusions;
+            break;
         }
+        energyMode = Energy2Inclusions;
 }
 
 Simulation::~Simulation()
@@ -147,10 +151,13 @@ void Simulation::run(){
 		}
 
 #ifdef DISASTERS
-                if(round == SAVE_TIME && totalLiving > 500){
+                if(round == SAVE_TIME){
                     catas = true;
-                }else{
+                }
+
+                if(catas && totalLiving < 500){
                     catas = false;
+                    round = 0;
                 }
 
 		//disaster :-)
@@ -276,6 +283,7 @@ void Simulation::regenerateEnergy(){
 	}
 
 	double mod = 1.0;
+        double mod2 = 0.0;
 
         switch(energyMode){
             case Even:
@@ -303,12 +311,24 @@ void Simulation::regenerateEnergy(){
                 mod = sin((x / (WORLD_X/10.))*2*MY_PI)+cos((y/ (WORLD_Y/10. ))*2*MY_PI);
                 mod = qMax(0.08, qMin((double)1.0, mod));
             break;
+            case Energy2Inclusions:
+                mod2 = sin((x / (WORLD_X/3.))*2*MY_PI)+cos((y/ (WORLD_Y/3. ))*2*MY_PI);
+                mod2 = qMax(0.08, qMin((double)1.0, mod2));
+                mod = 0;
+                if(mod2 < 0.1){
+                    mod = 1;
+                }
+            break;
         }
 
 	struct Cell *cell = &cells[(int)x][(int)y][(int)z];
 	if(cell->energy < MAX_ENERGY){
-		cell->energy += (int)((double)energyAdd * mod);
+                cell->energy += (int)((double)energyAdd * mod);
 	}
+
+        if(cell->energy2 < MAX_ENERGY2){
+            cell->energy2 += (int)((double)ENERGY2_ADDED * mod2);
+        }
 
 	if(cell->bad > 1 && randValue(2)){
 		cell->bad--;
@@ -739,11 +759,18 @@ void Simulation::executeCell2(int x, int y, int z){
 					}
 				}
 			}break;
-			case 37: //end
+                        case 37:{ //create energy from energy2
+                        if(cell->energy2 > 1){
+                                    cell->energy2-=2;
+                                    cell->energy2+= ENERGY2_CONVERSION_GAIN;
+                            }
+                            }
+                        break;
+                        case 38: //end
 				stop = true;
 				reproducing = false;
 				break;
-			case 38: //end and reproduce
+                        case 39: //end and reproduce
 				stop = true;
 				break;
 			}
