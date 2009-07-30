@@ -61,7 +61,6 @@ Simulation::Simulation(QQueue <struct Cell>*pool,QSemaphore *geneblocker,int id)
                 energyMode = Energy2Inclusions;
             break;
         }
-        energyMode = Energy2Inclusions;
 }
 
 Simulation::~Simulation()
