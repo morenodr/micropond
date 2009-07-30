@@ -33,7 +33,7 @@
 #define GENOME_SIZE 100 //number of operations in a genome
 
 #ifndef NANOSTYLE
-	#define GENOME_OPERATIONS 39 //number of different operations
+        #define GENOME_OPERATIONS 40 //number of different operations
 	#define NO_REP_OPERATION 11 //id of the NO REPRODUCE operation
 #else
 	#define GENOME_OPERATIONS 17 //nanopond style
@@ -61,6 +61,7 @@
 //#define MAX_MUTATIONS_NON_LIVING 3
 
 #define ENERGY_ADDED 5000
+#define ENERGY2_ADDED 100
 #define ENERGY_FREQUENCY 25
 
 #define REPRODUCTION_COST_FACTOR 1
@@ -72,8 +73,9 @@
 #define MIN_COPY 5
 
 #define MAX_ENERGY 6000
+#define MAX_ENERGY2 1000
 
-#define DISASTER_CHANCE 5000000
+#define DISASTER_CHANCE 8000000
 
 #define SAVE_TIME 300000000 //+- 3 minutes with no disasters
 
@@ -99,7 +101,8 @@ enum EnergyDistribution{
     Even,
     Centered,
     CornerBlobs,
-    Diamonds
+    Diamonds,
+    Energy2Inclusions
 };
 
 struct Cell{
