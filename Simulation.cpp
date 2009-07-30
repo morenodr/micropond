@@ -31,7 +31,7 @@ inline quint32 Simulation::randomNumber(){
 
 Simulation::Simulation(QQueue <struct Cell>*pool,QSemaphore *geneblocker,int id)
 {
-        nextRNG = 1;/*
+        /*
 
         int i = 0;
         int *a = new int[1000];
@@ -51,10 +51,12 @@ Simulation::Simulation(QQueue <struct Cell>*pool,QSemaphore *geneblocker,int id)
         }
 
         qDebug() << min << max;*/
-        initRNG(QDateTime::currentDateTime().toTime_t()+myId*1234);
+        myId = id;
+        initRNG(myId*1234);
+
 	genepool = pool;
 	genepoolblocker = geneblocker;
-	myId = id;
+
 	cellid = 0;
 	mutated = 0;
 	running = true;
@@ -179,7 +181,7 @@ void Simulation::run(){
                     catas = true;
                 }
 
-                if(catas && totalLiving < 500){
+                if(catas && totalLiving < SPEEDUP_CELLS){
                     catas = false;
                     round = 0;
                 }
@@ -191,7 +193,7 @@ void Simulation::run(){
 #endif
 
 
-		if((totalLiving > 500) && cell->generation < LIVING) {
+                if((totalLiving > SPEEDUP_CELLS) && cell->generation < LIVING) {
 			continue;
 		}
 
@@ -1233,7 +1235,6 @@ void Simulation::mutateCell(struct Cell *cell){
  * returns a random operation
  */
 inline uchar Simulation::randomOperation(){
-        //return (uchar)(qrand() % genomeOperations);
         return uchar(randomNumber() * randScale * genomeOperations);
 }
 

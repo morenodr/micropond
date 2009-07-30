@@ -134,7 +134,7 @@ void Renderer::updatePicture(){
 	//qDebug() << "Pond:"<< simulation->id() << "cells executed: " << counter;
 
 #ifdef SAVE_PICTURES
-	temp.save(QDir::homePath()+"/asdf"+QString::number(imageCounter)+".png");
+        temp.save(QDir::homePath()+"/micro/asdf"+QString::number(imageCounter)+".png");
 	imageCounter++;
 #endif
 	
