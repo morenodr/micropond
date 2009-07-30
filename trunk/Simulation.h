@@ -11,7 +11,6 @@
 //comment out if you want debug mode  -----start
 #ifndef CLEANROOM
 
-	#define VARIED_ENERGY //does not give the whole playing field the same energy
 	//#define DECREASE_ENERGY //decreases energy over time
 	//#define EXECUTION_ERRORS //creates random execution errors
 
@@ -84,6 +83,8 @@
 
 #define SPECIAL_COMMANDS 5 //number of allowed special commands like kill, move
 
+#define MY_PI 3.14159265
+
 enum Disasters
 {
 	Meteor,
@@ -92,6 +93,13 @@ enum Disasters
 	Killer,
 	Living,
 	Flood
+};
+
+enum EnergyDistribution{
+    Even,
+    Centered,
+    CornerBlobs,
+    Diamonds
 };
 
 struct Cell{
@@ -206,6 +214,8 @@ private:
 
 	int genomeOperations;
 	int noRepOperation;
+
+        EnergyDistribution energyMode;
 
 #ifdef Q_OS_WIN
 	static const double randScaleBig  = 1.0 / (1.0 + 1073741824.0); //2^30
