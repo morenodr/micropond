@@ -118,7 +118,7 @@ QString CreatureBar::operationName(uchar operation){
 		return "eat";
 		break;
 	case 24:
-		return "convert";
+                return "convert energy2 to energy";
 		break;
 	case 25://end
 		return "eject";
@@ -157,7 +157,7 @@ QString CreatureBar::operationName(uchar operation){
 		return "Unkill cell";
 		break;
         case 37://end
-                return "create energy from energy2";
+                return "NOP";
                 break;
         case 38://end
 		return "stop";
