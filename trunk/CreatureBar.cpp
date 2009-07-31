@@ -181,7 +181,7 @@ void CreatureBar::cellSelected(struct Cell cell){
 	toxic->setText("Toxic: "+QString::number(cell.bad));
 	genome->clear();
 	for(uint i = 0; i < cell.genome_size; i++){
-		genome->append(operationName(cell.genome[i]));
+            genome->append(QString::number(cell.genome[i])+" "+ operationName(cell.genome[i]));
 	}
 	genome->moveCursor(QTextCursor::Start, QTextCursor::MoveAnchor);
 }
