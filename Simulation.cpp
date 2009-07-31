@@ -761,35 +761,35 @@ void Simulation::executeCell2(int x, int y, int z){
 				}
 				break;
 			case 35:{//build wall
-				if(cell->generation >= LIVING){
-					struct Position pos = getNeighbour(x,y,z,facing);
-					tmpCell = &cells[pos.x][pos.y][pos.z];
-					if(accessOk(cell, tmpCell, reg,false)){
-						if(cell->energy2 >= 10 && cell->bad >= 3){
-							tmpCell->place->dead = true;
-							cell->energy2 -= 10;
-							cell->bad -= 3;
-						}
-					}
-				}
+                            if(cell->generation >= LIVING){
+                                struct Position pos = getNeighbour(x,y,z,facing);
+                                tmpCell = &cells[pos.x][pos.y][pos.z];
+                                if(accessOk(cell, tmpCell, reg,false)){
+                                    if(cell->energy2 >= 10 && cell->bad >= 3){
+                                        tmpCell->place->dead = true;
+                                        cell->energy2 -= 10;
+                                        cell->bad -= 3;
+                                    }
+                                }
+                            }
 			}break;
 			case 36:{//destroy wall
 				if(cell->generation >= LIVING){
 					struct Position pos = getNeighbour(x,y,z,facing);
 					tmpCell = &cells[pos.x][pos.y][pos.z];
-					if(cell->energy2 >= 10 && cell->bad >= 3){
+                                        if(tmpCell->place->dead && cell->energy2 >= 5 && cell->bad >= 2){
 						tmpCell->place->dead = false;
                                                 tmpCell->energy += 2*ENERGY2_CONVERSION_GAIN;
-						cell->energy2 -= 10;
-						cell->bad -= 3;
+                                                cell->energy2 -= 5;
+                                                cell->bad -= 2;
 					}
 				}
 			}break;
                         case 37:{ //create energy from energy2
-                        if(cell->energy2 > 1){
-                                    cell->energy2-=2;
+                        /*if(cell->energy2 > 3){
+                                    cell->energy2-=4;
                                     cell->energy2+= ENERGY2_CONVERSION_GAIN;
-                            }
+                            }*/
                             }
                         break;
                         case 38: //end
@@ -1276,7 +1276,7 @@ void Simulation::disaster(){
 	case Poison:
 		qDebug() << "Poison meteor hit pond"<< myId;
 		type = Poison;
-		//Meteor that kills most live and posons the place
+                //Meteor that kills most live and poisons the place
 		break;
 	case Hunger:
 		qDebug() << "Hunger hit pond"<< myId;
