@@ -4,29 +4,17 @@
 
 
 inline quint32 Simulation::bigrand() {
-#ifdef Q_OS_WIN
-        return (qrand() << 15) | qrand();
-#else
         return randomNumber();
-#endif
 }
 
 inline void Simulation::initRNG(int number){
-     #ifdef Q_OS_WIN
-        qsrand(number);
-    #else
-        nextRNG = number;
-    #endif
+    nextRNG = number;
 }
 
 inline quint32 Simulation::randomNumber(){
-    #ifdef Q_OS_WIN
-        return qrand();
-    #else
-        nextRNG =( 1103515245 * nextRNG+12345)&(0x7FFFFFFF);
-        return nextRNG;
-        //return qrand();
-    #endif
+    nextRNG =( 1103515245 * nextRNG+12345)&(0x7FFFFFFF);
+    return nextRNG;
+    //return qrand();
 }
 
 Simulation::Simulation(QQueue <struct Cell>*pool,QSemaphore *geneblocker,int id)
@@ -559,7 +547,7 @@ void Simulation::executeCell2(int x, int y, int z){
 				struct Position pos = getNeighbour(x,y,z,facing);
 				tmpCell = &cells[pos.x][pos.y][pos.z];
 				if(cell->generation >= LIVING  &&
-						randValue(4) == 0){
+                                                accessOk(cell, tmpCell, reg,false)){
 					killCell(tmpCell);
 					specCommands++;
 				}
@@ -785,11 +773,19 @@ void Simulation::executeCell2(int x, int y, int z){
 					}
 				}
 			}break;
-                        case 37:{ //create energy from energy2
-                        /*if(cell->energy2 > 3){
-                                    cell->energy2-=4;
-                                    cell->energy2+= ENERGY2_CONVERSION_GAIN;
-                            }*/
+                        case 37:{ //special kill with energy2
+                                if(cell->energy2 >= 2){
+                                    cell->energy2 -= 2;
+                                    struct Position pos = getNeighbour(x,y,z,facing);
+                                    tmpCell = &cells[pos.x][pos.y][pos.z];
+                                    if(cell->generation >= LIVING && tmpCell->energy2 < cell->energy2){
+                                            killCell(tmpCell);
+                                            specCommands++;
+                                    }
+                                    if(specCommands >= SPECIAL_COMMANDS){
+                                            stop = true;
+                                    }
+                                }
                             }
                         break;
                         case 38: //end

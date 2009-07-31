@@ -100,7 +100,7 @@ QString CreatureBar::operationName(uchar operation){
 		return "save reg in brain";
 		break;
 	case 18: //probe
-		return "probe";
+                return "probe neighbour type";
 		break;
 	case 19: //end
 		return "execute facing";
@@ -151,13 +151,13 @@ QString CreatureBar::operationName(uchar operation){
 		return "create energy2";
 		break;
 	case 35://end
-		return "Kill cell";
+                return "build wall";
 		break;
 	case 36://end
-		return "Unkill cell";
+                return "destroy wall";
 		break;
         case 37://end
-                return "NOP";
+                return "special kill";
                 break;
         case 38://end
 		return "stop";
