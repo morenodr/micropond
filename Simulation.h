@@ -89,6 +89,8 @@
 
 #define MY_PI 3.14159265
 
+#define MY_RAND_MAX 0x7FFFFFFF
+
 enum Disasters
 {
 	Meteor,
@@ -216,10 +218,9 @@ private:
 	QSemaphore *genepoolblocker;
 
 
-        static const double randScale  = 1.0 / (1.0 + RAND_MAX);
-        static const double randScaleX  = WORLD_X / (1.0 + RAND_MAX);
-        static const double randScaleY  = WORLD_Y / (1.0 + RAND_MAX);
-
+        static const double randScale  = 1.0 / (1.0 + MY_RAND_MAX);
+        static const double randScaleX  = WORLD_X / (1.0 + MY_RAND_MAX);
+        static const double randScaleY  = WORLD_Y / (1.0 + MY_RAND_MAX);
 
 	bool catas;
         qint32 totalLiving;
@@ -230,12 +231,7 @@ private:
         EnergyDistribution energyMode;
 
         quint32 nextRNG;
-
-#ifdef Q_OS_WIN
-	static const double randScaleBig  = 1.0 / (1.0 + 1073741824.0); //2^30
-#else
-	static const double randScaleBig  = 1.0 / (1.0 + RAND_MAX);
-#endif
+        static const double randScaleBig  = 1.0 / (1.0 + MY_RAND_MAX);
 };
 
 #endif /*SIMULATION_H_*/
