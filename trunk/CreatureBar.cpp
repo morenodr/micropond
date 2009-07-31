@@ -115,7 +115,7 @@ QString CreatureBar::operationName(uchar operation){
 		return "register = direction with most energy";
 		break;
 	case 23:
-		return "eat";
+                return "inject code";
 		break;
 	case 24:
                 return "convert energy2 to energy";

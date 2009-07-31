@@ -40,7 +40,7 @@ Simulation::Simulation(QQueue <struct Cell>*pool,QSemaphore *geneblocker,int id)
 
         qDebug() << min << max;*/
         myId = id;
-        initRNG(myId*1234);
+        initRNG(myId*1234 + time(NULL));
 
 	genepool = pool;
 	genepoolblocker = geneblocker;
@@ -222,8 +222,9 @@ void Simulation::run(){
 }
 
 void Simulation::killCell(struct Cell *cell){
-        if(cell->id && cell->generation)
+        if(cell->id && cell->generation >= LIVING)
 		totalLiving--;
+
 	cell->parent = 0;
 	cell->lineage = 0;
 	cell->generation = 0;
@@ -235,6 +236,7 @@ void Simulation::killCell(struct Cell *cell){
 	cell->facing = 0; //randValue(DIRECTIONS);
 	cell->homePond = myId;
 	cell->genome_operations = genomeOperations;
+        cell->injected = 0;
 
 #ifdef RANDOM_INITIAL_CELLS
 
@@ -322,7 +324,7 @@ void Simulation::regenerateEnergy(){
                 mod = qMax(0.08, qMin((double)1.0, mod));
             break;
             case Diamonds:
-                mod = sin((x / (WORLD_X/10.))*2*MY_PI)+cos((y/ (WORLD_Y/10. ))*2*MY_PI);
+                mod = sin((x / (WORLD_X/7.))*2*MY_PI)+cos((y/ (WORLD_Y/7. ))*2*MY_PI);
                 mod = qMax(0.08, qMin((double)1.0, mod));
             break;
             case Energy2Inclusions:
@@ -407,6 +409,7 @@ void Simulation::executeCell2(int x, int y, int z){
 		int temp = 0; //temp register
 		uint executed = 0;
 		uint specCommands = 0; //only allow a certain amout of kills
+                int injected = 0;
 
 		//Execute cell until no more energy is left
 		while(cell->energy && !stop && executed < MAX_EXECUTING){
@@ -460,6 +463,7 @@ void Simulation::executeCell2(int x, int y, int z){
 				break;
 			case 8:{ //look into direction specified in the register
 				facing = reg % DIRECTIONS;
+                                injected = 0;
 			}break;
 			case 9://while(register){
 				if(!reg){
@@ -538,6 +542,7 @@ void Simulation::executeCell2(int x, int y, int z){
 					cell = &cells[x][y][z];
 					stop = true;
 					specCommands++;
+                                        injected = 0;
 				}
 				if(specCommands >= SPECIAL_COMMANDS){
 					stop = true;
@@ -626,30 +631,45 @@ void Simulation::executeCell2(int x, int y, int z){
 				}
 			}
 				break;
-			case 23:{//eat energy and modify neighbour genome
+                        case 23:{//modify neighbour genome
 				struct Position pos = getNeighbour(x,y,z,facing);
 				tmpCell = &cells[pos.x][pos.y][pos.z];
 				if(accessOk(cell, tmpCell, reg,false)){
-					if(temp != 0 && temp != genomeOperations - 1 &&
-							tmpCell->genome[pointer] == temp){
-						tmpCell->genome[pointer] = 0;
 
-						//eat energy
-						cell->energy2 += EAT_ENERGY / 3;
-						if(tmpCell->energy2 >= (2 * EAT_ENERGY) / 3){
-							cell->energy2 += (2 * EAT_ENERGY) / 3;
-							tmpCell->energy2 -= (2 * EAT_ENERGY) / 3;
-						}
-					}
+                                        tmpCell->genome[pointer] = output_buffer[pointer];
+                                        if(randValue(1000) == 0){
+                                            tmpCell->genome[pointer] = randomOperation();
+                                        }
+
+                                        tmpCell->size += ++injected;
+                                        if(tmpCell->size > 100){
+                                            tmpCell->size = 100;
+                                        }
+
+                                        if(tmpCell->size > 5){
+                                            if(cell->id == 0){
+                                                cell->id = ++cellid;
+                                                cell->lineage = cell->id;
+                                            }
+
+                                            if(tmpCell->generation < LIVING && cell->generation+1 >= LIVING){
+                                                totalLiving++;
+                                            }
+
+                                            tmpCell->injected = cell->id;
+                                            tmpCell->generation = cell->generation+1;
+                                            tmpCell->id = ++cellid;
+                                            tmpCell->lineage = cell->id;
+                                        }
 				}
 			}break;
-			case 24:{//remove bad
+                        case 24:{//convert
 				if(cell->energy2){
-					cell->energy2--;
-					cell->energy += ENERGY2_CONVERSION_GAIN;
-                                        if(!(randomNumber() % 30)){
-						cell->bad++;
-					}
+                                    cell->energy2--;
+                                    cell->energy += ENERGY2_CONVERSION_GAIN;
+                                    if(randValue(30) == 0){
+                                            cell->bad++;
+                                    }
 				}
 			}break;
 			case 25:{//eject

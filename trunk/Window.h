@@ -33,6 +33,7 @@ public slots:
 	void energyView();
 	void energy2View();
 	void toxicView();
+        void injectedView();
 	void close();
 	void load(QString file);
 	void save(QString file);

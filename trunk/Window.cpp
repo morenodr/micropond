@@ -129,9 +129,13 @@ void Window::initGui(){
 	energy2->setCheckable(true);
 
 	QAction *toxic = new QAction("Toxics",viewsGroup);
-	connect(toxic, SIGNAL(triggered()), this, SLOT(toxicView()));
-	views->addActions(viewsGroup->actions());
+        connect(toxic, SIGNAL(triggered()), this, SLOT(toxicView()));
 	toxic->setCheckable(true);
+
+        QAction *injected = new QAction("Injected",viewsGroup);
+        connect(injected, SIGNAL(triggered()), this, SLOT(injectedView()));
+        views->addActions(viewsGroup->actions());
+        injected->setCheckable(true);
 
 	pondsGroup = new QActionGroup(this);
 	pondsGroup->setExclusive(true);
@@ -224,6 +228,10 @@ void Window::energy2View(){
 
 void Window::toxicView(){
 	renderer->changeColorMode(7);
+}
+
+void Window::injectedView(){
+        renderer->changeColorMode(8);
 }
 
 void Window::load(QString file){

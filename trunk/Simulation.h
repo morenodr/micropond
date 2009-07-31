@@ -126,6 +126,7 @@ struct Cell{
 	uint size;
 	uchar facing;
 	uint homePond;
+        qlonglong injected;
 };
 
 struct Place{
