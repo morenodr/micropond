@@ -107,6 +107,20 @@ QColor Renderer::getColor(struct Cell *cell, int mode){
 			g = qGreen(cell->bad * 180);
 			b = qBlue(cell->bad * 50);
 			break;
+                case INJECTED:
+                        if(cell->place->dead && SHOW_LANDSCAPE){
+                                r = 254;
+                                g = 254;
+                                b = 254;
+                        }else{
+                            if(cell->generation >= LIVING_CELL){
+                                    r = qRed(cell->injected * cell->injected);
+                                    g = qGreen(cell->injected * cell->injected);
+                                    b = qBlue(cell->injected * cell->injected);
+                            }
+                        }
+                        break;
+                        break;
 	}
 	
 	return QColor(r % 255,g % 255,b % 255);

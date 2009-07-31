@@ -14,8 +14,9 @@
 #define ENERGY 5
 #define ENERGY2 6
 #define BAD 7
+#define INJECTED 8
 
-#define RENDERMODES 8
+#define RENDERMODES 9
 
 #define LIVING_CELL 3
 
