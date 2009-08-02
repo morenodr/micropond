@@ -76,6 +76,14 @@ Simulation::Simulation(QQueue <struct Cell>*pool,QSemaphore *geneblocker,int id)
                 energyMode = Energy2Inclusions;
             break;
         }
+
+        if(myId == 0){
+            energyMode = Centered;
+        }
+
+        if(myId == 1){
+            energyMode = Energy2Inclusions;
+        }
 }
 
 Simulation::~Simulation()
@@ -330,10 +338,7 @@ void Simulation::regenerateEnergy(){
             case Energy2Inclusions:
                 mod2 = sin((x / (WORLD_X/3.))*2*MY_PI)+cos((y/ (WORLD_Y/3. ))*2*MY_PI);
                 mod2 = qMax(0.08, qMin((double)1.0, mod2));
-                mod = 0;
-                if(mod2 < 0.1){
-                    mod = 1;
-                }
+                mod = 1.0 - mod2;
             break;
         }
 
@@ -634,7 +639,7 @@ void Simulation::executeCell2(int x, int y, int z){
                         case 23:{//modify neighbour genome
 				struct Position pos = getNeighbour(x,y,z,facing);
 				tmpCell = &cells[pos.x][pos.y][pos.z];
-				if(accessOk(cell, tmpCell, reg,false)){
+                                if(cell->generation > LIVING && accessOk(cell, tmpCell, reg,false)){
 
                                         tmpCell->genome[pointer] = output_buffer[pointer];
                                         if(randValue(1000) == 0){
@@ -656,10 +661,13 @@ void Simulation::executeCell2(int x, int y, int z){
                                                 totalLiving++;
                                             }
 
-                                            tmpCell->injected = cell->id;
+                                            tmpCell->injected = cell->lineage;
                                             tmpCell->generation = cell->generation+1;
                                             tmpCell->id = ++cellid;
-                                            tmpCell->lineage = cell->id;
+
+                                            if(tmpCell->lineage == 0){
+                                                tmpCell->lineage = cell->lineage;
+                                            }
                                         }
 				}
 			}break;
@@ -1130,6 +1138,8 @@ bool Simulation::reproduce(struct Cell *cell, struct Cell *neighbour,uchar *outp
 		if(neighbour->generation >= LIVING){
 			totalLiving++;
 		}
+
+                neighbour->injected = cell->injected;
 
 		neighbour->lineage = cell->lineage;
 
