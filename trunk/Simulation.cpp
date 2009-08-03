@@ -78,7 +78,7 @@ Simulation::Simulation(QQueue <struct Cell>*pool,QSemaphore *geneblocker,int id)
         }
 
         if(myId == 0){
-            energyMode = Energy2Even;
+            energyMode = Centered;
         }
 
         if(myId == 1){
@@ -337,7 +337,7 @@ void Simulation::regenerateEnergy(){
                 mod = qMax(0.08, qMin((double)1.0, mod));
             break;
             case Energy2Inclusions:
-                mod2 = sin((x / (WORLD_X/3.))*2*MY_PI)+cos((y/ (WORLD_Y/3. ))*2*MY_PI);
+                mod2 = sin((x / (WORLD_X/2.))*2*MY_PI)+cos((y/ (WORLD_Y/2. ))*2*MY_PI);
                 mod2 = qMax(0.08, qMin((double)1.0, mod2));
                 mod = 1.0 - mod2;
             break;
