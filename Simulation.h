@@ -107,7 +107,7 @@ enum EnergyDistribution{
     CornerBlobs,
     Diamonds,
     Energy2Inclusions,
-    Energy2Even
+    Energy2Land
 };
 
 struct Cell{
