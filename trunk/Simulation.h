@@ -4,7 +4,7 @@
 #include <QtCore>
 
 
-#define CLEANROOM
+//#define CLEANROOM
 
 //#define NANOSTYLE
 
@@ -70,7 +70,7 @@
 
 #define ENERGY_DECREASE 5000000
 
-#define ENERGY2_CONVERSION_GAIN 8
+#define ENERGY2_CONVERSION_GAIN 15
 
 #define MIN_COPY 5
 
@@ -106,7 +106,8 @@ enum EnergyDistribution{
     Centered,
     CornerBlobs,
     Diamonds,
-    Energy2Inclusions
+    Energy2Inclusions,
+    Energy2Even
 };
 
 struct Cell{

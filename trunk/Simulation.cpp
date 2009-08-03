@@ -78,7 +78,7 @@ Simulation::Simulation(QQueue <struct Cell>*pool,QSemaphore *geneblocker,int id)
         }
 
         if(myId == 0){
-            energyMode = Centered;
+            energyMode = Energy2Even;
         }
 
         if(myId == 1){
@@ -341,6 +341,9 @@ void Simulation::regenerateEnergy(){
                 mod2 = qMax(0.08, qMin((double)1.0, mod2));
                 mod = 1.0 - mod2;
             break;
+            case Energy2Even:
+                mod2 = 1.0;
+                mod = 0.0;
         }
 
 	struct Cell *cell = &cells[(int)x][(int)y][(int)z];
