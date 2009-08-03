@@ -4,7 +4,7 @@
 #include <QtCore>
 
 
-//#define CLEANROOM
+#define CLEANROOM
 
 //#define NANOSTYLE
 

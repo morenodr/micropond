@@ -291,6 +291,7 @@ void Simulation::addCell(uchar *genome, uint size){
 				GENOME_SIZE * sizeof(uchar));
 
 	memcpy(cell->genome, genome, size);
+        cell->generation = LIVING;
 
 }
 
