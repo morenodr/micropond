@@ -23,3 +23,4 @@ SOURCES += CellEditor.cpp \
 FORMS += 
 RESOURCES += 
 CONFIG += debug_and_release
+OTHER_FILES += creatures.txt
