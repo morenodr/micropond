@@ -59,7 +59,7 @@ Simulation::Simulation(QQueue <struct Cell>*pool,QSemaphore *geneblocker,int id)
 	genomeOperations = GENOME_OPERATIONS;
         noRepOperation = NO_REP_OPERATION;
 
-        switch(randValue(5)){
+        switch(randValue(6)){
             case 0:
                 energyMode = Even;
             break;
@@ -74,6 +74,9 @@ Simulation::Simulation(QQueue <struct Cell>*pool,QSemaphore *geneblocker,int id)
             break;
             case 4:
                 energyMode = Energy2Inclusions;
+            break;
+            case 5:
+                energyMode = Energy2Land;
             break;
         }
 
@@ -341,9 +344,11 @@ void Simulation::regenerateEnergy(){
                 mod2 = qMax(0.08, qMin((double)1.0, mod2));
                 mod = 1.0 - mod2;
             break;
-            case Energy2Even:
-                mod2 = 1.0;
-                mod = 0.0;
+            case Energy2Land:
+                mod2 = sin(((double)x/ (WORLD_X))*2*MY_PI)+cos(((double)y/ (WORLD_Y ))*2*MY_PI+MY_PI);
+                mod2 = qMax(0.0,qMin((double)1.0, mod2));
+                mod = 1.0 - mod2;
+            break;
         }
 
 	struct Cell *cell = &cells[(int)x][(int)y][(int)z];
@@ -650,7 +655,10 @@ void Simulation::executeCell2(int x, int y, int z){
                                             tmpCell->genome[pointer] = randomOperation();
                                         }
 
-                                        tmpCell->size += ++injected;
+                                        if(output_buffer[pointer] != GENOME_OPERATIONS - 1){
+                                            tmpCell->size += ++injected;
+                                        }
+
                                         if(tmpCell->size > 100){
                                             tmpCell->size = 100;
                                         }
