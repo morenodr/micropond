@@ -136,7 +136,7 @@ void Simulation::run(){
 	    //mutex->acquire(1);
 		round++;
 		count++;
-		if(nextSet){
+                if(__builtin_expect(nextSet, false)){
 			x = nextx;
 			y = nexty;
 			z = nextz;
@@ -165,7 +165,7 @@ void Simulation::run(){
 		}
 #endif
 		//add energy every x rounds
-		if(!(round % ENERGY_FREQUENCY)){
+                if(__builtin_expect(!(round % ENERGY_FREQUENCY),false)){
 			regenerateEnergy();
 
                         //HACKS
@@ -176,23 +176,23 @@ void Simulation::run(){
 		}
 
 #ifdef DISASTERS
-                if(round == SAVE_TIME){
+                if(__builtin_expect(round == SAVE_TIME, false)){
                     catas = true;
                 }
 
-                if(catas && totalLiving < SPEEDUP_CELLS){
+                if(__builtin_expect(catas && totalLiving < SPEEDUP_CELLS, false)){
                     catas = false;
                     round = 0;
                 }
 
 		//disaster :-)
-		if(randValue(DISASTER_CHANCE) == 0 && catas){
+                if(__builtin_expect(randValue(DISASTER_CHANCE) == 0 && catas, false)){
 			disaster();
 		}
 #endif
 
 
-                if((totalLiving > SPEEDUP_CELLS) && cell->generation < LIVING) {
+                if(__builtin_expect((totalLiving > SPEEDUP_CELLS) && cell->generation < LIVING, false)) {
 			continue;
 		}
 
@@ -204,7 +204,7 @@ void Simulation::run(){
 #endif
 
 #ifdef BAD_KILLS
-		if(cell->generation >= LIVING && cell->bad > 3){
+                if(cell->generation >= LIVING && cell->bad > 3){
 			double killValue = 90.0 /
 				(( cell->bad) * ( cell->bad));
 
@@ -375,7 +375,7 @@ void Simulation::regenerateEnergy(){
  * the chance of success can be better with the guess parameter
  */
 bool Simulation::accessOk(struct Cell *source, struct Cell *dest, char guess,bool good){
-	if(dest->place->dead){
+        if(__builtin_expect(dest->place->dead, false)){
 		return false;
 	}
 
@@ -395,7 +395,7 @@ bool Simulation::accessOk(struct Cell *source, struct Cell *dest, char guess,boo
 
 	int access_chance = 10 - (int)(6.0 * temp - 3.0);
 
-	if(access_chance == 0)
+        if(__builtin_expect(access_chance == 0, false))
 		return true;
 
 	return !(randValue(access_chance));
@@ -406,464 +406,465 @@ bool Simulation::accessOk(struct Cell *source, struct Cell *dest, char guess,boo
  */
 void Simulation::executeCell2(int x, int y, int z){
 	struct Cell *cell = &cells[x][y][z]; //current cell
-		uchar inst; //current instruction
-		int genome_pointer = 0; //pointer to the current genome instruction
-		int output_pointer = 0; //pointer to the outputbuffer
-		uchar output_buffer[GENOME_SIZE]; //outputbuffer, needed for reproducing
-		bool stop = false;
-		bool reproducing = true;
-		struct Cell *tmpCell; //temporary cell
+        __builtin_prefetch(cell->genome,0,0);
+        uchar inst; //current instruction
+        int genome_pointer = 0; //pointer to the current genome instruction
+        int output_pointer = 0; //pointer to the outputbuffer
+        uchar output_buffer[GENOME_SIZE]; //outputbuffer, needed for reproducing
+        bool stop = false;
+        bool reproducing = true;
+        struct Cell *tmpCell; //temporary cell
 
-		memset(output_buffer, noRepOperation, GENOME_SIZE * sizeof(uchar));
+        memset(output_buffer, noRepOperation, GENOME_SIZE * sizeof(uchar));
 
-		genome_pointer = 0;
-		int pointer = 0;//general pointer
-		uchar facing = cell->facing;
-		int reg = 0; //internal register to be used for anything
-		int temp = 0; //temp register
-		uint executed = 0;
-		uint specCommands = 0; //only allow a certain amout of kills
-                int injected = 0;
+        genome_pointer = 0;
+        int pointer = 0;//general pointer
+        uchar facing = cell->facing;
+        int reg = 0; //internal register to be used for anything
+        int temp = 0; //temp register
+        uint executed = 0;
+        uint specCommands = 0; //only allow a certain amout of kills
+        int injected = 0;
 
-		//Execute cell until no more energy is left
-		while(cell->energy && !stop && executed < MAX_EXECUTING){
-			executed++;
-			inst = cell->genome[genome_pointer];
-			genome_pointer++;
+        //Execute cell until no more energy is left
+        while(cell->energy && !stop && executed < MAX_EXECUTING){
+                executed++;
+                inst = cell->genome[genome_pointer];
+                genome_pointer++;
 
-			if(genome_pointer > GENOME_SIZE-1){
-				genome_pointer = 0;
-			}
-			cell->energy--;
+                if(__builtin_expect(genome_pointer > GENOME_SIZE-1, false)){
+                        genome_pointer = 0;
+                }
+                cell->energy--;
 
-			switch(inst){
-			case 0:
-				pointer = 0;
-				reg = 0;
-				temp = 0;
-				break;
-			case 1: //pointer ++
-				pointer++;
-				if(pointer >= GENOME_SIZE ){
-					pointer = 0;
-				}
-				break;
-			case 2: //pointer --
-				pointer--;
-				if(pointer < 0){
-					pointer = GENOME_SIZE - 1;
-				}
-				break;
-			case 3: //register ++
-				reg++;
-				if(reg >= genomeOperations ){
-					reg = 0;
-				}
-				break;
-			case 4: //register --
-				reg--;
-				if(reg < 0 ){
-					reg = genomeOperations - 1;
-				}
-				break;
-			case 5: //read genome to register
-				reg = cell->genome[pointer];
-				break;
-			case 6: //write register to outputbuffer
-				output_buffer[pointer] = reg;
-				break;
-			case 7: //read output buffer to register
-				reg = output_buffer[pointer];
-				break;
-			case 8:{ //look into direction specified in the register
-				facing = reg % DIRECTIONS;
+                switch(inst){
+                case 0:
+                        pointer = 0;
+                        reg = 0;
+                        temp = 0;
+                        break;
+                case 1: //pointer ++
+                        pointer++;
+                        if(__builtin_expect(pointer >= GENOME_SIZE, false) ){
+                                pointer = 0;
+                        }
+                        break;
+                case 2: //pointer --
+                        pointer--;
+                        if(__builtin_expect(pointer < 0, false)){
+                                pointer = GENOME_SIZE - 1;
+                        }
+                        break;
+                case 3: //register ++
+                        reg++;
+                        if(__builtin_expect(reg >= genomeOperations, false) ){
+                                reg = 0;
+                        }
+                        break;
+                case 4: //register --
+                        reg--;
+                        if(__builtin_expect(reg < 0, false) ){
+                                reg = genomeOperations - 1;
+                        }
+                        break;
+                case 5: //read genome to register
+                        reg = cell->genome[pointer];
+                        break;
+                case 6: //write register to outputbuffer
+                        output_buffer[pointer] = reg;
+                        break;
+                case 7: //read output buffer to register
+                        reg = output_buffer[pointer];
+                        break;
+                case 8:{ //look into direction specified in the register
+                        facing = reg % DIRECTIONS;
+                        injected = 0;
+                }break;
+                case 9://while(register){
+                        if(!reg){
+                                int tempP = genome_pointer;
+                                uchar *comm = &cell->genome[genome_pointer];
+                                while(*comm != 10 &&
+                                                cell->energy &&
+                                                !stop){
+
+                                        genome_pointer++;
+                                        comm++;
+
+                                        cell->energy--;
+
+                                        if(genome_pointer == tempP ||
+                                           genome_pointer >= GENOME_SIZE){
+                                                stop = true;
+                                        }
+                                }
+
+                                genome_pointer++;
+                                if(__builtin_expect(genome_pointer >= GENOME_SIZE, false))
+                                        genome_pointer = 0;
+                        }
+                        break;
+                case 10://}
+                        if(reg){
+                                int tempP = genome_pointer;
+                                uchar *comm = &cell->genome[genome_pointer];
+                                while(*comm != 9 &&
+                                                cell->energy &&
+                                                !stop){
+                                        genome_pointer--;
+                                        comm--;
+                                        cell->energy--;
+
+                                        if(genome_pointer == tempP ||
+                                                        genome_pointer < 0){
+                                                stop = true;
+                                        }
+                                }
+
+                                genome_pointer++;
+                                if(__builtin_expect(genome_pointer >= GENOME_SIZE, false))
+                                        genome_pointer = 0;
+                        }
+                        break;
+                case 11://NOP
+                        break;
+                case 12:{ //move
+                        struct Position pos = getNeighbour(x,y,z,facing);
+                        tmpCell = &cells[pos.x][pos.y][pos.z];
+
+                        if(tmpCell != cell && accessOk(cell, tmpCell, reg,false) && cell->energy2 >= 3){
+                                cell->energy2 -= 3;
+                                int tempEnergy = cell->energy2;
+                                cell->energy2 = cell->energy2 / 2 + tmpCell->energy2;
+                                tmpCell->energy2 = tempEnergy / 2;
+
+                                tempEnergy = cell->energy;
+                                cell->energy = cell->energy / 2 + tmpCell->energy;
+                                tmpCell->energy = tempEnergy / 2;
+
+                                struct Cell tmp;
+                                tmp = *tmpCell;
+                                *tmpCell = *cell;
+                                *cell = tmp;
+
+                                struct Place *p = tmpCell->place;
+                                tmpCell->place = cell->place;
+                                cell->place = p;
+
+                                x = pos.x;
+                                y = pos.y;
+                                z = pos.z;
+                                cell = &cells[x][y][z];
+                                stop = true;
+                                specCommands++;
                                 injected = 0;
-			}break;
-			case 9://while(register){
-				if(!reg){
-					int tempP = genome_pointer;
-					uchar *comm = &cell->genome[genome_pointer];
-					while(*comm != 10 &&
-							cell->energy &&
-							!stop){
+                        }
+                        if(__builtin_expect(specCommands >= SPECIAL_COMMANDS, false)){
+                                stop = true;
+                        }
+                }break;
+                case 13:{ // kill
+                        struct Position pos = getNeighbour(x,y,z,facing);
+                        tmpCell = &cells[pos.x][pos.y][pos.z];
+                        if(cell->generation >= LIVING  &&
+                                        accessOk(cell, tmpCell, reg,false)){
+                                killCell(tmpCell);
+                                specCommands++;
+                        }
+                        if(specCommands >= SPECIAL_COMMANDS){
+                                stop = true;
+                        }
+                }break;
+                case 14:{//remove bad
+                        if(cell->bad > 2 && cell->energy >= ENERGY2_CONVERSION_GAIN / 4){
+                                cell->bad -= 2;
+                                cell->energy -= ENERGY2_CONVERSION_GAIN / 4;
+                        }
+                }break;
+                case 15:{//share
+                        struct Position pos = getNeighbour(x,y,z,facing);
+                        tmpCell = &cells[pos.x][pos.y][pos.z];
+                        if(accessOk(cell, tmpCell, reg,true)){
+                                uint tmpEnergy = tmpCell->energy + cell->energy;
+                                tmpCell->energy = tmpEnergy / 2;
+                                cell->energy = tmpEnergy / 2;
+                        }
+                }break;
+                case 16:{//swap temp
+                        int t = temp;
+                        temp = reg;
+                        reg = t;
+                    }
+                    break;
+                case 17://save reg in brain
+                        cell->brain = reg;
+                        break;
+                case 18:{//neigbour type
+                        struct Position pos = getNeighbour(x,y,z,facing);
+                        tmpCell = &cells[pos.x][pos.y][pos.z];
+                        if(world[pos.x][pos.y][pos.z].dead){
+                                reg = 0; //0 if the neighbour is a dead cell
+                        }else if(!tmpCell->generation){
+                                reg = 1; //registry is 1 if neighbour is very young
+                        }else if(tmpCell->genome[0] == cell->genome[0]){
+                                reg = 2; //2 if same logo, friend
+                        }else{
+                                reg = 3; //3 if enemy
+                        }
+                }break;
+                case 19:{//execute neigbour
+                        if(canExecuteNext && cell->energy2){
+                                int executeDir = reg % DIRECTIONS;
+                                struct Position pos = getNeighbour(x,y,z,executeDir);
+                                nextx = pos.x;
+                                nexty = pos.y;
+                                nextz = pos.z;
+                                nextSet = true;
+                                cell->energy2--;
+                        }
+                        stop = true;
+                }break;
+                case 20:{//recall brain
+                        reg = cell->brain;
+                }break;
+                case 21: //tmp == reg ?
+                        if(temp == reg){
+                                reg = 1;
+                        }else{
+                                reg = 0;
+                        }
+                        break;
+                case 22:{ //seek most energy
+                        uint max = 0;
+                        for(int i = 0; i < DIRECTIONS; i++){
+                                struct Position pos = getNeighbour(x,y,z,i);
+                                tmpCell = &cells[pos.x][pos.y][pos.z];
+                                if(max < tmpCell->energy){
+                                        reg = i;
+                                        max = tmpCell->energy;
+                                }
+                        }
+                }
+                        break;
+                case 23:{//modify neighbour genome
+                        struct Position pos = getNeighbour(x,y,z,facing);
+                        tmpCell = &cells[pos.x][pos.y][pos.z];
+                        if(cell->generation > LIVING && accessOk(cell, tmpCell, reg,false)){
 
-						genome_pointer++;
-						comm++;
+                                tmpCell->genome[pointer] = output_buffer[pointer];
+                                if(randValue(1000) == 0){
+                                    tmpCell->genome[pointer] = randomOperation();
+                                }
 
-						cell->energy--;
+                                if(output_buffer[pointer] != GENOME_OPERATIONS - 1){
+                                    tmpCell->size += ++injected;
+                                }
 
-						if(genome_pointer == tempP ||
-						   genome_pointer >= GENOME_SIZE){
-							stop = true;
-						}
-					}
+                                if(tmpCell->size > 100){
+                                    tmpCell->size = 100;
+                                }
 
-					genome_pointer++;
-					if(genome_pointer >= GENOME_SIZE)
-						genome_pointer = 0;
-				}
-				break;
-			case 10://}
-				if(reg){
-					int tempP = genome_pointer;
-					uchar *comm = &cell->genome[genome_pointer];
-					while(*comm != 9 &&
-							cell->energy &&
-							!stop){
-						genome_pointer--;
-						comm--;
-						cell->energy--;
-
-						if(genome_pointer == tempP ||
-								genome_pointer < 0){
-							stop = true;
-						}
-					}
-
-					genome_pointer++;
-					if(genome_pointer >= GENOME_SIZE)
-						genome_pointer = 0;
-				}
-				break;
-                        case 11://NOP
-				break;
-			case 12:{ //move
-				struct Position pos = getNeighbour(x,y,z,facing);
-				tmpCell = &cells[pos.x][pos.y][pos.z];
-
-				if(tmpCell != cell && accessOk(cell, tmpCell, reg,false) && cell->energy2 >= 3){
-					cell->energy2 -= 3;
-					int tempEnergy = cell->energy2;
-					cell->energy2 = cell->energy2 / 2 + tmpCell->energy2;
-					tmpCell->energy2 = tempEnergy / 2;
-
-					tempEnergy = cell->energy;
-					cell->energy = cell->energy / 2 + tmpCell->energy;
-					tmpCell->energy = tempEnergy / 2;
-
-					struct Cell tmp;
-					tmp = *tmpCell;
-					*tmpCell = *cell;
-					*cell = tmp;
-
-					struct Place *p = tmpCell->place;
-					tmpCell->place = cell->place;
-					cell->place = p;
-
-					x = pos.x;
-					y = pos.y;
-					z = pos.z;
-					cell = &cells[x][y][z];
-					stop = true;
-					specCommands++;
-                                        injected = 0;
-				}
-				if(specCommands >= SPECIAL_COMMANDS){
-					stop = true;
-				}
-			}break;
-			case 13:{ // kill
-				struct Position pos = getNeighbour(x,y,z,facing);
-				tmpCell = &cells[pos.x][pos.y][pos.z];
-				if(cell->generation >= LIVING  &&
-                                                accessOk(cell, tmpCell, reg,false)){
-					killCell(tmpCell);
-					specCommands++;
-				}
-				if(specCommands >= SPECIAL_COMMANDS){
-					stop = true;
-				}
-			}break;
-			case 14:{//remove bad
-				if(cell->bad > 2 && cell->energy >= ENERGY2_CONVERSION_GAIN / 4){
-					cell->bad -= 2;
-					cell->energy -= ENERGY2_CONVERSION_GAIN / 4;
-				}
-			}break;
-			case 15:{//share
-				struct Position pos = getNeighbour(x,y,z,facing);
-				tmpCell = &cells[pos.x][pos.y][pos.z];
-				if(accessOk(cell, tmpCell, reg,true)){
-					uint tmpEnergy = tmpCell->energy + cell->energy;
-					tmpCell->energy = tmpEnergy / 2;
-					cell->energy = tmpEnergy / 2;
-				}
-			}break;
-			case 16:{//swap temp
-				int t = temp;
-				temp = reg;
-				reg = t;
-				}
-				break;
-                        case 17://save reg in brain
-				cell->brain = reg;
-				break;
-			case 18:{//neigbour type
-				struct Position pos = getNeighbour(x,y,z,facing);
-				tmpCell = &cells[pos.x][pos.y][pos.z];
-				if(world[pos.x][pos.y][pos.z].dead){
-					reg = 0; //0 if the neighbour is a dead cell
-				}else if(!tmpCell->generation){
-					reg = 1; //registry is 1 if neighbour is very young
-				}else if(tmpCell->genome[0] == cell->genome[0]){
-					reg = 2; //2 if same logo, friend
-				}else{
-					reg = 3; //3 if enemy
-				}
-			}break;
-			case 19:{//execute neigbour
-				if(canExecuteNext && cell->energy2){
-					int executeDir = reg % DIRECTIONS;
-					struct Position pos = getNeighbour(x,y,z,executeDir);
-					nextx = pos.x;
-					nexty = pos.y;
-					nextz = pos.z;
-					nextSet = true;
-					cell->energy2--;
-				}
-				stop = true;
-			}break;
-                        case 20:{//recall brain
-				reg = cell->brain;
-			}break;
-			case 21: //tmp == reg ?
-				if(temp == reg){
-					reg = 1;
-				}else{
-					reg = 0;
-				}
-				break;
-			case 22:{ //seek most energy
-				uint max = 0;
-				for(int i = 0; i < DIRECTIONS; i++){
-					struct Position pos = getNeighbour(x,y,z,i);
-					tmpCell = &cells[pos.x][pos.y][pos.z];
-					if(max < tmpCell->energy){
-						reg = i;
-						max = tmpCell->energy;
-					}
-				}
-			}
-				break;
-                        case 23:{//modify neighbour genome
-				struct Position pos = getNeighbour(x,y,z,facing);
-				tmpCell = &cells[pos.x][pos.y][pos.z];
-                                if(cell->generation > LIVING && accessOk(cell, tmpCell, reg,false)){
-
-                                        tmpCell->genome[pointer] = output_buffer[pointer];
-                                        if(randValue(1000) == 0){
-                                            tmpCell->genome[pointer] = randomOperation();
-                                        }
-
-                                        if(output_buffer[pointer] != GENOME_OPERATIONS - 1){
-                                            tmpCell->size += ++injected;
-                                        }
-
-                                        if(tmpCell->size > 100){
-                                            tmpCell->size = 100;
-                                        }
-
-                                        if(tmpCell->size > 5){
-                                            if(cell->id == 0){
-                                                cell->id = ++cellid;
-                                                cell->lineage = cell->id;
-                                            }
-
-                                            if(tmpCell->generation < LIVING && cell->generation+1 >= LIVING){
-                                                totalLiving++;
-                                            }
-
-                                            tmpCell->injected = cell->lineage;
-                                            tmpCell->generation = cell->generation+1;
-                                            tmpCell->id = ++cellid;
-
-                                            if(tmpCell->lineage == 0){
-                                                tmpCell->lineage = cell->lineage;
-                                            }
-                                        }
-				}
-			}break;
-                        case 24:{//convert
-				if(cell->energy2){
-                                    cell->energy2--;
-                                    cell->energy += ENERGY2_CONVERSION_GAIN;
-                                    if(randValue(30) == 0){
-                                            cell->bad++;
+                                if(tmpCell->size > 5){
+                                    if(cell->id == 0){
+                                        cell->id = ++cellid;
+                                        cell->lineage = cell->id;
                                     }
-				}
-			}break;
-			case 25:{//eject
-				struct Position pos = getNeighbour(x,y,z,facing);
-				tmpCell = &cells[pos.x][pos.y][pos.z];
-				if(accessOk(cell, tmpCell, reg,true)){
 
-					switch(reg){
-						case 0:{ //eject bad particle
-							if(cell->bad){
-								cell->bad--;
-								tmpCell->bad++;
-							}
-						}break;
-						case 1:{
-							if(tmpCell->bad){
-								cell->bad++;
-								tmpCell->bad--;
-							}
-						}break;
-						default:{
-							if(cell->energy >= (uint)reg){
-								cell->energy -= reg;
-								tmpCell->energy += reg;
-							}
-						}break;
-					}
+                                    if(tmpCell->generation < LIVING && cell->generation+1 >= LIVING){
+                                        totalLiving++;
+                                    }
 
-					uint tmpEnergy = tmpCell->energy + cell->energy;
-					tmpCell->energy = tmpEnergy / 2;
-					cell->energy = tmpEnergy / 2;
-				}
-			}break;
-			case 26: //random
-				reg = randomOperation();
-				break;
-			case 27: //test output pointer
-				if(output_pointer != GENOME_SIZE - 1){
-					reg = 1;
-				}else{
-					reg = 0;
-				}
-				break;
-			case 28: //if
-				if(reg){
-					reg++;
-					if(reg >= genomeOperations ){
-						reg = 0;
-					}
-				}
-				break;
-			case 29: //if not
-				if(!reg){
-					reg++;
-					if(reg >= genomeOperations ){
-						reg = 0;
-					}
-				}
-				break;
-			case 30: //number of directions
-				reg = DIRECTIONS - 1;
-				break;
-			case 31:{ //see neighbour facing
-				struct Position pos = getNeighbour(x,y,z,facing);
-				tmpCell = &cells[pos.x][pos.y][pos.z];
-				reg = tmpCell->facing;
-			}break;
-			case 32:{ //read neighbour genome
-				struct Position pos = getNeighbour(x,y,z,facing);
-				tmpCell = &cells[pos.x][pos.y][pos.z];
-				if(accessOk(cell, tmpCell, reg,false)){
-					reg = tmpCell->genome[pointer];
-				}
-			}break;
-			case 33:{ //reproduce
-				if(output_buffer[0] != noRepOperation &&
-						cell->energy >= cell->size * REPRODUCTION_COST_FACTOR){
-					cell->energy -= cell->size * REPRODUCTION_COST_FACTOR;
-					struct Position pos = getNeighbour(x,y,z,facing);
-					struct Cell *neighbour = &cells[pos.x][pos.y][pos.z];
-					if(accessOk(cell, neighbour, reg,false) && accessOk(cell, neighbour, reg,false)){
-						if(reproduce(cell,neighbour,output_buffer)){
-							cell->reproduced = 0;
-						}
-					}
-				}
-				memset(output_buffer, noRepOperation, GENOME_SIZE * sizeof(uchar));
-				specCommands++;
-				if(specCommands >= SPECIAL_COMMANDS){
-					stop = true;
-				}
-			}break;
-			case 34: //create energy 2
-				if(cell->energy >= ENERGY2_CONVERSION_GAIN * 2){
-					cell->energy -= ENERGY2_CONVERSION_GAIN * 2;
-					cell->energy2++;
-				}
-				break;
-			case 35:{//build wall
-                            if(cell->generation >= LIVING){
+                                    tmpCell->injected = cell->lineage;
+                                    tmpCell->generation = cell->generation+1;
+                                    tmpCell->id = ++cellid;
+
+                                    if(tmpCell->lineage == 0){
+                                        tmpCell->lineage = cell->lineage;
+                                    }
+                                }
+                        }
+                }break;
+                case 24:{//convert
+                        if(cell->energy2){
+                            cell->energy2--;
+                            cell->energy += ENERGY2_CONVERSION_GAIN;
+                            if(__builtin_expect(randValue(30) == 0, false)){
+                                    cell->bad++;
+                            }
+                        }
+                }break;
+                case 25:{//eject
+                        struct Position pos = getNeighbour(x,y,z,facing);
+                        tmpCell = &cells[pos.x][pos.y][pos.z];
+                        if(accessOk(cell, tmpCell, reg,true)){
+
+                                switch(reg){
+                                        case 0:{ //eject bad particle
+                                                if(cell->bad){
+                                                        cell->bad--;
+                                                        tmpCell->bad++;
+                                                }
+                                        }break;
+                                        case 1:{
+                                                if(tmpCell->bad){
+                                                        cell->bad++;
+                                                        tmpCell->bad--;
+                                                }
+                                        }break;
+                                        default:{
+                                                if(cell->energy >= (uint)reg){
+                                                        cell->energy -= reg;
+                                                        tmpCell->energy += reg;
+                                                }
+                                        }break;
+                                }
+
+                                uint tmpEnergy = tmpCell->energy + cell->energy;
+                                tmpCell->energy = tmpEnergy / 2;
+                                cell->energy = tmpEnergy / 2;
+                        }
+                }break;
+                case 26: //random
+                        reg = randomOperation();
+                        break;
+                case 27: //test output pointer
+                        if(output_pointer != GENOME_SIZE - 1){
+                                reg = 1;
+                        }else{
+                                reg = 0;
+                        }
+                        break;
+                case 28: //if
+                        if(reg){
+                                reg++;
+                                if(reg >= genomeOperations ){
+                                        reg = 0;
+                                }
+                        }
+                        break;
+                case 29: //if not
+                        if(!reg){
+                                reg++;
+                                if(reg >= genomeOperations ){
+                                        reg = 0;
+                                }
+                        }
+                        break;
+                case 30: //number of directions
+                        reg = DIRECTIONS - 1;
+                        break;
+                case 31:{ //see neighbour facing
+                        struct Position pos = getNeighbour(x,y,z,facing);
+                        tmpCell = &cells[pos.x][pos.y][pos.z];
+                        reg = tmpCell->facing;
+                }break;
+                case 32:{ //read neighbour genome
+                        struct Position pos = getNeighbour(x,y,z,facing);
+                        tmpCell = &cells[pos.x][pos.y][pos.z];
+                        if(accessOk(cell, tmpCell, reg,false)){
+                                reg = tmpCell->genome[pointer];
+                        }
+                }break;
+                case 33:{ //reproduce
+                        if(output_buffer[0] != noRepOperation &&
+                                        cell->energy >= cell->size * REPRODUCTION_COST_FACTOR){
+                                cell->energy -= cell->size * REPRODUCTION_COST_FACTOR;
+                                struct Position pos = getNeighbour(x,y,z,facing);
+                                struct Cell *neighbour = &cells[pos.x][pos.y][pos.z];
+                                if(accessOk(cell, neighbour, reg,false) && accessOk(cell, neighbour, reg,false)){
+                                        if(reproduce(cell,neighbour,output_buffer)){
+                                                cell->reproduced = 0;
+                                        }
+                                }
+                        }
+                        memset(output_buffer, noRepOperation, GENOME_SIZE * sizeof(uchar));
+                        specCommands++;
+                        if(specCommands >= SPECIAL_COMMANDS){
+                                stop = true;
+                        }
+                }break;
+                case 34: //create energy 2
+                        if(cell->energy >= ENERGY2_CONVERSION_GAIN * 2){
+                                cell->energy -= ENERGY2_CONVERSION_GAIN * 2;
+                                cell->energy2++;
+                        }
+                        break;
+                case 35:{//build wall
+                    if(cell->generation >= LIVING){
+                        struct Position pos = getNeighbour(x,y,z,facing);
+                        tmpCell = &cells[pos.x][pos.y][pos.z];
+                        if(accessOk(cell, tmpCell, reg,false)){
+                            if(cell->energy2 >= 10 && cell->bad >= 3){
+                                tmpCell->place->dead = true;
+                                cell->energy2 -= 10;
+                                cell->bad -= 3;
+                            }
+                        }
+                    }
+                }break;
+                case 36:{//destroy wall
+                        if(cell->generation >= LIVING){
                                 struct Position pos = getNeighbour(x,y,z,facing);
                                 tmpCell = &cells[pos.x][pos.y][pos.z];
-                                if(accessOk(cell, tmpCell, reg,false)){
-                                    if(cell->energy2 >= 10 && cell->bad >= 3){
-                                        tmpCell->place->dead = true;
-                                        cell->energy2 -= 10;
-                                        cell->bad -= 3;
-                                    }
+                                if(tmpCell->place->dead && cell->energy2 >= 5 && cell->bad >= 2){
+                                        tmpCell->place->dead = false;
+                                        tmpCell->energy += 2*ENERGY2_CONVERSION_GAIN;
+                                        cell->energy2 -= 5;
+                                        cell->bad -= 2;
                                 }
+                        }
+                }break;
+                case 37:{ //special kill with energy2
+                        if(cell->energy2 >= 2){
+                            cell->energy2 -= 2;
+                            struct Position pos = getNeighbour(x,y,z,facing);
+                            tmpCell = &cells[pos.x][pos.y][pos.z];
+                            if(cell->generation >= LIVING && tmpCell->energy2 < cell->energy2){
+                                    killCell(tmpCell);
+                                    specCommands++;
                             }
-			}break;
-			case 36:{//destroy wall
-				if(cell->generation >= LIVING){
-					struct Position pos = getNeighbour(x,y,z,facing);
-					tmpCell = &cells[pos.x][pos.y][pos.z];
-                                        if(tmpCell->place->dead && cell->energy2 >= 5 && cell->bad >= 2){
-						tmpCell->place->dead = false;
-                                                tmpCell->energy += 2*ENERGY2_CONVERSION_GAIN;
-                                                cell->energy2 -= 5;
-                                                cell->bad -= 2;
-					}
-				}
-			}break;
-                        case 37:{ //special kill with energy2
-                                if(cell->energy2 >= 2){
-                                    cell->energy2 -= 2;
-                                    struct Position pos = getNeighbour(x,y,z,facing);
-                                    tmpCell = &cells[pos.x][pos.y][pos.z];
-                                    if(cell->generation >= LIVING && tmpCell->energy2 < cell->energy2){
-                                            killCell(tmpCell);
-                                            specCommands++;
-                                    }
-                                    if(specCommands >= SPECIAL_COMMANDS){
-                                            stop = true;
-                                    }
-                                }
+                            if(specCommands >= SPECIAL_COMMANDS){
+                                    stop = true;
                             }
+                        }
+                    }
+                break;
+                case 38: //end
+                        stop = true;
+                        reproducing = false;
                         break;
-                        case 38: //end
-				stop = true;
-				reproducing = false;
-				break;
-                        case 39: //end and reproduce
-				stop = true;
-				break;
-			}
-		}
+                case 39: //end and reproduce
+                        stop = true;
+                        break;
+                }
+        }
 
-		cell->facing = facing;
+        cell->facing = facing;
 
-		output_pointer = 0;
+        output_pointer = 0;
 
-		//jeah, we can reproduce something
-		if(output_buffer[0] != noRepOperation && reproducing &&
-				cell->energy >= cell->size * REPRODUCTION_COST_FACTOR){
-			cell->energy -= cell->size * REPRODUCTION_COST_FACTOR;
-			struct Position pos = getNeighbour(x,y,z,facing);
-			struct Cell *neighbour = &cells[pos.x][pos.y][pos.z];
-			if(accessOk(cell, neighbour, reg,false) && accessOk(cell, neighbour, reg,false)){
-				if(reproduce(cell,neighbour,output_buffer)){
-					cell->reproduced = 0;
-				}else{
-					cell->reproduced++;
-				}
-			}
-		}else{
-			cell->reproduced++;
-		}
+        //jeah, we can reproduce something
+        if(output_buffer[0] != noRepOperation && reproducing &&
+                        cell->energy >= cell->size * REPRODUCTION_COST_FACTOR){
+                cell->energy -= cell->size * REPRODUCTION_COST_FACTOR;
+                struct Position pos = getNeighbour(x,y,z,facing);
+                struct Cell *neighbour = &cells[pos.x][pos.y][pos.z];
+                if(accessOk(cell, neighbour, reg,false) && accessOk(cell, neighbour, reg,false)){
+                        if(reproduce(cell,neighbour,output_buffer)){
+                                cell->reproduced = 0;
+                        }else{
+                                cell->reproduced++;
+                        }
+                }
+        }else{
+                cell->reproduced++;
+        }
 
-	#ifdef MUST_REPRODUCE
-		if(cell->generation >= LIVING && cell->reproduced > 4){
-			killCell(cell);
-		}
-	#endif
+#ifdef MUST_REPRODUCE
+        if(cell->generation >= LIVING && cell->reproduced > 4){
+                killCell(cell);
+        }
+#endif
 }
 
 /**
@@ -1091,7 +1092,7 @@ bool Simulation::reproduce(struct Cell *cell, struct Cell *neighbour,uchar *outp
 		}
 
 #ifdef REPRODUCTION_ERRORS
-		if(!(randValue(MUTATION_RATE_REPRODUCTION))){
+                if(__builtin_expect(!randValue(MUTATION_RATE_REPRODUCTION), false)){
 			switch(randValue(4)){
 			case 0://command replacement
 				neighbour->genome[i] = randomOperation();
@@ -1118,11 +1119,6 @@ bool Simulation::reproduce(struct Cell *cell, struct Cell *neighbour,uchar *outp
 		copied++;
 	}
 
-	/*if(!stoped && i < GENOME_SIZE - 1){
-		neighbour->parent = cell->id;
-		neighbour->lineage = neighbour->id;
-		neighbour->generation = 1;
-	}*/
 
 	if(i < GENOME_SIZE - 1 && i > GENOME_SIZE / 5){
 		memset(neighbour->genome +i*sizeof(uchar),
@@ -1447,42 +1443,42 @@ struct Position Simulation::getNeighbour(int x, int y, int z, uchar direction){
 	switch(direction){
 	case NORTH:{
 		y--;
-		if(y < 0){
+                if(__builtin_expect (y < 0, false)){
 			y = WORLD_Y - 1;
 		}
 	}
 		break;
 	case SOUTH:{
 		y++;
-		if(y >= WORLD_Y){
+		if(__builtin_expect (y >= WORLD_Y,false)){
 			y = 0;
 		}
 	}
 		break;
 	case WEST:{
 		x--;
-		if(x < 0){
+		if(__builtin_expect (x < 0,false)){
 			x = WORLD_X-1;
 		}
 	}
 		break;
 	case EAST:{
 		x++;
-		if(x >= WORLD_X){
+		if(__builtin_expect (x >= WORLD_X,false)){
 			x = 0;
 		}
 	}
 		break;
 	case UP:{
 		z++;
-		if(z >= WORLD_Z){
+		if(__builtin_expect (z >= WORLD_Z,false)){
 			z = WORLD_Z - 1;
 		}
 	}
 		break;
 	case DOWN:{
 		z--;
-		if(z < 0){
+		if(__builtin_expect (z < 0,false)){
 			z = 0;
 		}
 	}
